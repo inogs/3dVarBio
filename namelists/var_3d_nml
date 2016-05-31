@@ -1,0 +1,189 @@
+W!------------------------------------------------------------
+! OceanVar namelist
+!------------------------------------------------------------
+!
+! Namelist runlst
+! ---
+!
+!             Define the general set-up
+!
+!  flag_a   - character*12: flag for the analysis
+!  sdat_f   - Starting date of the forecast
+!  shou_f   - Starting hour of the forecast
+!  lhou_f   - Length of the forecast 
+!
+! ---
+&runlst
+   flag_a   = "MFS_analysis"
+   sdat_f   = 20050225
+   shou_f   = 12
+   lhou_f   = 24
+/
+!------------------------------------------------------------
+!
+! Namelist obslst
+!
+!             Observational data sets set-up
+!
+! ---
+!  obs_sla -  1-assimilate sla, 0-do not assimilate
+!  obs_arg -  1-assimilate Argo, 0-do not assimilate
+!  obs_xbt -  1-assimilate XBT, 0-do not assimilate
+!  obs_gld -  1-assimilate glider, 0-do not assimilate
+!  obs_tra -  1-assimilate Argo trajectories, 0-do not assimilate
+!  obs_trd -  1-assimilate drifter trajectories, 0-do not assimilate
+!  obs_vdr -  1-assimilate velocity from drifters, 
+!             0-do not assimilate
+!  obs_gvl -  1-assimilate velocity from gliders, 
+!             0-do not assimilate
+!  obs_chl -  1-assimilate chlorophyll, 0-do not assimilate
+!
+! ---
+&obslst
+   obs_sla = 0
+   obs_arg = 0
+   obs_xbt = 0
+   obs_gld = 0
+   obs_tra = 0
+   obs_trd = 0
+   obs_vdr = 0
+   obs_gvl = 0
+   obs_chl = 1
+/
+!------------------------------------------------------------
+!
+! Namelist drvlst
+! ---
+!
+!             Outer loop set-up
+!
+!  ntr     -  Number of outer iterations over grids
+!  grid    -  grid number in each iteration
+!  read_grd - Logical to read grids from files.
+!             See subroutine def_grd.f90       
+!  ratio   -  Resolution ratio between the previous 
+!             and the current grid
+!  mask    -  Mask type: 
+!              1 - no land
+!              2 - 2d mask by coasts
+!              3 - 3d mask by bottom topography
+!  barmd   -  Run barotropic model on the grid
+!  divda   -  Apply divergence damping on the grid
+!  divdi   -  Initialise corrections by divergence damping 
+!
+! ---
+&grdlst
+   ntr      =  1,
+   grid     =  1,  1,   1
+   read_grd = .T. ,.T.,.T.
+   ratio    =  1., 1.,  1.
+   mask     =  3,  3,   3 
+   barmd    =  0,  0,   1 
+   divda    =  0,  0,   1 
+   divdi    =  0,  0,   1 
+/
+!------------------------------------------------------------
+!
+! Namelist ctllst
+! ---
+!
+!             BFGS minimizers set-up
+!
+!  ctl_m   -  Number of copies saved in the minimizer
+!  ctl_tol -  Stopping criteria (absolute)
+!  ctl_per -  Stopping criteria (relative)
+!
+! ---
+&ctllst
+   ctl_m    = 5    
+   ctl_tol  = 1.e-11
+   ctl_per  = 1.e-4
+/
+!------------------------------------------------------------
+!
+! Namelist rcflst
+! ---
+!
+!             Covariance constants
+!
+!  neof     - Number of vertical EOFs 
+!  nreg    -  Number of regions
+!  read_eof - Logical to read EOFs from files.
+!             See subroutine def_cov.f90       
+!  rcf_ntr -  Number of iterations of the recursive filter
+!  rcf_L   -  Horizontal correlation radius
+!  rcf_efc -  Extension factor for coasts
+!
+! ---
+&covlst
+   neof     = 14
+   nreg     = 16363
+   read_eof = .true. 
+   rcf_ntr  = 4
+   rcf_L    = 10000.
+   rcf_efc  = 5.0
+/
+!------------------------------------------------------------
+!
+! Namelist slalst
+! ---
+!
+!          SLA assimilation set-up
+!
+!  sla_dep -  Maximum depth for assimilation of sla
+!
+! ---
+&slalst
+   sla_dep  = 150.
+/
+!------------------------------------------------------------
+!
+! Namelist bmdlst
+! ---
+!
+!          Barotropic model set-up
+!
+!  bmd_dt  -  Time step
+!  bmd_ndy -  Number of days to integrate the model
+!  bmd_ady -  Number of days for averaging
+!  bmd_ady -  Weight for the trapezoidal scheme
+!  bmd_fc1 -  Horizontal friction for vorticity
+!  bmd_fc2 -  Horizontal friction for divergence
+!  bmd_ovr -  Overrelaxation
+!  bmd_resem - Stopping criteria
+!  bmd_ncnt - Maximum number of successive corrections
+!
+! ---
+&bmdlst
+  bmd_dt    = 7200. 
+  bmd_ndy   =  3.
+  bmd_ady   = 0.8
+  bmd_alp   = 1.0
+  bmd_fc1   = 0.1
+  bmd_fc2   = 0.2
+  bmd_ovr   = 1.9
+  bmd_resem = 5.e-2
+  bmd_ncnt  = 201
+/
+!------------------------------------------------------------
+!
+! Namelist biolst
+! ---
+!
+!          Biological assimilation set-up
+!
+!  biol    -  1-biological variables in state vector, 
+!             0-no biological variables in state vector
+!  bphy    -  1-biological and physical variables in state vector,
+!             0-no physical variables in state vector
+!  nchl    -  Number of phytoplankton species
+!  chl_dep -  Minimum depth for chlorophyll assimilation
+!
+! ---
+&biolst
+  biol    = 1
+  bphy    = 0
+  nchl    = 1
+  chl_dep = 200.0
+/
+!------------------------------------------------------------
