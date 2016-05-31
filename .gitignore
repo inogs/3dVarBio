@@ -1,5 +1,18 @@
-libvar_3d.a
+# "main" component product by the compilation
+*.a
+cpp.*
+
+# Avoid inclusion of .svn folder
 .svn/
+
+# emacs redundant files
 *~
+
+# object files
 *.o
+
+# module files
+*.mod
+
+# executable
 var_3d
