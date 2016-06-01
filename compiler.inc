@@ -14,8 +14,8 @@ OPT_FLTCONSISTENCY =
 LIBFEXIT  = ./libfexit/
 LIBNCMEDLEV =./libnc-medlevel
 
-FFLAGS  = -O2 -I$(NETCDF_INC) $(OPT_FLTCONSISTENCY) -c
-CFLAGS  = -O2 -I$(NETCDF_INC)
+FFLAGS  = -g -O2 -I$(NETCDF_INC) $(OPT_FLTCONSISTENCY) -c
+CFLAGS  = -g -O2 -I$(NETCDF_INC)
 
 LDFLAGS += -L$(NETCDF_LIB) -lnetcdff -lnetcdf
 AR      = ar
