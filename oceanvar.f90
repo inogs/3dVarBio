@@ -37,11 +37,20 @@ subroutine oceanvar
 
  use set_knd
  use drv_str
-
+ use myalloc_mpi
+ 
  implicit none
 
  INTEGER(i4)   ::  ktr
+ INTEGER(i4)   ::  MyID
+ 
+ call mynode
+ MyID = rank !mynode()
 
+ print*,MyID, rank, size
+
+ if( MyID .eq. 0) then
+ print*, "Only process ", MyID, " will works..."
 ! ---
 ! Initialize diagnostics and read namelists
       call def_nml
@@ -135,4 +144,6 @@ subroutine oceanvar
 
 !-----------------------------------------------------------------
 close(drv%dia)
+endif
+CALL mpi_stop
 end subroutine oceanvar

@@ -38,7 +38,7 @@ $(info $$NETCDF_LIB  = ${NETCDF_LIB})
 $(info $$LIBFEXIT    = ${LIBFEXIT})
 $(info $$LIBNCMEDLEV = ${LIBNCMEDLEV})
 
-
+PREPROC = -Dkey_mpp_mpi
 
 LDFLAGS += -L$(LIBFEXIT) -lf_exit
 
@@ -61,7 +61,8 @@ OBJSTR  =  \
 	bmd_str.o\
 	eof_str.o\
 	ctl_str.o\
-	rcfl_mod.o
+	rcfl_mod.o\
+	mpi_alloc.o
 
 PHYSOBS  =  \
 	get_obs_sla.o\
@@ -140,6 +141,7 @@ OBJS    =  \
 	cnv_ctv_ad.o\
 	cnv_inn.o\
 	wrt_dia.o\
+	mpi_utils.o\
     oceanvar.o
 
 MAINEXE = main.o
@@ -160,10 +162,10 @@ $(LIB)  :       $(KNDSTR) $(OBJSTR) $(OBJS)
 
 .DEFAULTS:
 .f90.o :
-	$(CPP) $*.f90 > cpp.$*.f90 ; $(F90) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
+	$(CPP) $(PREPROC) $*.f90 > cpp.$*.f90 ; $(F90) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
 
 .f.o :
-	$(CPP) $*.f > cpp.$*.f ; $(F77) $(FFLAGS) cpp.$*.f  ; $(MV) cpp.$*.o $*.o
+	$(CPP) $(PREPROC) $*.f > cpp.$*.f ; $(F77) $(FFLAGS) cpp.$*.f  ; $(MV) cpp.$*.o $*.o
 
 libf_exit.a :
 	cd $(LIBFEXIT) && $(MAKE)
