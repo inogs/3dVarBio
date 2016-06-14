@@ -37,11 +37,16 @@ subroutine oceanvar
 
  use set_knd
  use drv_str
+
+#ifdef key_mpp_mpi
  use myalloc_mpi
- 
+#endif
+
  implicit none
 
  INTEGER(i4)   ::  ktr
+
+#ifdef key_mpp_mpi
  INTEGER(i4)   ::  MyID
  
  call mynode
@@ -51,6 +56,8 @@ subroutine oceanvar
 
  if( MyID .eq. 0) then
  print*, "Only process ", MyID, " will works..."
+#endif
+
 ! ---
 ! Initialize diagnostics and read namelists
       call def_nml
@@ -140,10 +147,15 @@ subroutine oceanvar
 
 ! ---
 ! End of outer loop
-  enddo
 
+  enddo
 !-----------------------------------------------------------------
 close(drv%dia)
+#ifdef key_mpp_mpi
 endif
+#endif
+
+#ifdef key_mpp_mpi
 CALL mpi_stop
+#endif
 end subroutine oceanvar

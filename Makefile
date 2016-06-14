@@ -38,7 +38,7 @@ $(info $$NETCDF_LIB  = ${NETCDF_LIB})
 $(info $$LIBFEXIT    = ${LIBFEXIT})
 $(info $$LIBNCMEDLEV = ${LIBNCMEDLEV})
 
-PREPROC = -Dkey_mpp_mpi
+PREPROC = #-Dkey_mpp_mpi
 
 LDFLAGS += -L$(LIBFEXIT) -lf_exit
 

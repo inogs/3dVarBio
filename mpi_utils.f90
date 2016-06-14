@@ -44,8 +44,8 @@ SUBROUTINE mynode()
   CALL mpi_comm_size(mpi_comm_world,size,ierr)
   
 #  else
-  INTEGER mynode
-  mynode=0
+  INTEGER ierr
+  ierr = 0
   RETURN
 #endif
   
@@ -58,9 +58,9 @@ SUBROUTINE mpi_sync
   IMPLICIT NONE
 
   INTEGER :: ierror
-  
+#ifdef key_mpp_mpi  
   CALL mpi_barrier(MPI_COMM_WORLD, ierror)
-  
+#endif
 END SUBROUTINE mpi_sync
 
 
@@ -73,7 +73,7 @@ SUBROUTINE mpi_stop
   INTEGER info
 
   ! CALL mpi_sync
-
+#ifdef key_mpp_mpi
   CALL mpi_finalize(info)
-
+#endif
 END SUBROUTINE mpi_stop
