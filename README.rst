@@ -18,11 +18,13 @@ Added **x86_64.LINUX.netcdf4.3.2.inc** file.
 After load the proper modules with the following command:
 
 .. code::
+
    module load autoload netcdff/4.4.2--intel--cs-xe-2015--binary
 
 with:
 
 .. code::
+
    cp x86_64.LINUX.netcdf4.3.2.inc compiler.inc
    make
 
