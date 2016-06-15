@@ -13,7 +13,7 @@ The only version of VTune that works with this modules is vtune/15.1 (because of
 NetCDF 4.3.2
 ===============
 
-Added x86_64.LINUX.netcdf4.3.2.inc.
+Added **x86_64.LINUX.netcdf4.3.2.inc** file.
 
 After load the proper modules with the following command:
 
