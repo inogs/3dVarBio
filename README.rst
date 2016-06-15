@@ -29,4 +29,4 @@ with:
    make
 
 
-you will compile with the latest version of the netcdf library available on PICO.
+you will compile with the latest (at this moment) version of the netcdf library available on PICO.
