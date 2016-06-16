@@ -23,10 +23,18 @@ program MyPnetCDF
   call MPI_Comm_rank(MPI_COMM_WORLD, MyID, ierr)
   call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
 
+  !
   ! init check
+  !
   write(*,*) "Hello World by process ", MyId
 
+  !*******************************************
+  !
   ! read domain decomposition files
+  ! some parts of this code are copied from
+  ! src/General/parini.F subroutine within ogstm package
+  !
+  
   call COUNTLINE ('Dom_Dec_jpi.ascii', jpni)
   call COUNTWORDS('Dom_Dec_jpi.ascii', jpnj)
   
@@ -48,12 +56,18 @@ program MyPnetCDF
      WRITE(*,*) ' '
   endif
   
+  !
+  ! open meshmask_872.nc in read-only mode
+  !
   filename = "meshmask_872.nc"
   cmode = NF90_NOWRITE
   ierr = nf90mpi_open(MPI_COMM_WORLD, filename, cmode, MPI_INFO_NULL, ncid)
 
   if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_open', ierr)
 
+  !
+  ! get useful quantities
+  !
   call MyGetDimension(ncid, 'x', MyOffset)
   jpiglo = MyOffset
 
@@ -75,8 +89,6 @@ program MyPnetCDF
      WRITE(*,*) ' Rest    : mod(jpiglo, size)                       ',mod(jpiglo, size)
      WRITE(*,*) ' '
   endif
-
-  !*******************************************
 
   allocate(ilcit(jpni, jpnj)) ; ilcit = huge(ilcit(1,1))
   allocate(ilcjt(jpni, jpnj)) ; ilcjt = huge(ilcjt(1,1))
@@ -106,6 +118,19 @@ program MyPnetCDF
   ! jpij=jpi*jpj
   ! jpkbm1=jpkb-1
   
+
+  !*******************************************
+  !
+  ! PDICERBO version of the domain decomposition:
+  ! the domain is divided among the processes into slices
+  ! of size (jpiglo / size, jpjglo)
+  ! WARNING!!! netcdf stores data in ROW MAJOR order
+  ! while here we are reading in column major order.
+  ! We have to take into account this simply swapping
+  ! the entries of MyStart and MyCount
+  !
+  !*******************************************
+
   MyRest = mod(jpiglo, size)
   MyCount(1) = jpiglo / size
   RealOffset = 0
@@ -116,10 +141,10 @@ program MyPnetCDF
   end if
 
   MyStart(1) = MyCount(1) * MyID + RealOffset + 1
-  MyCount(1) = MyCount(1) !- 1
+  MyCount(1) = MyCount(1)
 
   MyStart(2) = 1
-  MyCount(2) = jpjglo !-1
+  MyCount(2) = jpjglo
 
   if(MyID .eq. 0) then
      write(*,*) "MyID = ", MyId, " MyStart = ", MyStart, " MyCount = ", &
@@ -129,29 +154,19 @@ program MyPnetCDF
           MyCount, " Sum = ", MyCount +MyStart
   end if
   
-  ! allocate(values(jpjglo, MyCount(2)+1))
-  ! allocate(values(jpiglo, jpiglo))
-  allocate(values(MyCount(1), jpjglo)) !, MyCount(2)+1))
+  allocate(values(MyCount(1), jpjglo))
 
-  ! write(*,*) "check dimensions: MyID = ", MyID, " shape(values) = ", shape(values)
-
+  !
+  ! reading nav_lon variable
+  !
   ierr = nf90mpi_inq_varid(ncid, "nav_lon", VarId)
   if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_inq_varid', ierr)
 
-  ! MyVar = "nav_lon"
-  ! allocate(dimids(2))
-  ! ierr = nf90mpi_inquire_variable(ncid, VarId, MyVar, xtype, ndims, dimids)
-  ! if(MyID .eq.0) then
-  !    write(*,*) "MyVar ", trim(MyVar), " xtype = ", xtype, " ndims = ", ndims, " dimids = ", dimids
-  ! end if
-
   ierr = nfmpi_get_vara_real_all(ncid, VarId, MyStart, MyCount, values)
-  if (ierr .ne. NF90_NOERR ) call new_handle_err('nf90mpi_get_vara_real', ierr, MyId)
+  if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_get_vara_real', ierr)
 
   write(*,*) "MyID = ", MyID, " shape(values) = ", shape(values)
-  write(*,*) "MyID = ", MyID, " values = ", values
-
-  !*******************************************
+  ! write(*,*) "MyID = ", MyID, " values = ", values
 
   ierr = nf90mpi_close(ncid)
   if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_close', ierr)
@@ -196,24 +211,6 @@ subroutine handle_err(err_msg, errcode)
   call MPI_Abort(MPI_COMM_WORLD, -1, err)
   return
 end subroutine handle_err
-
-subroutine new_handle_err(err_msg, errcode, me)
-
-  use mpi
-  use pnetcdf
-
-  implicit none
-
-  character*(*), intent(in) :: err_msg
-  integer,       intent(in) :: errcode, me
-
-  !local variables
-  integer err
-
-  write(*,*) 'MyID = ', me, ' Error: ', trim(err_msg), ' ', nf90mpi_strerror(errcode)
-  call MPI_Abort(MPI_COMM_WORLD, -1, err)
-  return
-end subroutine new_handle_err
 
 
 ! **************************************************************
