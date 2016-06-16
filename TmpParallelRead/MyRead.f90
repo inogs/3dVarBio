@@ -8,7 +8,7 @@ program MyPnetCDF
   integer :: ierr, MyID, size, cmode, ncid
   integer :: jpni, jpnj, jpnij, jpreci, jprecj, jpkb
   integer :: jpiglo, jpjglo, jpk, DimId, VarId
-  real(4), allocatable :: values(:,:)
+  real, allocatable :: values(:,:)
 
   integer, allocatable :: ilcit(:,:), ilcjt(:,:)
   integer :: ji, jj, jpi, jpj, nn !, jpij, jpim1, jpjm1, jpkm1, jpkbm1
@@ -24,7 +24,7 @@ program MyPnetCDF
   call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
 
   ! init check
-  write(*,*) "Hello World by process ", myid
+  write(*,*) "Hello World by process ", MyId
 
   ! read domain decomposition files
   call COUNTLINE ('Dom_Dec_jpi.ascii', jpni)
@@ -33,7 +33,6 @@ program MyPnetCDF
   jpnij = jpni*jpnj
   jpreci = 1
   jprecj = 1
-  
 
 
   if(MyID .eq. 0) then
@@ -108,19 +107,19 @@ program MyPnetCDF
   ! jpkbm1=jpkb-1
   
   MyRest = mod(jpiglo, size)
-  MyCount(2) = jpiglo / size
+  MyCount(1) = jpiglo / size
   RealOffset = 0
   if (MyId .lt. MyRest) then
-     MyCount(2) = MyCount(2) + 1
+     MyCount(1) = MyCount(1) + 1
   else
      RealOffset = MyRest
   end if
 
-  MyStart(2) = MyCount(2) * MyID + RealOffset + 1
-  MyCount(2) = MyCount(2) - 1
+  MyStart(1) = MyCount(1) * MyID + RealOffset + 1
+  MyCount(1) = MyCount(1) !- 1
 
-  MyStart(1) = 1
-  MyCount(1) = jpjglo -1
+  MyStart(2) = 1
+  MyCount(2) = jpjglo !-1
 
   if(MyID .eq. 0) then
      write(*,*) "MyID = ", MyId, " MyStart = ", MyStart, " MyCount = ", &
@@ -130,8 +129,9 @@ program MyPnetCDF
           MyCount, " Sum = ", MyCount +MyStart
   end if
   
-  allocate(values(jpjglo, MyCount(2)+1))
+  ! allocate(values(jpjglo, MyCount(2)+1))
   ! allocate(values(jpiglo, jpiglo))
+  allocate(values(MyCount(1), jpjglo)) !, MyCount(2)+1))
 
   ! write(*,*) "check dimensions: MyID = ", MyID, " shape(values) = ", shape(values)
 
@@ -145,12 +145,11 @@ program MyPnetCDF
   !    write(*,*) "MyVar ", trim(MyVar), " xtype = ", xtype, " ndims = ", ndims, " dimids = ", dimids
   ! end if
 
-  ! ierr = nfmpi_get_vara_double_all(ncid, VarId, MyStart, MyCount, values)
   ierr = nfmpi_get_vara_real_all(ncid, VarId, MyStart, MyCount, values)
   if (ierr .ne. NF90_NOERR ) call new_handle_err('nf90mpi_get_vara_real', ierr, MyId)
 
-  ! write(*,*) "MyID = ", MyID, " shape(values) = ", shape(values)
-  ! write(*,*) "MyID = ", MyID, " values = ", values
+  write(*,*) "MyID = ", MyID, " shape(values) = ", shape(values)
+  write(*,*) "MyID = ", MyID, " values = ", values
 
   !*******************************************
 
