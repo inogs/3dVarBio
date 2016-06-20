@@ -13,5 +13,17 @@ run: all
 	mpirun -np 4 ./MyRead
 	@echo ""
 
+test: MyReadTestfile WriteBuff
+	@echo ""
+	mpirun -np 4 ./WriteBuff
+	mpirun -np 4 ./MyReadTestfile
+	@echo ""
+
+MyReadTestfile: MyReadTestfile.f90
+	$(CC) $(INCLUDE) $^ $(FFLAGS) $(LFLAGS) -o $@
+
+WriteBuff: pnetcdf-write-bufferedf.f90
+	$(CC) $(INCLUDE) $^ $(FFLAGS) $(LFLAGS) -o $@
+
 clean:
-	rm -rf MyRead
+	rm -rf MyRead WriteBuff MyReadTestfile
