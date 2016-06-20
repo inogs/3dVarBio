@@ -19,11 +19,20 @@ test: MyReadTestfile WriteBuff
 	mpirun -np 4 ./MyReadTestfile
 	@echo ""
 
+grid: ProcGrid WriteBuff
+	@echo ""
+	mpirun -np 4 ./WriteBuff
+	mpirun -np 12 ./ProcGrid
+	@echo ""
+
 MyReadTestfile: MyReadTestfile.f90
+	$(CC) $(INCLUDE) $^ $(FFLAGS) $(LFLAGS) -o $@
+
+ProcGrid: ProcGrid.f90
 	$(CC) $(INCLUDE) $^ $(FFLAGS) $(LFLAGS) -o $@
 
 WriteBuff: pnetcdf-write-bufferedf.f90
 	$(CC) $(INCLUDE) $^ $(FFLAGS) $(LFLAGS) -o $@
 
 clean:
-	rm -rf MyRead WriteBuff MyReadTestfile
+	rm -rf MyRead WriteBuff MyReadTestfile ProcGrid
