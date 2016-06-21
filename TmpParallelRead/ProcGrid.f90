@@ -40,7 +40,7 @@ program MyPnetCDF
   call COUNTLINE ('Dom_Dec_jpi.ascii', jpni)
   call COUNTWORDS('Dom_Dec_jpi.ascii', jpnj)
   
-  gridX = 4
+  gridX = 5
   gridY = 4
 
   if(gridX * gridY .ne. size) then
