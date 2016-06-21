@@ -22,7 +22,7 @@ test: MyReadTestfile WriteBuff
 grid: ProcGrid WriteBuff
 	@echo ""
 	mpirun -np 4 ./WriteBuff
-	mpirun -np 4 ./ProcGrid
+	mpirun -np 16 ./ProcGrid
 	@echo ""
 
 MyReadTestfile: MyReadTestfile.f90
