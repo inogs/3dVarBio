@@ -1,4 +1,4 @@
-CC=mpif90
+CC=mpiifort #f90
 FFLAGS=-O2
 LFLAGS=-L$(PNETCDF_LIB) -lpnetcdf
 INCLUDE=-I$(PNETCDF_INC)
@@ -22,7 +22,7 @@ test: MyReadTestfile WriteBuff
 grid: ProcGrid WriteBuff
 	@echo ""
 	mpirun -np 4 ./WriteBuff
-	mpirun -np 12 ./ProcGrid
+	mpirun -np 4 ./ProcGrid
 	@echo ""
 
 MyReadTestfile: MyReadTestfile.f90

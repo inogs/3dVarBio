@@ -35,11 +35,12 @@ program MyPnetCDF
   ! some parts of this code are copied from
   ! src/General/parini.F subroutine within ogstm package
   !
+  !*******************************************
   
   call COUNTLINE ('Dom_Dec_jpi.ascii', jpni)
   call COUNTWORDS('Dom_Dec_jpi.ascii', jpnj)
   
-  gridX = 3
+  gridX = 1
   gridY = 4
 
   if(gridX * gridY .ne. size) then
