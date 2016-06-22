@@ -36,10 +36,7 @@ public
 
    TYPE drv_t
 
-        CHARACTER(LEN=12)     ::  flag         ! Flag for the analysis
-        INTEGER(I4)           ::  sdat         ! Starting date of the forecast
-        INTEGER(I4)           ::  shou         ! Starting hour of the forecast
-        INTEGER(I4)           ::  lhou         ! Length of the forecast
+        ! CHARACTER(LEN=12)     ::  flag         ! Flag for the analysis
         INTEGER(i4)           ::  dia          ! No. of diagnostic output file
         INTEGER(i4)           ::  ntr          ! No. of outer iterations 
         INTEGER(i4)           ::  ktr          ! Outer iteration

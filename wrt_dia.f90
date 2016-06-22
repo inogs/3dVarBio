@@ -138,84 +138,8 @@ status = nf90_close(ncid)
 !  open(215,file=drv%flag//drv%date//'obs_'//fgrd//'.dat',form='unformatted')
   open(215,file=trim(OBS_FILE),form='unformatted')
 
-   write(215) sla%no
-   if(sla%no.gt.0)  write(215)                                 &
-        sla%ino(1:sla%no), sla%flg(1:sla%no)                   &
-       ,sla%lon(1:sla%no), sla%lat(1:sla%no), sla%tim(1:sla%no)&
-       ,sla%val(1:sla%no), sla%bac(1:sla%no)                   &
-       ,sla%err(1:sla%no), sla%res(1:sla%no)                   &
-       ,sla%bia(1:sla%no), sla%inc(1:sla%no)                   &
-       ,sla%b_a(1:sla%no)                                      &
-       ,sla%dpt(1:sla%no)
-   write(215) arg%no
-   if(arg%no.ne.0) write (215)                                  &
-        arg%ino(1:arg%no), arg%flg(1:arg%no), arg%par(1:arg%no) &
-       ,arg%lon(1:arg%no), arg%lat(1:arg%no)                    &
-       ,arg%dpt(1:arg%no), arg%tim(1:arg%no)                    &
-       ,arg%val(1:arg%no), arg%bac(1:arg%no)                    &
-       ,arg%err(1:arg%no), arg%res(1:arg%no)                    &
-       ,arg%bia(1:arg%no), arg%inc(1:arg%no)                    &
-       ,arg%b_a(1:arg%no)
-   write(215) xbt%no
-   if(xbt%no.ne.0) write (215)                                  &
-        xbt%ino(1:xbt%no), xbt%flg(1:xbt%no), xbt%par(1:xbt%no) &
-       ,xbt%lon(1:xbt%no), xbt%lat(1:xbt%no)                    &
-       ,xbt%dpt(1:xbt%no), xbt%tim(1:xbt%no)                    &
-       ,xbt%val(1:xbt%no), xbt%bac(1:xbt%no)                    &
-       ,xbt%err(1:xbt%no), xbt%res(1:xbt%no)                    &
-       ,xbt%bia(1:xbt%no), xbt%inc(1:xbt%no)                    &
-       ,xbt%b_a(1:xbt%no)
-   write(215) gld%no
-   if(gld%no.ne.0) write (215)                                  &
-        gld%ino(1:gld%no), gld%flg(1:gld%no), gld%par(1:gld%no) &
-       ,gld%lon(1:gld%no), gld%lat(1:gld%no)                    &
-       ,gld%dpt(1:gld%no), gld%tim(1:gld%no)                    &
-       ,gld%val(1:gld%no), gld%bac(1:gld%no)                    &
-       ,gld%err(1:gld%no), gld%res(1:gld%no)                    &
-       ,gld%bia(1:gld%no), gld%inc(1:gld%no)                    &
-       ,gld%b_a(1:gld%no)
-   write(215) tra%no
-   if(tra%no.ne.0) write (215)                                  &
-        tra%dpt                                                 &
-       ,tra%ino(1:tra%no), tra%flg(1:tra%no)                    &
-       ,tra%loi(1:tra%no), tra%lai(1:tra%no)                    &
-       ,tra%lof(1:tra%no), tra%laf(1:tra%no)                    &
-       ,tra%lob(tra%nt+1,1:tra%no), tra%lab(tra%nt+1,1:tra%no)  &
-       ,tra%rex(1:tra%no), tra%inx(1:tra%no)                    &
-       ,tra%rey(1:tra%no), tra%iny(1:tra%no)                    &
-       ,tra%loa(1:tra%no), tra%laa(1:tra%no)                    &
-       ,tra%erx(1:tra%no), tra%ery(1:tra%no)
-   write(215) trd%no
-   if(trd%no.ne.0) write (215)                                  &
-        trd%dpt                                                 &
-       ,trd%ino(1:trd%no), trd%flg(1:trd%no)                    &
-       ,trd%loi(1:trd%no), trd%lai(1:trd%no)                    &
-       ,trd%lof(1:trd%no), trd%laf(1:trd%no)                    &
-       ,trd%lob(trd%nt+1,1:trd%no), trd%lab(trd%nt+1,1:trd%no)  &
-       ,trd%rex(1:trd%no), trd%inx(1:trd%no)                    &
-       ,trd%rey(1:trd%no), trd%iny(1:trd%no)                    &
-       ,trd%loa(1:trd%no), trd%laa(1:trd%no)
-   write(215) vdr%no
-   if(vdr%no.ne.0) write (215)                                  &
-        vdr%ino(1:vdr%no), vdr%flg(1:vdr%no), vdr%par(1:vdr%no) &
-       ,vdr%lon(1:vdr%no), vdr%lat(1:vdr%no)                    &
-       ,vdr%dpt(1:vdr%no), vdr%tim(1:vdr%no)                    &
-       ,vdr%tms(1:vdr%no), vdr%tme(1:vdr%no)                    &
-       ,vdr%val(1:vdr%no), vdr%bac(1:vdr%no)                    &
-       ,vdr%err(1:vdr%no), vdr%res(1:vdr%no)                    &
-       ,vdr%bia(1:vdr%no), vdr%inc(1:vdr%no)                    &
-       ,vdr%b_a(1:vdr%no)
-   write(215) gvl%no
-   if(gvl%no.ne.0) write (215)                                  &
-        gvl%ino(1:gvl%no), gvl%flg(1:gvl%no), gvl%par(1:gvl%no) &
-       ,gvl%lon(1:gvl%no), gvl%lat(1:gvl%no)                    &
-       ,gvl%dpt(1:gvl%no), gvl%tim(1:gvl%no)                    &
-       ,gvl%tms(1:gvl%no), gvl%tme(1:gvl%no)                    &
-       ,gvl%val(1:gvl%no), gvl%bac(1:gvl%no)                    &
-       ,gvl%err(1:gvl%no), gvl%res(1:gvl%no)                    &
-       ,gvl%bia(1:gvl%no), gvl%inc(1:gvl%no)                    &
-       ,gvl%b_a(1:gvl%no)
-   write(215) chl%no
+  write(215) chl%no
+  
 #ifdef __FISICA
    if(chl%no.ne.0) write (215)                                  &
         gvl%flg(1:gvl%no)                                       &

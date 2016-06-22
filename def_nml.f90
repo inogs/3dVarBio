@@ -41,15 +41,13 @@ subroutine def_nml
 
   INTEGER(i4), PARAMETER    :: ngrids = 3
 
-  CHARACTER(LEN=12) :: flag_a
-  INTEGER(i4)   :: sdat_f, shou_f, lhou_f
   LOGICAL       :: read_eof
   INTEGER(i4)   :: neof, nreg, rcf_ntr, ntr
   INTEGER(i4)   :: ctl_m
-  INTEGER(i4)   :: obs_sla, obs_arg, obs_xbt, obs_gld, obs_tra, obs_trd, obs_gvl, obs_chl
+  INTEGER(i4)   :: obs_chl
   INTEGER(i4)   :: obs_vdr, bmd_ncnt
   INTEGER(i4)   :: biol, bphy, nchl
-  REAL(r8)      :: sla_dep, rcf_L, ctl_tol, ctl_per, bmd_fc1, bmd_fc2, rcf_efc, chl_dep
+  REAL(r8)      :: rcf_L, ctl_tol, ctl_per, bmd_fc1, bmd_fc2, rcf_efc, chl_dep
   REAL(r8)      :: bmd_dt, bmd_ndy, bmd_ady, bmd_alp, bmd_ovr, bmd_resem
   INTEGER(i4)   :: grid (ngrids)
   REAL(r8)      :: ratio(ngrids)
@@ -60,13 +58,9 @@ subroutine def_nml
   LOGICAL       :: read_grd(ngrids)
 
 
-  NAMELIST /runlst/ flag_a, sdat_f, shou_f, lhou_f
-  NAMELIST /obslst/ obs_sla, obs_arg, obs_xbt, obs_gld, obs_tra, &
-                    obs_trd, obs_vdr, obs_gvl, obs_chl
   NAMELIST /grdlst/ ntr, grid, read_grd, ratio, mask, barmd, divda, divdi
   NAMELIST /ctllst/ ctl_m, ctl_tol, ctl_per
   NAMELIST /covlst/ neof, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
-  NAMELIST /slalst/ sla_dep
   NAMELIST /bmdlst/ bmd_dt, bmd_ndy, bmd_ady, bmd_alp, bmd_fc1, bmd_fc2,  &
                     bmd_ovr, bmd_resem, bmd_ncnt
   NAMELIST /biolst/ biol, bphy, nchl, chl_dep
@@ -92,43 +86,11 @@ subroutine def_nml
   write(drv%dia,*) '  '
 
 ! ---
-  read(11,runlst)
-
-  write(drv%dia,*) '------------------------------------------------------------'
-  write(drv%dia,*) ' RUN NAMELIST INPUT: '
-  write(drv%dia,*) ' Flag for the analysis:           flag_a   = ', flag_a
-  write(drv%dia,*) ' Starting day of the forecast:    sdat_f   = ', sdat_f
-  write(drv%dia,*) ' Starting hour of the forecast:   shou_f   = ', shou_f
-  write(drv%dia,*) ' Lenght of the forecast:          lhou_f   = ', lhou_f
-
-  drv%flag     = flag_a
-  drv%sdat = sdat_f
-  drv%shou = shou_f
-  drv%lhou = lhou_f
-
-! ---
-  read(11,obslst)
-
+  obs_chl = 1
   write(drv%dia,*) '------------------------------------------------------------'
   write(drv%dia,*) ' OBSERVATIONS NAMELIST INPUT: '
-  write(drv%dia,*) ' Use SLA observations:                   obs_sla = ', obs_sla
-  write(drv%dia,*) ' Use ARGO observations:                  obs_arg = ', obs_arg
-  write(drv%dia,*) ' Use XBT observations:                   obs_xbt = ', obs_xbt
-  write(drv%dia,*) ' Use glider observations:                obs_gld = ', obs_gld
-  write(drv%dia,*) ' Use Argo trajectory observations:       obs_tra = ', obs_tra
-  write(drv%dia,*) ' Use drifter trajectory observations:    obs_trd = ', obs_trd
-  write(drv%dia,*) ' Use drifter observations of velocity:   obs_vdr = ', obs_vdr
-  write(drv%dia,*) ' Use glider observations of velocity:    obs_gvl = ', obs_gvl
   write(drv%dia,*) ' Use Chlorophyll:                        obs_chl = ', obs_chl
 
-    obs%sla = obs_sla
-    obs%arg = obs_arg
-    obs%xbt = obs_xbt
-    obs%gld = obs_gld
-    obs%tra = obs_tra
-    obs%trd = obs_trd
-    obs%vdr = obs_vdr
-    obs%gvl = obs_gvl
     obs%chl = obs_chl
 
 ! ---
@@ -189,15 +151,6 @@ subroutine def_nml
        rcf%ntr      = rcf_ntr
        rcf%L        = rcf_L
        rcf%efc      = rcf_efc
-
-! ---
-  read(11,slalst)
-
-  write(drv%dia,*) '------------------------------------------------------------'
-  write(drv%dia,*) ' SLA NAMELIST INPUT: '
-  write(drv%dia,*) ' Minimum depth for observations:  sla_dep  = ', sla_dep
-
-  sla%dep  = sla_dep
 
 ! ---
   read(11,bmdlst)
