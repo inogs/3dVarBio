@@ -14,5 +14,8 @@ cpp.*
 # module files
 *.mod
 
+# compiler.inc
+compiler.inc
+
 # executable
 var_3d
