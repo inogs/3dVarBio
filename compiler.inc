@@ -14,13 +14,12 @@ OPT_FLTCONSISTENCY =
 LIBFEXIT  = ./libfexit/
 LIBNCMEDLEV =./libnc-medlevel
 
-FFLAGS  = -g -O2 -I$(NETCDF_INC) $(OPT_FLTCONSISTENCY) -c
-CFLAGS  = -g -O2 -I$(NETCDF_INC)
+FFLAGS  = -O2 -I$(NETCDF_INC) -I$(NETCDFF_INC) $(OPT_FLTCONSISTENCY) -c
+CFLAGS  = -O2 -I$(NETCDF_INC)
 
-LDFLAGS += -L$(NETCDF_LIB) -lnetcdff -lnetcdf
+LDFLAGS += -L$(NETCDF_LIB) -L$(NETCDFF_LIB) -lnetcdff -lnetcdf
 AR      = ar
 
 # Debug options##########
 # FFLAGS =  -O0 -g -traceback -fp-stack-check -check bounds -fpe0 -c $(OPT_FLTCONSISTENCY)
 #########################
-
