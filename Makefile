@@ -58,7 +58,6 @@ OBJSTR  =  \
 	cns_str.o\
 	obs_str.o\
 	grd_str.o\
-	bmd_str.o\
 	eof_str.o\
 	ctl_str.o\
 	rcfl_mod.o\
@@ -108,7 +107,6 @@ OBJS    =  \
 	def_grd.o\
 	sav_itr.o\
 	ini_itr.o\
-	ini_bmd.o\
 	rdgrds.o\
 	rdeofs.o\
 	netcdf_err.o\

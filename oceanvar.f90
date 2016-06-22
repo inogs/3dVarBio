@@ -97,13 +97,6 @@ subroutine oceanvar
      endif
 
 ! ---
-! Initialise barotropic model
-      if(drv%bmd(drv%ktr) .eq. 1) then
-         call ini_bmd
-          write(drv%dia,*) 'out of ini_bmd'
-      endif
-
-! ---
 ! Initialize cost function and its gradient
       call ini_cfn
        write(drv%dia,*) 'out of ini_cfn'
