@@ -49,93 +49,55 @@ subroutine veof_ad
 
    egm(:,:) = 0.0
 
- if(drv%biol.eq.0 .or. drv%bphy.eq.1) then
-
-! Eta
-  if(drv%bmd(drv%ktr) .ne. 1)then
-   do j=1,grd%jm
-    do i=1,grd%im
+   if(drv%biol.eq.1)then
+      
+      ! 3D variables
+      k1 = 0
+      
+      do l=1,grd%nchl
+         do k=1,grd%km ! OMP
+            k1 = k1 + 1
+            do j=1,grd%jm
+               do i=1,grd%im
 #ifdef opt_huge_memory
-     egm(i,j) = egm(i,j) + ros%evc( i, j, 1,n) * grd%eta_ad(i,j)
+                  egm(i,j) = egm(i,j) + ros%evc( i, j, k1,n) * grd%chl_ad(i,j,k,l)
 #else
-     egm(i,j) = egm(i,j) + ros%evc(grd%reg(i,j), 1,n) * grd%eta_ad(i,j)
+                  egm(i,j) = egm(i,j) + ros%evc(grd%reg(i,j), k,n) * grd%chl_ad(i,j,k,l)
 #endif
-    enddo
-   enddo
-  endif
-
-
-
-! 3D variables
-  do k=1,grd%km
-   do j=1,grd%jm
-    do i=1,grd%im
-#ifdef opt_huge_memory
-     egm(i,j) = egm(i,j) + ros%evc( i, j, k+1       ,n) * grd%tem_ad(i,j,k)
-     egm(i,j) = egm(i,j) + ros%evc( i, j, k+grd%km+1,n) * grd%sal_ad(i,j,k)
-#else
-     egm(i,j) = egm(i,j) + ros%evc(grd%reg(i,j), k+1       ,n) * grd%tem_ad(i,j,k)
-     egm(i,j) = egm(i,j) + ros%evc(grd%reg(i,j), k+grd%km+1,n) * grd%sal_ad(i,j,k)
-#endif
-    enddo
-   enddo
-  enddo
-
- endif
-
-
- if(drv%biol.eq.1)then
-
-! 3D variables
-   if(drv%bphy.eq.1)then
-    k1 = 2*grd%km+1
-   else
-    k1 = 0
+               enddo
+            enddo
+         enddo
+      enddo
+      
    endif
- do l=1,grd%nchl
-  do k=1,grd%km ! OMP
-    k1 = k1 + 1
+   
+   
    do j=1,grd%jm
-    do i=1,grd%im
+      do i=1,grd%im
 #ifdef opt_huge_memory
-     egm(i,j) = egm(i,j) + ros%evc( i, j, k1,n) * grd%chl_ad(i,j,k,l)
+         egm(i,j) = ros%eva( i, j, n) * egm(i,j) 
 #else
-     egm(i,j) = egm(i,j) + ros%evc(grd%reg(i,j), k,n) * grd%chl_ad(i,j,k,l)
+         egm(i,j) = ros%eva(grd%reg(i,j),n) * egm(i,j) 
 #endif
-    enddo
+      enddo
    enddo
-  enddo
- enddo
-
- endif
-
-
+   
+   !cdir serial
+   ! 3D variables
+   !  do l=n,ros%neof
    do j=1,grd%jm
-    do i=1,grd%im
+      do i=1,grd%im
 #ifdef opt_huge_memory
-     egm(i,j) = ros%eva( i, j, n) * egm(i,j) 
+         grd%ro_ad(i,j,n) = grd%ro_ad(i,j,n) + egm(i,j) ! * ros%cor( i, j, n, l) 
 #else
-     egm(i,j) = ros%eva(grd%reg(i,j),n) * egm(i,j) 
+         grd%ro_ad(i,j,n) = grd%ro_ad(i,j,n) + egm(i,j) ! * ros%cor( grd%reg(i,j), n, l) 
 #endif
-    enddo
+      enddo
    enddo
-
-!cdir serial
-! 3D variables
-!  do l=n,ros%neof
-   do j=1,grd%jm
-    do i=1,grd%im
-#ifdef opt_huge_memory
-     grd%ro_ad(i,j,n) = grd%ro_ad(i,j,n) + egm(i,j) ! * ros%cor( i, j, n, l) 
-#else
-     grd%ro_ad(i,j,n) = grd%ro_ad(i,j,n) + egm(i,j) ! * ros%cor( grd%reg(i,j), n, l) 
-#endif
-    enddo
-   enddo
-!  enddo
-!cdir end serial
-
-  enddo
+   !  enddo
+   !cdir end serial
+   
+enddo
 !$OMP END DO
 !$OMP END PARALLEL 
 

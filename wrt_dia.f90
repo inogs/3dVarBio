@@ -35,7 +35,6 @@ subroutine wrt_dia
  use grd_str
  use eof_str
  use ctl_str
- use bmd_str
  use netcdf
  use filenames
  implicit none

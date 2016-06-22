@@ -31,7 +31,6 @@ subroutine def_nml
   use set_knd
   use drv_str
   use grd_str
-  use bmd_str
   use obs_str
   use eof_str
   use cns_str
@@ -48,7 +47,7 @@ subroutine def_nml
   INTEGER(i4)   :: obs_vdr, bmd_ncnt
   INTEGER(i4)   :: biol, bphy, nchl
   REAL(r8)      :: rcf_L, ctl_tol, ctl_per, bmd_fc1, bmd_fc2, rcf_efc, chl_dep
-  REAL(r8)      :: bmd_dt, bmd_ndy, bmd_ady, bmd_alp, bmd_ovr, bmd_resem
+  ! REAL(r8)      :: bmd_dt, bmd_ndy, bmd_ady, bmd_alp, bmd_ovr, bmd_resem
   INTEGER(i4)   :: grid (ngrids)
   REAL(r8)      :: ratio(ngrids)
   INTEGER(i4)   :: mask (ngrids)
@@ -61,8 +60,8 @@ subroutine def_nml
   NAMELIST /grdlst/ ntr, grid, read_grd, ratio, mask, barmd, divda, divdi
   NAMELIST /ctllst/ ctl_m, ctl_tol, ctl_per
   NAMELIST /covlst/ neof, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
-  NAMELIST /bmdlst/ bmd_dt, bmd_ndy, bmd_ady, bmd_alp, bmd_fc1, bmd_fc2,  &
-                    bmd_ovr, bmd_resem, bmd_ncnt
+  ! NAMELIST /bmdlst/ bmd_dt, bmd_ndy, bmd_ady, bmd_alp, bmd_fc1, bmd_fc2,  &
+  !                   bmd_ovr, bmd_resem, bmd_ncnt
   NAMELIST /biolst/ biol, bphy, nchl, chl_dep
 
 
@@ -113,7 +112,6 @@ subroutine def_nml
   ALLOCATE( drv%ratco(drv%ntr))      ; drv%ratco(1:drv%ntr)    = ratio(1:drv%ntr)
   ALLOCATE( drv%ratio(drv%ntr))      ; drv%ratio               = huge(drv%ratio(1))
   ALLOCATE( drv%mask (drv%ntr))      ; drv%mask (1:drv%ntr)    = mask (1:drv%ntr)
-  ALLOCATE( drv%bmd(drv%ntr))        ; drv%bmd  (1:drv%ntr)    = barmd(1:drv%ntr)
   ALLOCATE( drv%dda(drv%ntr))        ; drv%dda  (1:drv%ntr)    = divda(1:drv%ntr)
   ALLOCATE( drv%ddi(drv%ntr))        ; drv%ddi  (1:drv%ntr)    = divdi(1:drv%ntr)
 
@@ -151,31 +149,6 @@ subroutine def_nml
        rcf%ntr      = rcf_ntr
        rcf%L        = rcf_L
        rcf%efc      = rcf_efc
-
-! ---
-  read(11,bmdlst)
-
-  write(drv%dia,*) '------------------------------------------------------------'
-  write(drv%dia,*) ' BAROTROPIC MODEL NAMELIST INPUT: '
-  write(drv%dia,*) ' Time step:           bmd_dt     = ', bmd_dt
-  write(drv%dia,*) ' Simulation days:     bmd_ndy    = ', bmd_ndy
-  write(drv%dia,*) ' Averaged days:       bmd_ady    = ', bmd_ady
-  write(drv%dia,*) ' Implicit weight:     bmd_alp    = ', bmd_alp
-  write(drv%dia,*) ' Friction intensity:  bmd_fc1    = ', bmd_fc1
-  write(drv%dia,*) ' Friction intensity:  bmd_fc2    = ', bmd_fc2
-  write(drv%dia,*) ' Over-relaxation:     bmd_ovr    = ', bmd_ovr
-  write(drv%dia,*) ' Minimum residual:    bmd_resem  = ', bmd_resem
-  write(drv%dia,*) ' Maximum iterations   bmd_ncnt   = ', bmd_ncnt 
-
-  bmd%dt    = bmd_dt !7200. !1800.
-  bmd%ndy   = bmd_ndy ! 3.
-  bmd%ady   = bmd_ady ! 1.
-  bmd%alp1  = bmd_alp !1.0
-  bmd%fc1  = bmd_fc1
-  bmd%fc2  = bmd_fc2
-  bmd%ovr = bmd_ovr !1.9
-  bmd%resem = bmd_resem !5.e-2
-  bmd%ncnt = bmd_ncnt !201
 
   write(drv%dia,*) '------------------------------------------------------------'
 

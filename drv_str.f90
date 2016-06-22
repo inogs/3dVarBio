@@ -47,7 +47,7 @@ public
         REAL(r8),    POINTER  ::  ratco(:)     ! Ratio between model grid and the current grid
         REAL(r8),    POINTER  ::  ratio(:)     ! Ratio between successive grids
         INTEGER(i4), POINTER  ::  mask(:)      ! Mask used for horizontal covariances
-        INTEGER(i4), POINTER  ::  bmd(:)       ! 1 - run barotropic model, else - do not run
+        ! INTEGER(i4), POINTER  ::  bmd(:)       ! 1 - run barotropic model, else - do not run
         INTEGER(i4), POINTER  ::  dda(:)       ! 1 - divergence damping in analysis, else no filter
         INTEGER(i4), POINTER  ::  ddi(:)       ! 1 - divergence damping in initialisation, else no filter
         REAL(r8)              ::  f_ci         ! Inital cost function

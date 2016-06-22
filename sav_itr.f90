@@ -36,7 +36,6 @@ subroutine sav_itr
  use grd_str
  use eof_str
  use ctl_str
- use bmd_str
  use rcfl
 
  implicit none
@@ -132,28 +131,5 @@ subroutine sav_itr
      DEALLOCATE (Dump_chl, Dump_vip, Dump_msk)
 
      write(*,*) ' DEALLOCATION DONE'
-! Barotropic model
-   if(drv%bmd(drv%ktr) .eq. 1) then
-     DEALLOCATE ( bmd%itr)
-     DEALLOCATE ( bmd%mst, bmd%msu, bmd%msv)
-     DEALLOCATE ( bmd%hgt, bmd%hgu, bmd%hgv)
-     DEALLOCATE ( bmd%dxu, bmd%dxv)
-     DEALLOCATE ( bmd%dyu, bmd%dyv)
-     DEALLOCATE ( bmd%a1, bmd%a2, bmd%a3)
-     DEALLOCATE ( bmd%a4, bmd%a0, bmd%a00)
-     DEALLOCATE ( bmd%bx, bmd%by)
-     DEALLOCATE ( bmd%b_x, bmd%b_y)
-     DEALLOCATE ( bmd%dns)
-     DEALLOCATE ( bmd%bxby, bmd%rgh)
-     DEALLOCATE ( bmd%etb, bmd%ub, bmd%vb)
-     DEALLOCATE ( bmd%etn, bmd%un, bmd%vn)
-     DEALLOCATE ( bmd%eta, bmd%ua, bmd%va)
-     DEALLOCATE ( bmd%etm, bmd%um, bmd%vm)
-     DEALLOCATE ( bmd%div, bmd%cu, bmd%cv)
-     DEALLOCATE ( bmd%dux, bmd%duy)
-     DEALLOCATE ( bmd%dvx, bmd%dvy)
-     DEALLOCATE ( bmd%etx, bmd%ety)
-   endif
-
 
 end subroutine sav_itr
