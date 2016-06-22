@@ -36,10 +36,7 @@ public
 
    TYPE drv_t
 
-        CHARACTER(LEN=12)     ::  flag         ! Flag for the analysis
-        INTEGER(I4)           ::  sdat         ! Starting date of the forecast
-        INTEGER(I4)           ::  shou         ! Starting hour of the forecast
-        INTEGER(I4)           ::  lhou         ! Length of the forecast
+        ! CHARACTER(LEN=12)     ::  flag         ! Flag for the analysis
         INTEGER(i4)           ::  dia          ! No. of diagnostic output file
         INTEGER(i4)           ::  ntr          ! No. of outer iterations 
         INTEGER(i4)           ::  ktr          ! Outer iteration
@@ -50,7 +47,7 @@ public
         REAL(r8),    POINTER  ::  ratco(:)     ! Ratio between model grid and the current grid
         REAL(r8),    POINTER  ::  ratio(:)     ! Ratio between successive grids
         INTEGER(i4), POINTER  ::  mask(:)      ! Mask used for horizontal covariances
-        INTEGER(i4), POINTER  ::  bmd(:)       ! 1 - run barotropic model, else - do not run
+        ! INTEGER(i4), POINTER  ::  bmd(:)       ! 1 - run barotropic model, else - do not run
         INTEGER(i4), POINTER  ::  dda(:)       ! 1 - divergence damping in analysis, else no filter
         INTEGER(i4), POINTER  ::  ddi(:)       ! 1 - divergence damping in initialisation, else no filter
         REAL(r8)              ::  f_ci         ! Inital cost function
@@ -58,8 +55,8 @@ public
         REAL(r8)              ::  f_c          ! Cost function
         REAL(r8),    POINTER  ::  ro_ad(:,:,:) ! Observational part of the cost function gradient
         REAL(r8),    POINTER  ::    msk(:,:)   ! Mask of the old grid
-        INTEGER(i4)           ::  biol         ! Flag for the assimilation of biological parameters
-        INTEGER(i4)           ::  bphy         ! Flag for the assimilation of biological+physical parameters
+        ! INTEGER(i4)           ::  biol         ! Flag for the assimilation of biological parameters
+        ! INTEGER(i4)           ::  bphy         ! Flag for the assimilation of biological+physical parameters
 
    END TYPE drv_t
 

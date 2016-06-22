@@ -27,4 +27,3 @@ AR      = ar
 # Debug options##########
 # FFLAGS = -O0 -g -Wall -Wextra -fbounds-check -fimplicit-none -ffpe-trap=invalid,overflow -pedantic -fbacktrace -c $(OPT_FLTCONSISTENCY)
 #########################
-

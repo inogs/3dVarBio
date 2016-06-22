@@ -71,24 +71,7 @@ subroutine rdgrd
      ALLOCATE ( grd%ums(grd%im,grd%jm,grd%km), grd%vms(grd%im,grd%jm,grd%km))
      grd%ums = huge(grd%ums(1,1,1))  ; grd%vms = huge(grd%vms(1,1,1))
      ALLOCATE ( grd%f(grd%im,grd%jm)) ; grd%f = huge(grd%f(1,1));
-
-
-     if  (drv%bphy.eq.1) then
-         ALLOCATE ( grd%tem(grd%im,grd%jm,grd%km), grd%sal(grd%im,grd%jm,grd%km))
-         ALLOCATE ( grd%uvl(grd%im,grd%jm,grd%km), grd%vvl(grd%im,grd%jm,grd%km))
-         ALLOCATE ( grd%uvl_ad(grd%im,grd%jm,grd%km), grd%vvl_ad(grd%im,grd%jm,grd%km))
-         ALLOCATE ( grd%b_x(grd%im,grd%jm,grd%km), grd%b_y(grd%im,grd%jm,grd%km))
-         ALLOCATE ( grd%temb(grd%im,grd%jm,grd%km), grd%salb(grd%im,grd%jm,grd%km))
-         ALLOCATE ( grd%tem_ad(grd%im,grd%jm,grd%km), grd%sal_ad(grd%im,grd%jm,grd%km))
-
-         ALLOCATE ( grd%dns(grd%im,grd%jm,grd%km))
-         ALLOCATE ( grd%eta(grd%im,grd%jm))
-         ALLOCATE ( grd%etab(grd%im,grd%jm))
-         ALLOCATE ( grd%sla(grd%im,grd%jm))
-         ALLOCATE ( grd%eta_ad(grd%im,grd%jm))
-
-
-     endif
+      
      ALLOCATE ( grd%mdt(grd%im,grd%jm)) ; grd%mdt = huge(grd%mdt(1,1));
      ALLOCATE ( grd%hgt(grd%im,grd%jm)) ; grd%hgt = huge(grd%hgt(1,1))
      ALLOCATE ( grd%bx(grd%im,grd%jm))  ; grd%bx = huge(grd%bx(1,1))
@@ -118,10 +101,8 @@ subroutine rdgrd
 
      ALLOCATE ( Dump_chl(grd%im,grd%jm,grd%km) ) ; Dump_chl  = 0.0
      ALLOCATE ( Dump_msk(grd%im,grd%jm) )        ; Dump_msk  = 0.0
-    if(drv%biol.eq.1) then
      ALLOCATE ( grd%chl(grd%im,grd%jm,grd%km,grd%nchl) )    ; grd%chl    = huge(grd%chl(1,1,1,1))
      ALLOCATE ( grd%chl_ad(grd%im,grd%jm,grd%km,grd%nchl) ) ; grd%chl_ad = huge(grd%chl_ad(1,1,1,1))
-    endif
 
      ALLOCATE ( x3(grd%im,grd%jm,grd%km)) ;  x3 = huge(x3(1,1,1))
      ALLOCATE ( x2(grd%im,grd%jm))        ; x2 = huge(x2(1,1))

@@ -23,4 +23,3 @@ AR      = ar
 # Debug options##########
 # FFLAGS =  -O0 -g -traceback -fp-stack-check -check bounds -fpe0 -c $(OPT_FLTCONSISTENCY)
 #########################
-
