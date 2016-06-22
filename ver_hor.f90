@@ -57,19 +57,18 @@ subroutine ver_hor
   ! ---
   ! Load temporary arrays
   if(drv%mask(drv%ktr) .gt. 1) then
-     if(drv%biol.eq.1)  then 
-        do l=1,grd%nchl
-           !$OMP PARALLEL  &
-           !$OMP PRIVATE(k)
-           !$OMP DO
-           do k=1,grd%km
-              grd%chl_ad(:,:,k,l) = grd%chl(:,:,k,l) 
-           enddo
-           !$OMP END DO
-           !$OMP END PARALLEL
+     do l=1,grd%nchl
+        !$OMP PARALLEL  &
+        !$OMP PRIVATE(k)
+        !$OMP DO
+        do k=1,grd%km
+           grd%chl_ad(:,:,k,l) = grd%chl(:,:,k,l) 
         enddo
-     endif
+        !$OMP END DO
+        !$OMP END PARALLEL
+     enddo
   endif
+  
   !
   ! Attenuation of the correction near the cost and where d<200m 
   do l=1,grd%nchl
@@ -106,41 +105,35 @@ subroutine ver_hor
   enddo ! do on l
   ! ---
   ! x direction
-  if(drv%biol.eq.1) then
-     call rcfl_x( grd%im, grd%jm, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, grd%chl, grd%inx, grd%imx)
-  endif
+  call rcfl_x( grd%im, grd%jm, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, grd%chl, grd%inx, grd%imx)
   
-  if(drv%biol.eq.1) then
-     do l=1,grd%nchl
-        !$OMP PARALLEL  &
-        !$OMP PRIVATE(k)
-        !$OMP DO
-        do k=1,grd%km
-           grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:) 
-        enddo
-        !$OMP END DO
-        !$OMP END PARALLEL
+  do l=1,grd%nchl
+     !$OMP PARALLEL  &
+     !$OMP PRIVATE(k)
+     !$OMP DO
+     do k=1,grd%km
+        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:) 
      enddo
-  endif
+     !$OMP END DO
+     !$OMP END PARALLEL
+  enddo
+  
   ! ---
   ! y direction
-  if(drv%biol.eq.1) then
-     call rcfl_y( grd%im, grd%jm, grd%km*grd%nchl, grd%jmax, grd%aey, grd%bey, grd%chl, grd%jnx, grd%jmx)
-  endif
+  call rcfl_y( grd%im, grd%jm, grd%km*grd%nchl, grd%jmax, grd%aey, grd%bey, grd%chl, grd%jnx, grd%jmx)
+  
   ! ---
   ! Scale by the scaling factor
-  if(drv%biol.eq.1) then
-     do l=1,grd%nchl
-        !$OMP PARALLEL  &
-        !$OMP PRIVATE(k)
-        !$OMP DO
-        do k=1,grd%km
-           grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:) 
-        enddo
-        !$OMP END DO
-        !$OMP END PARALLEL
+  do l=1,grd%nchl
+     !$OMP PARALLEL  &
+     !$OMP PRIVATE(k)
+     !$OMP DO
+     do k=1,grd%km
+        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:) 
      enddo
-  endif
+     !$OMP END DO
+     !$OMP END PARALLEL
+  enddo
   
   ! ---
   ! Transpose calculation in the presense of coastal boundaries
@@ -148,75 +141,66 @@ subroutine ver_hor
      
      ! ---
      ! Scale by the scaling factor
-     if(drv%biol.eq.1) then
-        do l=1,grd%nchl
-           !$OMP PARALLEL  &
-           !$OMP PRIVATE(k)
-           !$OMP DO
-           do k=1,grd%km
-              grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:) 
-           enddo
-           !$OMP END DO
-           !$OMP END PARALLEL
+     do l=1,grd%nchl
+        !$OMP PARALLEL  &
+        !$OMP PRIVATE(k)
+        !$OMP DO
+        do k=1,grd%km
+           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:) 
         enddo
-     endif
+        !$OMP END DO
+        !$OMP END PARALLEL
+     enddo
+     
      ! ---
      ! y direction
-     if(drv%biol.eq.1) then
-        call rcfl_y_ad( grd%im, grd%jm, grd%km*grd%nchl, grd%jmax, grd%aey, grd%bey, grd%chl_ad, grd%jnx, grd%jmx)
-     endif
+     call rcfl_y_ad( grd%im, grd%jm, grd%km*grd%nchl, grd%jmax, grd%aey, grd%bey, grd%chl_ad, grd%jnx, grd%jmx)
+
      ! ---
      ! Scale by the scaling factor
-     if(drv%biol.eq.1) then
-        do l=1,grd%nchl
-           !$OMP PARALLEL  &
-           !$OMP PRIVATE(k)
-           !$OMP DO
-           do k=1,grd%km
-              grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:) 
-           enddo
-           !$OMP END DO
-           !$OMP END PARALLEL
+     do l=1,grd%nchl
+        !$OMP PARALLEL  &
+        !$OMP PRIVATE(k)
+        !$OMP DO
+        do k=1,grd%km
+           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:) 
         enddo
-     endif
+        !$OMP END DO
+        !$OMP END PARALLEL
+     enddo
+
      ! ---
      ! x direction
-     if(drv%biol.eq.1) then
-        call rcfl_x_ad( grd%im, grd%jm, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, grd%chl_ad, grd%inx, grd%imx)
-     endif
+     call rcfl_x_ad( grd%im, grd%jm, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, grd%chl_ad, grd%inx, grd%imx)
      
      ! ---
      ! Average
-     if(drv%biol.eq.1) then
-        do l=1,grd%nchl
-           !$OMP PARALLEL  &
-           !$OMP PRIVATE(k)
-           !$OMP DO
-           do k=1,grd%km
-              grd%chl(:,:,k,l)   = (grd%chl(:,:,k,l) + grd%chl_ad(:,:,k,l) ) * 0.5 
-           enddo
-           !$OMP END DO
-           !$OMP END PARALLEL
+     do l=1,grd%nchl
+        !$OMP PARALLEL  &
+        !$OMP PRIVATE(k)
+        !$OMP DO
+        do k=1,grd%km
+           grd%chl(:,:,k,l)   = (grd%chl(:,:,k,l) + grd%chl_ad(:,:,k,l) ) * 0.5 
         enddo
-     endif
+        !$OMP END DO
+        !$OMP END PARALLEL
+     enddo
      
   endif
   
   
   ! ---
   ! Scale for boundaries
-  if(drv%biol.eq.1) then
-     do l=1,grd%nchl
-        !$OMP PARALLEL  &
-        !$OMP PRIVATE(k)
-        !$OMP DO
-        do k=1,grd%km
-           grd%chl(:,:,k,l)   = grd%chl(:,:,k,l) * grd%fct(:,:,k)  
-        enddo
-        !$OMP END DO
-        !$OMP END PARALLEL
+  do l=1,grd%nchl
+     !$OMP PARALLEL  &
+     !$OMP PRIVATE(k)
+     !$OMP DO
+     do k=1,grd%km
+        grd%chl(:,:,k,l)   = grd%chl(:,:,k,l) * grd%fct(:,:,k)  
      enddo
-  endif
+     !$OMP END DO
+     !$OMP END PARALLEL
+  enddo
   
   
 #ifdef __FISICA
@@ -244,17 +228,15 @@ subroutine ver_hor
   
   !103 continue
   ! Correction is zero out of mask (for correction near the coast)
-  if(drv%biol.eq.1) then
-     do k=1,grd%km
-        do j=1,grd%jm
-           do i=1,grd%im
-              if (grd%msk(i,j,k).eq.0) then
-                 grd%chl(i,j,k,:) = 0.
-              endif
-           enddo  !i
-        enddo  !j
-     enddo  !k
-  endif
+  do k=1,grd%km
+     do j=1,grd%jm
+        do i=1,grd%im
+           if (grd%msk(i,j,k).eq.0) then
+              grd%chl(i,j,k,:) = 0.
+           endif
+        enddo  !i
+     enddo  !j
+  enddo  !k
   
-  
+
 end subroutine ver_hor

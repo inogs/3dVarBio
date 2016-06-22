@@ -55,8 +55,8 @@ public
         REAL(r8)              ::  f_c          ! Cost function
         REAL(r8),    POINTER  ::  ro_ad(:,:,:) ! Observational part of the cost function gradient
         REAL(r8),    POINTER  ::    msk(:,:)   ! Mask of the old grid
-        INTEGER(i4)           ::  biol         ! Flag for the assimilation of biological parameters
-        INTEGER(i4)           ::  bphy         ! Flag for the assimilation of biological+physical parameters
+        ! INTEGER(i4)           ::  biol         ! Flag for the assimilation of biological parameters
+        ! INTEGER(i4)           ::  bphy         ! Flag for the assimilation of biological+physical parameters
 
    END TYPE drv_t
 

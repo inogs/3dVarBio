@@ -36,10 +36,8 @@ subroutine res_inc
 
  implicit none
 
-   if(drv%biol.eq.1) then
-     grd%chl_ad(:,:,:,:) = 0.0 ! OMP
-   endif
-
-     obs%gra(:) = obs%amo(:) / obs%err(:) ! OMP
+ grd%chl_ad(:,:,:,:) = 0.0 ! OMP
+ 
+ obs%gra(:) = obs%amo(:) / obs%err(:) ! OMP
 
 end subroutine res_inc

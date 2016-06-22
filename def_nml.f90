@@ -162,10 +162,10 @@ subroutine def_nml
   write(drv%dia,*) ' Number of phytoplankton species  nchl     = ', nchl    
   write(drv%dia,*) ' Minimum depth for chlorophyll    chl_dep  = ', chl_dep
 
-       drv%biol = biol
-       drv%bphy = bphy
-       grd%nchl = nchl
-       chl%dep  = chl_dep
+  ! drv%biol = biol
+  ! drv%bphy = bphy
+  grd%nchl = nchl
+  chl%dep  = chl_dep
 
 
 

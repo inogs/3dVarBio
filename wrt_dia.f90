@@ -78,7 +78,6 @@ subroutine wrt_dia
 
    write(fgrd,'(i1)')drv%ktr
 
-  if(drv%biol.eq.1) then
    do l=1,grd%nchl
    do k=1,grd%km
    do j=1,grd%jm
@@ -89,7 +88,6 @@ subroutine wrt_dia
    enddo
    enddo
 
-  endif
    do j=1,grd%jm
    do i=1,grd%im
       Dump_msk(i,j) = real(grd%msk(i,j,1),4);

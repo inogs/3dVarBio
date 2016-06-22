@@ -40,18 +40,16 @@ subroutine veof
   REAL(r8), DIMENSION ( grd%im, grd%jm)  :: egm
   
   
-  if(drv%biol.eq.1)then
-     do l=1,grd%nchl
-        !$OMP PARALLEL  &
-        !$OMP PRIVATE(k)
-        !$OMP DO
-        do k=1,grd%km
-           grd%chl(:,:,k,l) = 0.0
-        enddo
-        !$OMP END DO
-        !$OMP END PARALLEL
+  do l=1,grd%nchl
+     !$OMP PARALLEL  &
+     !$OMP PRIVATE(k)
+     !$OMP DO
+     do k=1,grd%km
+        grd%chl(:,:,k,l) = 0.0
      enddo
-  endif
+     !$OMP END DO
+     !$OMP END PARALLEL
+  enddo
   
   !cdir noconcur
   do n=1,ros%neof
@@ -82,31 +80,26 @@ subroutine veof
         enddo
      enddo
           
-     if(drv%biol.eq.1)then
-        
-        ! 3D variables
-        do l=1,grd%nchl
-           !$OMP PARALLEL  &
-           !$OMP PRIVATE(i,j,k,k1) 
-           !$OMP DO
-           do k=1,grd%km ! OMP
-              k1 = k1 + 1
-              do j=1,grd%jm
-                 do i=1,grd%im
+     ! 3D variables
+     do l=1,grd%nchl
+        !$OMP PARALLEL  &
+        !$OMP PRIVATE(i,j,k,k1) 
+        !$OMP DO
+        do k=1,grd%km ! OMP
+           k1 = k1 + 1
+           do j=1,grd%jm
+              do i=1,grd%im
 #ifdef opt_huge_memory
-                    grd%chl(i,j,k,l) = grd%chl(i,j,k,l) + ros%evc( i, j, k1, n)  * egm(i,j)
+                 grd%chl(i,j,k,l) = grd%chl(i,j,k,l) + ros%evc( i, j, k1, n)  * egm(i,j)
 #else
-                    grd%chl(i,j,k,l) = grd%chl(i,j,k,l) + ros%evc(grd%reg(i,j),k,n) * egm(i,j)
+                 grd%chl(i,j,k,l) = grd%chl(i,j,k,l) + ros%evc(grd%reg(i,j),k,n) * egm(i,j)
 #endif
-                 enddo
               enddo
            enddo
-           !$OMP END DO
-           !$OMP END PARALLEL
         enddo
-        
-     endif
-     
+        !$OMP END DO
+        !$OMP END PARALLEL
+     enddo
   enddo
   
 end subroutine veof
