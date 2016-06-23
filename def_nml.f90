@@ -166,6 +166,7 @@ subroutine def_nml
   ! drv%bphy = bphy
   grd%nchl = nchl
   chl%dep  = chl_dep
+
   write(drv%dia,*) '------------------------------------------------------------'
   write(drv%dia,*) ''
 
