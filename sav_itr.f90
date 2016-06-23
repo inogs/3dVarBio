@@ -48,7 +48,6 @@ subroutine sav_itr
   ! Save eigenvalues
   if (1.eq.0) then ! We do not know the reason of these lines
      ALLOCATE ( drv%ro(drv%im,drv%jm,ros%neof))    ; drv%ro   (:,:,:) = grd%ro   (:,:,:)
-     ALLOCATE ( drv%ro_ad(drv%im,drv%jm,ros%neof)) ; drv%ro_ad(:,:,:) = grd%ro_ad(:,:,:)
      ALLOCATE ( drv%msk(drv%im,drv%jm))            ; drv%msk  (:,:)   = grd%msr  (:,:,1)
   endif
   ! ---
