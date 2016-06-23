@@ -16,6 +16,8 @@ cpp.*
 
 # compiler.inc
 compiler.inc
+libfexit/test_f_exit
+libfexit/test_f_exit_message
 
 # executable
 var_3d
