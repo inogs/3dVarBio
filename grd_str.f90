@@ -55,31 +55,11 @@ public
         REAL(r8),    POINTER     ::  hgt(:,:)     ! Topography
         REAL(r8),    POINTER     ::    f(:,:)     ! Coriolis term
 
-        ! REAL(r8),    POINTER     ::  tem(:,:,:)   ! Temperature increment
-        ! REAL(r8),    POINTER     ::  sal(:,:,:)   ! Salinity increment
-        ! REAL(r8),    POINTER     ::  uvl(:,:,:)   ! u componnet of velocity increment
-        ! REAL(r8),    POINTER     ::  vvl(:,:,:)   ! v componnet of velocity increment
-        ! REAL(r8),    POINTER     ::  eta(:,:)     ! Sea level increment
-
-        ! REAL(r8),    POINTER     ::  temb(:,:,:)   ! Temperature background
-        ! REAL(r8),    POINTER     ::  salb(:,:,:)   ! Salinity background
         REAL(r8),    POINTER     ::  uvlb(:,:,:)   ! u componnet of velocity background
         REAL(r8),    POINTER     ::  vvlb(:,:,:)   ! v componnet of velocity background
-        ! REAL(r8),    POINTER     ::  etab(:,:)     ! Sea level background
-
-        REAL(r8),    POINTER     ::  mdt(:,:)      ! Mean dynamic topography
-        ! REAL(r8),    POINTER     ::  sla(:,:)      ! Sea level anomaly
 
         REAL(r8),    POINTER     ::  ro_ad(:,:,:)    ! Reduced order control vector adjoint
-        ! REAL(r8),    POINTER     ::  tem_ad(:,:,:)   ! Temperature adjoint
-        ! REAL(r8),    POINTER     ::  sal_ad(:,:,:)   ! Salinity adjoint
-        ! REAL(r8),    POINTER     ::  uvl_ad(:,:,:)   ! u componnet of velocity adjoint
-        ! REAL(r8),    POINTER     ::  vvl_ad(:,:,:)   ! v componnet of velocity adjoint
-        ! REAL(r8),    POINTER     ::  eta_ad(:,:)     ! Sea level adjoint
 
-        ! REAL(r8),    POINTER     ::  dns(:,:,:)      ! density
-        ! REAL(r8),    POINTER     ::  b_x(:,:,:)      ! bouyancy force 
-        ! REAL(r8),    POINTER     ::  b_y(:,:,:)      ! bouyancy force 
         REAL(r8),    POINTER     ::  bx(:,:)         ! bouyancy force integral
         REAL(r8),    POINTER     ::  by(:,:)         ! bouyancy force integral
 

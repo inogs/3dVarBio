@@ -60,7 +60,6 @@ subroutine sav_itr
   DEALLOCATE ( grd%hgt)
   DEALLOCATE ( grd%f)
   DEALLOCATE ( grd%bx, grd%by)
-  DEALLOCATE ( grd%mdt )
   DEALLOCATE ( grd%lon, grd%lat, grd%dep)
   DEALLOCATE ( grd%dx, grd%dy, grd%dz)
   DEALLOCATE ( grd%dxdy)
