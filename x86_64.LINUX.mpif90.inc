@@ -14,6 +14,9 @@ OPT_FLTCONSISTENCY =
 LIBFEXIT  = ./libfexit/
 LIBNCMEDLEV =./libnc-medlevel
 
+PREPROC = -Dkey_mpp_mpi
+CPP += $(PREPROC)
+
 # NETCDF_INC = $(NETCDFF_INC)
 # NETCDF_LIB = $(NETCDFF_LIB)
 

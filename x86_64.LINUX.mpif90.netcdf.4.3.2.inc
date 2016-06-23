@@ -14,8 +14,13 @@ OPT_FLTCONSISTENCY =
 LIBFEXIT  = ./libfexit/
 LIBNCMEDLEV =./libnc-medlevel
 
+PREPROC = -Dkey_mpp_mpi
+CPP += $(PREPROC)
+
 # NETCDF_INC = $(NETCDFF_INC)
 # NETCDF_LIB = $(NETCDFF_LIB)
+
+# FFLAGS  = -ffree-line-length-none -O2 -I$(NETCDF_INC) $(OPT_FLTCONSISTENCY) -c
 FFLAGS  = -O2 -I$(NETCDF_INC) -I$(NETCDFF_INC) $(OPT_FLTCONSISTENCY) -c
 CFLAGS  = -O2 -I$(NETCDF_INC)
 

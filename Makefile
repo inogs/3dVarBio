@@ -38,8 +38,6 @@ $(info $$NETCDF_LIB  = ${NETCDF_LIB})
 $(info $$LIBFEXIT    = ${LIBFEXIT})
 $(info $$LIBNCMEDLEV = ${LIBNCMEDLEV})
 
-PREPROC = -Dkey_mpp_mpi
-
 LDFLAGS += -L$(LIBFEXIT) -lf_exit
 
 EXEC = var_3d
@@ -160,10 +158,10 @@ $(LIB)  :       $(KNDSTR) $(OBJSTR) $(OBJS)
 
 .DEFAULTS:
 .f90.o :
-	$(CPP) $(PREPROC) $*.f90 > cpp.$*.f90 ; $(F90) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
+	$(CPP) $*.f90 > cpp.$*.f90 ; $(F90) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
 
 .f.o :
-	$(CPP) $(PREPROC) $*.f > cpp.$*.f ; $(F77) $(FFLAGS) cpp.$*.f  ; $(MV) cpp.$*.o $*.o
+	$(CPP) $*.f > cpp.$*.f ; $(F77) $(FFLAGS) cpp.$*.f  ; $(MV) cpp.$*.o $*.o
 
 libf_exit.a :
 	cd $(LIBFEXIT) && $(MAKE)
