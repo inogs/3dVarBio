@@ -14,8 +14,10 @@ cpp.*
 # module files
 *.mod
 
-# compiler.inc
+# removing conflict generators
 compiler.inc
+libfexit/test_f_exit
+libfexit/test_f_exit_message
 
 # executable
 var_3d
