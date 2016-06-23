@@ -72,7 +72,6 @@ subroutine rdgrd
      grd%ums = huge(grd%ums(1,1,1))  ; grd%vms = huge(grd%vms(1,1,1))
      ALLOCATE ( grd%f(grd%im,grd%jm)) ; grd%f = huge(grd%f(1,1));
       
-     ALLOCATE ( grd%mdt(grd%im,grd%jm)) ; grd%mdt = huge(grd%mdt(1,1));
      ALLOCATE ( grd%hgt(grd%im,grd%jm)) ; grd%hgt = huge(grd%hgt(1,1))
      ALLOCATE ( grd%bx(grd%im,grd%jm))  ; grd%bx = huge(grd%bx(1,1))
      ALLOCATE ( grd%by(grd%im,grd%jm))  ; grd%by = huge(grd%by(1,1))
@@ -155,12 +154,6 @@ subroutine rdgrd
     stat = nf90_get_var (ncid, idvar, x2)
     if (stat /= nf90_noerr) call netcdf_err(stat)
     grd%reg(:,:) = int(x2(:,:))
-
-    stat = nf90_inq_varid (ncid, 'mdt', idvar)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
-    stat = nf90_get_var (ncid, idvar, x2)
-    grd%mdt(:,:) = x2(:,:)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
 
     stat = nf90_close(ncid)
 
