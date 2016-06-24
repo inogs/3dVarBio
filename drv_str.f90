@@ -42,7 +42,6 @@ MODULE drv_str
      INTEGER(i4)           ::  im           ! Dimension of the coarse grid
      INTEGER(i4)           ::  jm           ! Dimension of the coarse grid
      INTEGER(i4), POINTER  ::  grid(:)      ! grid number for the current iterration
-     LOGICAL    , POINTER  ::  read_grd(:)  ! Flag to read the grid
      REAL(r8),    POINTER  ::  ratco(:)     ! Ratio between model grid and the current grid
      REAL(r8),    POINTER  ::  ratio(:)     ! Ratio between successive grids
      INTEGER(i4), POINTER  ::  mask(:)      ! Mask used for horizontal covariances

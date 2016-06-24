@@ -105,7 +105,6 @@ subroutine def_nml
 
   drv%ntr = ntr
   ALLOCATE( drv%grid (drv%ntr))      ; drv%grid (1:drv%ntr)    = grid (1:drv%ntr)
-  ALLOCATE( drv%read_grd (drv%ntr))  ; drv%read_grd(1:drv%ntr) = read_grd(1:drv%ntr)
   ALLOCATE( drv%ratco(drv%ntr))      ; drv%ratco(1:drv%ntr)    = ratio(1:drv%ntr)
   ALLOCATE( drv%ratio(drv%ntr))      ; drv%ratio               = huge(drv%ratio(1))
   ALLOCATE( drv%mask (drv%ntr))      ; drv%mask (1:drv%ntr)    = mask (1:drv%ntr)

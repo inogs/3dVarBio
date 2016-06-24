@@ -40,7 +40,6 @@ subroutine def_grd
   ! ---
   ! Define grid 
   grd%grd_mod  = drv%grid (drv%ktr)
-  grd%read_grd = drv%read_grd (drv%ktr)
   
   !Read grid definition
   call rdgrd
@@ -68,8 +67,6 @@ subroutine def_grd
      !stop
      call f_exit(21)
   endif
-  
-  grd%nps = grd%im*grd%jm*grd%km
   
   
   nSurfaceWaterPoints = 0
