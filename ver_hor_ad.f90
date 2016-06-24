@@ -62,32 +62,7 @@ subroutine ver_hor_ad
   
   !goto 103 ! No Vh
   ione = 1
-  
-  
-#ifdef __FISICA
-  
-  ! ---
-  ! Divergence damping
-  if(drv%dda(drv%ktr) .eq. 1) then
-     call div_dmp_ad
-  endif
-  
-  ! ---
-  ! Velocity
-  call get_vel_ad
-  
-  ! ---
-  ! Barotropic model
-  if(drv%bmd(drv%ktr) .eq. 1) then
-     call bar_mod_ad
-  endif
-  
-  ! ---
-  ! Bouyancy force
-  call get_byg_ad
-  
-#endif
-  
+    
   ! ---
   ! Scale for boundaries
   do l=1,grd%nchl

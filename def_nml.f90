@@ -47,7 +47,6 @@ subroutine def_nml
   INTEGER(i4)   :: obs_vdr, bmd_ncnt
   INTEGER(i4)   :: biol, bphy, nchl
   REAL(r8)      :: rcf_L, ctl_tol, ctl_per, bmd_fc1, bmd_fc2, rcf_efc, chl_dep
-  ! REAL(r8)      :: bmd_dt, bmd_ndy, bmd_ady, bmd_alp, bmd_ovr, bmd_resem
   INTEGER(i4)   :: grid (ngrids)
   REAL(r8)      :: ratio(ngrids)
   INTEGER(i4)   :: mask (ngrids)
@@ -60,8 +59,6 @@ subroutine def_nml
   NAMELIST /grdlst/ ntr, grid, read_grd, ratio, mask, barmd, divda, divdi
   NAMELIST /ctllst/ ctl_m, ctl_tol, ctl_per
   NAMELIST /covlst/ neof, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
-  ! NAMELIST /bmdlst/ bmd_dt, bmd_ndy, bmd_ady, bmd_alp, bmd_fc1, bmd_fc2,  &
-  !                   bmd_ovr, bmd_resem, bmd_ncnt
   NAMELIST /biolst/ biol, bphy, nchl, chl_dep
 
 
@@ -162,11 +159,12 @@ subroutine def_nml
   write(drv%dia,*) ' Number of phytoplankton species  nchl     = ', nchl    
   write(drv%dia,*) ' Minimum depth for chlorophyll    chl_dep  = ', chl_dep
 
-  ! drv%biol = biol
-  ! drv%bphy = bphy
   grd%nchl = nchl
   chl%dep  = chl_dep
   
+  write(drv%dia,*) '------------------------------------------------------------'
+  write(drv%dia,*) ''
+
   write(drv%dia,*) '------------------------------------------------------------'
   write(drv%dia,*) ''
 

@@ -34,41 +34,6 @@ subroutine get_obs
 
  implicit none
 
-#ifdef __FISICA
-! ----
-! Load SLA observations
-  call get_obs_sla
-
-! ----
-! Load ARGO observations
-  call get_obs_arg
-
-! ----
-! Load XBT observations
-  call get_obs_xbt
-
-! ----
-! Load glider observations
-  call get_obs_gld
-
-! ----
-! Load Argo trajectory observations
-  call get_obs_tra
-
-! ----
-! Load trajectory observations of surface drifters
-  call get_obs_trd
-
-! ----
-! Load observations of velocity by drifters
-  call get_obs_vdr
-
-! ----
-! Load observations of velocity by drifters
-  call get_obs_gvl
-
-#endif
-
 ! ----
 ! Load observations of chlorophyll
   call get_obs_chl

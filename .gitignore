@@ -14,7 +14,7 @@ cpp.*
 # module files
 *.mod
 
-# removing "conflict generators"
+# removing conflict generators
 compiler.inc
 libfexit/test_f_exit
 libfexit/test_f_exit_message
