@@ -203,29 +203,6 @@ subroutine ver_hor
   enddo
   
   
-#ifdef __FISICA
-  ! ---
-  ! Bouyancy force
-  call get_byg
-  
-  ! ---
-  ! Barotropic model
-  if(drv%bmd(drv%ktr) .eq. 1) then
-     call bar_mod
-  endif
-  
-  ! ---
-  ! Barotropic model
-  call get_vel
-  
-  ! ---
-  ! Divergence damping
-  if(drv%dda(drv%ktr) .eq. 1) then
-     call div_dmp
-  endif
-  
-#endif
-  
   !103 continue
   ! Correction is zero out of mask (for correction near the coast)
   do k=1,grd%km

@@ -36,40 +36,6 @@ subroutine obsop_ad
 
   obs%k = 0
 
-#ifdef __FISICA
-! ---
-! Satellite observations of SLA
-  call obs_sla_ad
-
-! ---
-! ARGO observations 
-  call obs_arg_ad
-
-! ---
-! XBT observations 
-  call obs_xbt_ad
-
-! ---
-! Glider observations 
-  call obs_gld_ad
-
-! ---
-! Observations of Argo trajectories
-  if(tra%no.gt.0) call obs_tra_ad
-
-! ---
-! Observations of trajectories of surface drifters
-  if(trd%no.gt.0) call obs_trd_ad
-
-! ---
-! Observations of velocity from drifters
-  call obs_vdr_ad
-
-! ---
-! Observations of velocity from gliders
-  call obs_gvl_ad
-
-#endif
 ! ---
 ! Observations of chlorophyll
   call obs_chl_ad

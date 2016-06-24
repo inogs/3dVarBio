@@ -116,7 +116,7 @@ subroutine ini_itr
    enddo
 
 
-   DEALLOCATE( drv%ro, drv%ro_ad, drv%msk)
+   DEALLOCATE( drv%ro, drv%msk)
    DEALLOCATE( pq1 )
    DEALLOCATE( pq2 )
    DEALLOCATE( pq3 )

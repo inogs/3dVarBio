@@ -48,7 +48,6 @@ subroutine sav_itr
   ! Save eigenvalues
   if (1.eq.0) then ! We do not know the reason of these lines
      ALLOCATE ( drv%ro(drv%im,drv%jm,ros%neof))    ; drv%ro   (:,:,:) = grd%ro   (:,:,:)
-     ALLOCATE ( drv%ro_ad(drv%im,drv%jm,ros%neof)) ; drv%ro_ad(:,:,:) = grd%ro_ad(:,:,:)
      ALLOCATE ( drv%msk(drv%im,drv%jm))            ; drv%msk  (:,:)   = grd%msr  (:,:,1)
   endif
   ! ---
@@ -57,12 +56,8 @@ subroutine sav_itr
   ! Grid structure
   DEALLOCATE ( grd%reg)
   DEALLOCATE ( grd%msk)
-  DEALLOCATE ( grd%hgt)
-  DEALLOCATE ( grd%f)
-  DEALLOCATE ( grd%bx, grd%by)
-  DEALLOCATE ( grd%lon, grd%lat, grd%dep)
-  DEALLOCATE ( grd%dx, grd%dy, grd%dz)
-  DEALLOCATE ( grd%dxdy)
+  DEALLOCATE ( grd%dep)
+  DEALLOCATE ( grd%dx, grd%dy)
   DEALLOCATE ( grd%alx )
   DEALLOCATE ( grd%aly )
   DEALLOCATE ( grd%btx )
