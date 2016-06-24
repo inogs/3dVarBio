@@ -36,6 +36,7 @@ subroutine sav_itr
   use grd_str
   use eof_str
   use ctl_str
+  use cns_str
   use rcfl
   
   implicit none
@@ -94,6 +95,27 @@ subroutine sav_itr
   DEALLOCATE( ctl%wt, ctl%wn, ctl%snd)
   DEALLOCATE( ctl%z_c, ctl%r_c, ctl%d_c, ctl%t_c)
   DEALLOCATE (SurfaceWaterPoints)  
+
+  ! chlorophyll structure
+  DEALLOCATE ( chl%flg)
+  DEALLOCATE ( chl%flc)
+  DEALLOCATE ( chl%inc)
+  DEALLOCATE ( chl%err)
+  DEALLOCATE ( chl%res)
+  DEALLOCATE ( chl%ib)
+  DEALLOCATE ( chl%pb)
+  DEALLOCATE ( chl%jb)
+  DEALLOCATE ( chl%qb)
+  DEALLOCATE ( chl%pq1)
+  DEALLOCATE ( chl%pq2)
+  DEALLOCATE ( chl%pq3)
+  DEALLOCATE ( chl%pq4)
+  DEALLOCATE ( chl%dpt)
+  DEALLOCATE ( chl%dzr)
+
+  ! Constants structure
+  DEALLOCATE ( rcf%al)
+  DEALLOCATE ( rcf%sc)
   
   DEALLOCATE ( a_rcx)
   DEALLOCATE ( b_rcx)

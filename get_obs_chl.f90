@@ -81,7 +81,6 @@ subroutine get_obs_chl
   ALLOCATE ( chl%inc(chl%no)) ; chl%inc = huge(chl%inc(1))
   ALLOCATE ( chl%err(chl%no)) ; chl%err = huge(chl%err(1))
   ALLOCATE ( chl%res(chl%no)) ; chl%res = huge(chl%res(1))
-  ! ALLOCATE ( chl%b_a(chl%no)) ; chl%b_a = huge( chl%b_a(1))
   ALLOCATE ( chl%ib(chl%no))  ; chl%ib  = huge(chl%ib(1))
   ALLOCATE ( chl%jb(chl%no))  ; chl%jb  = huge(chl%jb(1))
   ALLOCATE ( chl%pb(chl%no))  ; chl%pb  = huge(chl%pb(1))
@@ -90,7 +89,6 @@ subroutine get_obs_chl
   ALLOCATE ( chl%pq2(chl%no)) ; chl%pq2 = huge(chl%pq2(1))
   ALLOCATE ( chl%pq3(chl%no)) ; chl%pq3 = huge(chl%pq3(1))
   ALLOCATE ( chl%pq4(chl%no)) ; chl%pq4 = huge(chl%pq4(1))
-  ! ALLOCATE ( chl%dpt(chl%no)) ; chl%dpt = huge(chl%dpt(1))
   ALLOCATE ( chl%dzr(grd%km,chl%no)) ; chl%dzr=huge(chl%dzr(1,1))
   
   
