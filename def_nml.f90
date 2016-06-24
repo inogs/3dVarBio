@@ -82,14 +82,6 @@ subroutine def_nml
   write(drv%dia,*) '  '
 
 ! ---
-  obs_chl = 1
-  write(drv%dia,*) '------------------------------------------------------------'
-  write(drv%dia,*) ' OBSERVATIONS NAMELIST INPUT: '
-  write(drv%dia,*) ' Use Chlorophyll:                        obs_chl = ', obs_chl
-
-    obs%chl = obs_chl
-
-! ---
   read(11,grdlst)
 
   write(drv%dia,*) '------------------------------------------------------------'

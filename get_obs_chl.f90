@@ -139,8 +139,6 @@ subroutine get_obs_chl
     endif
    enddo
 
-   if(obs%chl.eq.0) chl%flg(:) = -1
-
 ! residual check
   do k=1,chl%no
    if(abs(chl%res(k)).gt.10.0) chl%flg(k) = 0

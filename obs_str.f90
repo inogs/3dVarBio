@@ -45,7 +45,6 @@ MODULE obs_str
      REAL(r8),    POINTER     ::  res(:)     ! residual
      REAL(r8),    POINTER     ::  err(:)     ! Observational error
      REAL(r8),    POINTER     ::  gra(:)     ! Observational gradient
-     INTEGER(i8)              ::  chl        ! Flag for assimilation of chlorophyll
      
   END TYPE obs_t
   
