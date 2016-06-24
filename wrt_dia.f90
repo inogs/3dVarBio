@@ -52,28 +52,6 @@ subroutine wrt_dia
 ! ---
 ! Innovations
 
-#ifdef __FISICA
-   REAL         :: x2(grd%im,grd%jm)
-    x2(:,:) = grd%eta(:,:)
-    write(101) x2
-   do k=1,grd%km
-    x2(:,:) = grd%tem(:,:,k)
-    write(101) x2
-   enddo
-   do k=1,grd%km
-    x2(:,:) = grd%sal(:,:,k)
-    write(101) x2
-   enddo
-   do k=1,grd%km
-    x2(:,:) = grd%uvl(:,:,k)
-    write(101) x2
-   enddo
-   do k=1,grd%km
-    x2(:,:) = grd%vvl(:,:,k)
-    write(101) x2
-   enddo
-#endif
-
    write(drv%dia,*) 'writes to corrections.dat !!!!!!!!!!!!!!!!!!!!!!!!!'
 
    write(fgrd,'(i1)')drv%ktr
@@ -137,13 +115,6 @@ status = nf90_close(ncid)
 
   write(215) chl%no
   
-#ifdef __FISICA
-   if(chl%no.ne.0) write (215)                                  &
-        gvl%flg(1:gvl%no)                                       &
-       ,gvl%dpt(1:gvl%no)                                       &
-       ,gvl%err(1:gvl%no), gvl%res(1:gvl%no)                    &
-       ,gvl%inc(1:gvl%no)
-#endif
   close (215)
   write(*,*)'nchl ',chl%no
 
