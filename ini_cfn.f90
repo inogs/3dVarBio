@@ -54,7 +54,7 @@ subroutine ini_cfn
 ! ---
 ! Allocate memory for optimization arrays
 
-    ctl%n = nSurfaceWaterpoints * ros%neof
+    ctl%n = nSurfaceWaterPoints * ros%neof
     write(drv%dia,*) 'Size of the control vector: ',ctl%n
     ALLOCATE( ctl%nbd(ctl%n)) ; ctl%nbd = huge(ctl%nbd(1))
     ALLOCATE(ctl%iwa(3*ctl%n)); ctl%iwa = huge(ctl%iwa(1))

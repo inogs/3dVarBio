@@ -77,9 +77,9 @@ subroutine def_grd
   enddo
   
   
-  ALLOCATE (SurfaceWaterpoints(2,nSurfaceWaterpoints))
+  ALLOCATE (SurfaceWaterPoints(2,nSurfaceWaterPoints))
   
-  write(*,*) 'nSurfaceWaterpoints = ', nSurfaceWaterpoints
+  write(*,*) 'nSurfaceWaterPoints = ', nSurfaceWaterPoints
   
   indSupWP=0
   do i=1,grd%im

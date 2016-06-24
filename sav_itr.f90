@@ -93,7 +93,7 @@ subroutine sav_itr
   DEALLOCATE( ctl%sy, ctl%ss, ctl%yy)
   DEALLOCATE( ctl%wt, ctl%wn, ctl%snd)
   DEALLOCATE( ctl%z_c, ctl%r_c, ctl%d_c, ctl%t_c)
-  DEALLOCATE (SurfaceWaterpoints)  
+  DEALLOCATE (SurfaceWaterPoints)  
   
   DEALLOCATE ( a_rcx)
   DEALLOCATE ( b_rcx)

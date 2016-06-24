@@ -84,7 +84,7 @@ MODULE grd_str
   END TYPE grid_t
   
   TYPE (grid_t)                 :: grd
-  INTEGER(i4), ALLOCATABLE, DIMENSION(:,:) :: SurfaceWaterpoints
+  INTEGER(i4), ALLOCATABLE, DIMENSION(:,:) :: SurfaceWaterPoints
   INTEGER(i4) :: nSurfaceWaterPoints
   REAL(r4),   ALLOCATABLE, DIMENSION(:,:,:)     ::  Dump_chl, Dump_vip
   REAL(r4),   ALLOCATABLE, DIMENSION(:,:)       ::  Dump_msk
