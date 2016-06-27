@@ -54,7 +54,7 @@ subroutine get_obs_chl
   endif
   
   chl%no = grd%im*grd%jm
-  
+  chl%max_val = 10.0
   
   ! ---
   ! Level corresponding to the minimum depth and maximum light propagation
@@ -130,49 +130,31 @@ subroutine get_obs_chl
   !   chl%err(:) =  0.3
   
   ! ---
-  ! Initialise quality flag
+  ! Initialise quality flag, do residual check and count good observations
+  chl%nc = 0
   do k=1,chl%no
      j = (k-1)/grd%im + 1
      i = k - (j-1)*grd%im
      if(grd%msk(i,j,chl%kdp).eq.1. )then
         chl%flg(k) = 1
+        if(abs(chl%res(k)).gt.chl%max_val) then
+           chl%flg(k) = 0
+        else
+           zbn = grd%dep(1)*2.0
+           chl%dzr(1,k) = zbn
+           zbo = zbn
+           chl%dzr(:,k) = chl%dzr(:,k) / zbo
+
+           ! Update chl%nc variable
+           chl%nc = chl%nc + 1
+        end if
      else
         chl%flg(k) = 0
      endif
   enddo
   
-  ! residual check
-  do k=1,chl%no
-     if(abs(chl%res(k)).gt.10.0) chl%flg(k) = 0
-  enddo
-  
-  ! ---
-  ! Vertical intgration parameters
-  do k = 1,chl%no
-     
-     if(chl%flg(k).eq.1)then
-        zbn = grd%dep(1)*2.0
-        chl%dzr(1,k) = zbn
-        zbo = zbn
-        chl%dzr(:,k) = chl%dzr(:,k) / zbo
-     endif
-     
-  enddo
-  
-  
   chl%flc(:) = chl%flg(:)
-  
-  ! ---
-  ! Count good observations
-  chl%nc = 0
-  do k=1,chl%no
-     if(chl%flc(k).eq.1)then
-        chl%nc = chl%nc + 1
-     endif
-  enddo
-  
-  
-  
+    
 end subroutine get_obs_chl
 
 subroutine int_par_chl
