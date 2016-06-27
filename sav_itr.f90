@@ -110,7 +110,6 @@ subroutine sav_itr
   DEALLOCATE ( chl%pq2)
   DEALLOCATE ( chl%pq3)
   DEALLOCATE ( chl%pq4)
-  DEALLOCATE ( chl%dpt)
   DEALLOCATE ( chl%dzr)
 
   ! Constants structure
