@@ -53,7 +53,8 @@ subroutine sav_itr
   endif
   ! ---
   ! Deallocate everithing related to the old grid
-  
+  DEALLOCATE ( drv%grid, drv%ratco, drv%ratio)
+  DEALLOCATE ( drv%mask, drv%dda, drv%ddi)
   ! Grid structure
   DEALLOCATE ( grd%reg)
   DEALLOCATE ( grd%msk)
