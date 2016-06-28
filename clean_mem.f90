@@ -1,4 +1,4 @@
-subroutine sav_itr
+subroutine clean_mem
   
   
   !---------------------------------------------------------------------------
@@ -41,70 +41,30 @@ subroutine sav_itr
   
   implicit none
   
-  ! ---
-  ! Save grid dimensions
+  ! Deallocate everithing related to the old grid
+  DEALLOCATE ( drv%grid, drv%ratco, drv%ratio)
+  DEALLOCATE ( drv%mask, drv%dda, drv%ddi)
+
+  ! chlorophyll structure
+  DEALLOCATE ( chl%flg)
+  DEALLOCATE ( chl%flc)
+  DEALLOCATE ( chl%inc)
+  DEALLOCATE ( chl%err)
+  DEALLOCATE ( chl%res)
+  DEALLOCATE ( chl%ib)
+  DEALLOCATE ( chl%pb)
+  DEALLOCATE ( chl%jb)
+  DEALLOCATE ( chl%qb)
+  DEALLOCATE ( chl%pq1)
+  DEALLOCATE ( chl%pq2)
+  DEALLOCATE ( chl%pq3)
+  DEALLOCATE ( chl%pq4)
+  DEALLOCATE ( chl%dzr)
+
+  ! Constants structure
+  DEALLOCATE ( rcf%al)
+  DEALLOCATE ( rcf%sc)
   
-  drv%im = grd%im
-  drv%jm = grd%jm
-  ! Save eigenvalues
-  if (1.eq.0) then ! We do not know the reason of these lines
-     ALLOCATE ( drv%ro(drv%im,drv%jm,ros%neof))    ; drv%ro   (:,:,:) = grd%ro   (:,:,:)
-     ALLOCATE ( drv%msk(drv%im,drv%jm))            ; drv%msk  (:,:)   = grd%msr  (:,:,1)
-  endif
-  ! ---
-  ! Grid structure
-  DEALLOCATE ( grd%reg)
-  DEALLOCATE ( grd%msk)
-  DEALLOCATE ( grd%dep)
-  DEALLOCATE ( grd%dx, grd%dy)
-  DEALLOCATE ( grd%alx )
-  DEALLOCATE ( grd%aly )
-  DEALLOCATE ( grd%btx )
-  DEALLOCATE ( grd%bty )
-  DEALLOCATE ( grd%scx )
-  DEALLOCATE ( grd%scy )
-  DEALLOCATE ( grd%msr )
-  DEALLOCATE ( grd%imx, grd%jmx)
-  DEALLOCATE ( grd%istp, grd%jstp)
-  DEALLOCATE ( grd%inx, grd%jnx)
-  DEALLOCATE ( grd%fct)
-  DEALLOCATE ( grd%aex)
-  DEALLOCATE ( grd%aey)
-  DEALLOCATE ( grd%bex)
-  DEALLOCATE ( grd%bey)
-  ! Biological vectors
-  DEALLOCATE ( grd%chl)
-  DEALLOCATE ( grd%chl_ad)
-  ! Observational vector
-  DEALLOCATE ( obs%inc, obs%amo, obs%res)
-  DEALLOCATE ( obs%err, obs%gra)
-  ! Covariances structure
-  DEALLOCATE ( grd%ro)
-  DEALLOCATE ( grd%ro_ad)
-  DEALLOCATE ( ros%evc, ros%eva )
-  ! Control structure    
-  DEALLOCATE( ctl%nbd, ctl%iwa)
-  DEALLOCATE( ctl%x_c, ctl%g_c)
-  DEALLOCATE( ctl%l_c, ctl%u_c)
-  DEALLOCATE( ctl%wa, ctl%sg, ctl%sgo, ctl%yg, ctl%ygo)
-  DEALLOCATE( ctl%ws, ctl%wy)
-  DEALLOCATE( ctl%sy, ctl%ss, ctl%yy)
-  DEALLOCATE( ctl%wt, ctl%wn, ctl%snd)
-  DEALLOCATE( ctl%z_c, ctl%r_c, ctl%d_c, ctl%t_c)
-  DEALLOCATE (SurfaceWaterPoints)  
+  write(*,*) ' ALL MEMORY CLEAN'
   
-  DEALLOCATE ( a_rcx)
-  DEALLOCATE ( b_rcx)
-  DEALLOCATE ( c_rcx)
-  DEALLOCATE ( a_rcy)
-  DEALLOCATE ( b_rcy)
-  DEALLOCATE ( c_rcy)
-  DEALLOCATE ( alp_rcx)
-  DEALLOCATE ( bta_rcx)
-  DEALLOCATE ( alp_rcy)
-  DEALLOCATE ( bta_rcy)
-  DEALLOCATE (Dump_chl, Dump_vip, Dump_msk)
-  
-  write(*,*) ' DEALLOCATION DONE'
-  
-end subroutine sav_itr
+end subroutine clean_mem

@@ -130,7 +130,7 @@ subroutine get_obs_chl
   !   chl%err(:) =  0.3
   
   ! ---
-  ! Initialise quality flag, do residual check and count good observations
+  ! Initialise quality flag, do residual check, compute vertical integration parameters and count good observations
   chl%nc = 0
   do k=1,chl%no
      j = (k-1)/grd%im + 1
@@ -138,8 +138,10 @@ subroutine get_obs_chl
      if(grd%msk(i,j,chl%kdp).eq.1. )then
         chl%flg(k) = 1
         if(abs(chl%res(k)).gt.chl%max_val) then
+           ! residual check
            chl%flg(k) = 0
         else
+           ! compute vertical integration parameters
            zbn = grd%dep(1)*2.0
            chl%dzr(1,k) = zbn
            zbo = zbn
@@ -153,8 +155,9 @@ subroutine get_obs_chl
      endif
   enddo
   
+  print*,'Good chl observations: ',chl%nc
   chl%flc(:) = chl%flg(:)
-    
+
 end subroutine get_obs_chl
 
 subroutine int_par_chl
@@ -229,20 +232,7 @@ subroutine int_par_chl
                 /( div_x * div_y + 1.e-16 )
            
         endif
-     enddo
-   
-     ! ---
-     ! Count good observations
-     chl%nc = 0
-     do k=1,chl%no
-        if(chl%flc(k).eq.1)then
-           chl%nc = chl%nc + 1
-        endif
-     enddo
-     
-     print*,'Good chl observations: ',chl%nc
-     
-     
+     enddo    
   endif
   
 end subroutine int_par_chl

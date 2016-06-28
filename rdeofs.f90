@@ -57,64 +57,49 @@ subroutine rdeofs
   if (stat /= nf90_noerr) call netcdf_err(stat)
   stat = nf90_inquire_dimension (ncid, idvar, len = neofs)
   if (stat /= nf90_noerr) call netcdf_err(stat)
-  
+
   write(drv%dia,*)'Eof dimensions are: ',ros%nreg, ros%kmt, neofs
   write(drv%dia,*)'Uses ',ros%neof,' eofs.'
 
-  if(ros%nreg .gt. nregs) then
-     write(drv%dia,*)'Error: Requires more regions than available in the input file.'
+  if(ros%nreg .ne. nregs) then
+     write(drv%dia,*)'Error: ros%nreg differs from nregs'
      !stop
      call f_exit(22)
-  else if(ros%nreg .lt. nregs) then
-     write(drv%dia,*)'Warning! ros%nreg < nregs!'
-     write(drv%dia,*)'ros%nreg =', ros%nreg
-     write(drv%dia,*)'nregs =', nregs
-     write(drv%dia,*)'continue with ros%nreg value'
   endif
   
   if(ros%neof .gt. neofs) then
      write(drv%dia,*)'Error: Requires more Eofs than available in the input file.'
      !stop
      call f_exit(22)
+  else if(ros%neof .lt. neofs) then
+     write(drv%dia,*)'Warning: ros%neof < neofs!'
+     write(drv%dia,*)'ros%neof =', ros%neof
+     write(drv%dia,*)'neofs =', neofs
+     write(drv%dia,*)'continue using ros%neof'
   endif
+  
   if(ros%kmt .ne. nlevs) then
      write(drv%dia,*)'Error: Vertical dimension different than in the input file.'
      !stop
      call f_exit(23)
   endif
   
-  !  Allocate eof arrays
-  ALLOCATE ( ros%evc( ros%nreg, ros%kmt, neofs) )  ; ros%evc = huge(ros%evc(1,1,1))
-  ALLOCATE ( ros%eva( ros%nreg, neofs) )           ; ros%eva = huge(ros%eva(1,1))
-  ALLOCATE ( ros%cor( ros%nreg, ros%neof, neofs) ) ; ros%cor = huge(ros%cor(1,1,1))
+  !  Allocate eof arrays and get data
+  ALLOCATE ( ros%evc( ros%nreg, ros%kmt, ros%neof) )  ; ros%evc = huge(ros%evc(1,1,1))
+  ALLOCATE ( ros%eva( ros%nreg, ros%neof) )           ; ros%eva = huge(ros%eva(1,1))
   
   stat = nf90_inq_varid (ncid, 'eva', idvar)
   if (stat /= nf90_noerr) call netcdf_err(stat)
-  stat = nf90_get_var (ncid,idvar,ros%eva)
+  stat = nf90_get_var (ncid,idvar,ros%eva, &
+       start = (/1,1/), count = (/ros%nreg, ros%neof/))
   if (stat /= nf90_noerr) call netcdf_err(stat)
   stat = nf90_inq_varid (ncid, 'evc', idvar)
   if (stat /= nf90_noerr) call netcdf_err(stat)
-  stat = nf90_get_var (ncid,idvar,ros%evc)
+  stat = nf90_get_var (ncid,idvar,ros%evc, &
+       start = (/1,1,1/), count = (/ros%nreg, ros%kmt, ros%neof/))
   if (stat /= nf90_noerr) call netcdf_err(stat)
-  
-  stat = nf90_close(ncid)
-  
-  !    ros%eva(:,:) = 0.1
-  !    ros%evc(:,:,:,:) = 0.1
-  
-  
-  !    do nec=1,ros%neof
-  !     do k=1,ros%neof
-  !      do nrg=1,ros%nreg
-  !       if(k.eq.nec)then
-  !!        ros%cor(nrg,k,nec) = ros%eva(nrg,nec)
-  !       else
-  !!        ros%cor(nrg,k,nec) = 0.0
-  !       endif
-  !      enddo
-  !     enddo
-  !    enddo
-  
+     
+  stat = nf90_close(ncid)  
   
 end subroutine rdeofs
 
