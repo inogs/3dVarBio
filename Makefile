@@ -138,6 +138,7 @@ OBJS    =  \
 	cnv_inn.o\
 	wrt_dia.o\
 	mpi_utils.o\
+	clean_mem.o\
     oceanvar.o
 
 MAINEXE = main.o

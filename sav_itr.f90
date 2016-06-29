@@ -36,6 +36,7 @@ subroutine sav_itr
   use grd_str
   use eof_str
   use ctl_str
+  use cns_str
   use rcfl
   
   implicit none
@@ -51,8 +52,6 @@ subroutine sav_itr
      ALLOCATE ( drv%msk(drv%im,drv%jm))            ; drv%msk  (:,:)   = grd%msr  (:,:,1)
   endif
   ! ---
-  ! Deallocate everithing related to the old grid
-  
   ! Grid structure
   DEALLOCATE ( grd%reg)
   DEALLOCATE ( grd%msk)
@@ -83,7 +82,6 @@ subroutine sav_itr
   DEALLOCATE ( grd%ro)
   DEALLOCATE ( grd%ro_ad)
   DEALLOCATE ( ros%evc, ros%eva )
-  DEALLOCATE ( ros%cor )
   ! Control structure    
   DEALLOCATE( ctl%nbd, ctl%iwa)
   DEALLOCATE( ctl%x_c, ctl%g_c)
@@ -93,7 +91,7 @@ subroutine sav_itr
   DEALLOCATE( ctl%sy, ctl%ss, ctl%yy)
   DEALLOCATE( ctl%wt, ctl%wn, ctl%snd)
   DEALLOCATE( ctl%z_c, ctl%r_c, ctl%d_c, ctl%t_c)
-  DEALLOCATE (SurfaceWaterpoints)  
+  DEALLOCATE (SurfaceWaterPoints)  
   
   DEALLOCATE ( a_rcx)
   DEALLOCATE ( b_rcx)

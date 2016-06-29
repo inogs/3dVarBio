@@ -40,7 +40,6 @@ subroutine def_grd
   ! ---
   ! Define grid 
   grd%grd_mod  = drv%grid (drv%ktr)
-  grd%read_grd = drv%read_grd (drv%ktr)
   
   !Read grid definition
   call rdgrd
@@ -69,8 +68,6 @@ subroutine def_grd
      call f_exit(21)
   endif
   
-  grd%nps = grd%im*grd%jm*grd%km
-  
   
   nSurfaceWaterPoints = 0
   do i=1,grd%im
@@ -80,9 +77,9 @@ subroutine def_grd
   enddo
   
   
-  ALLOCATE (SurfaceWaterpoints(2,nSurfaceWaterpoints))
+  ALLOCATE (SurfaceWaterPoints(2,nSurfaceWaterPoints))
   
-  write(*,*) 'nSurfaceWaterpoints = ', nSurfaceWaterpoints
+  write(*,*) 'nSurfaceWaterPoints = ', nSurfaceWaterPoints
   
   indSupWP=0
   do i=1,grd%im
