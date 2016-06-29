@@ -45,7 +45,6 @@ MODULE obs_str
      REAL(r8),    POINTER     ::  res(:)     ! residual
      REAL(r8),    POINTER     ::  err(:)     ! Observational error
      REAL(r8),    POINTER     ::  gra(:)     ! Observational gradient
-     INTEGER(i8)              ::  chl        ! Flag for assimilation of chlorophyll
      
   END TYPE obs_t
   
@@ -61,16 +60,9 @@ MODULE obs_str
      INTEGER(i8)              ::  kdp        ! Model level corresponding to dep
      INTEGER(i8), POINTER     ::  flg(:)     ! Quality flag
      INTEGER(i8), POINTER     ::  flc(:)     ! Temporary flag for multigrid
-     REAL(r8),    POINTER     ::  lon(:)     ! Longitute
-     REAL(r8),    POINTER     ::  lat(:)     ! Latitude
-     REAL(r8),    POINTER     ::  tim(:)     ! Time
-     REAL(r8),    POINTER     ::  val(:)     ! Observed value
-     REAL(r8),    POINTER     ::  bac(:)     ! Background value
      REAL(r8),    POINTER     ::  inc(:)     ! Increments
-     REAL(r8),    POINTER     ::  bia(:)     ! Bias
      REAL(r8),    POINTER     ::  err(:)     ! Observational error
      REAL(r8),    POINTER     ::  res(:)     ! residual
-     REAL(r8),    POINTER     ::  b_a(:)     ! Background - analyses
      INTEGER(i8), POINTER     ::  ib(:)      ! i index of the nearest west point
      REAL(r8)   , POINTER     ::  pb(:)      ! distance from the nearest west point
      INTEGER(i8), POINTER     ::  jb(:)      ! j index of the nearest south point
@@ -80,14 +72,10 @@ MODULE obs_str
      REAL(r8)   , POINTER     ::  pq3(:)     ! Interpolation parameter for masked grids
      REAL(r8)   , POINTER     ::  pq4(:)     ! Interpolation parameter for masked grids
      REAL(r8)   , POINTER     ::  dpt(:)     ! Maximum depth of surrounding points
-     INTEGER(i8), POINTER     ::  kb(:)      ! k index of bottom point for vertical integration
      REAL(r8),    POINTER     ::  dzr(:,:)   ! Relative thickness
-     
+     REAL(r8)                 ::  max_val    ! Maximum value allowed to accept the observation
   END TYPE chl_t
   
   TYPE (chl_t)                 :: chl
-  
-  ! ---
-
   
 END MODULE obs_str

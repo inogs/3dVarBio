@@ -1,8 +1,9 @@
-subroutine obs_chl
+subroutine clean_mem
+  
   
   !---------------------------------------------------------------------------
   !                                                                          !
-  !    Copyright 2007 Srdjan Dobricic, CMCC, Bologna                         !
+  !    Copyright 2006 Srdjan Dobricic, CMCC, Bologna                         !
   !                                                                          !
   !    This file is part of OceanVar.                                          !
   !                                                                          !
@@ -23,39 +24,47 @@ subroutine obs_chl
   
   !-----------------------------------------------------------------------
   !                                                                      !
-  ! Apply observational operator for chlorophyll                         !
+  ! Save the result on the coarse grid                                   !
   !                                                                      !
+  ! Version 1: S.Dobricic 2006                                           !
   !-----------------------------------------------------------------------
   
   
   use set_knd
-  use grd_str
+  use drv_str
   use obs_str
+  use grd_str
+  use eof_str
+  use ctl_str
+  use cns_str
+  use rcfl
   
   implicit none
   
-  INTEGER(i4)   ::  i, j, l, kk
+  ! Deallocate everithing related to the old grid
+  DEALLOCATE ( drv%grid, drv%ratco, drv%ratio)
+  DEALLOCATE ( drv%mask, drv%dda, drv%ddi)
+
+  ! chlorophyll structure
+  DEALLOCATE ( chl%flg)
+  DEALLOCATE ( chl%flc)
+  DEALLOCATE ( chl%inc)
+  DEALLOCATE ( chl%err)
+  DEALLOCATE ( chl%res)
+  DEALLOCATE ( chl%ib)
+  DEALLOCATE ( chl%pb)
+  DEALLOCATE ( chl%jb)
+  DEALLOCATE ( chl%qb)
+  DEALLOCATE ( chl%pq1)
+  DEALLOCATE ( chl%pq2)
+  DEALLOCATE ( chl%pq3)
+  DEALLOCATE ( chl%pq4)
+  DEALLOCATE ( chl%dzr)
+
+  ! Constants structure
+  DEALLOCATE ( rcf%al)
+  DEALLOCATE ( rcf%sc)
   
-  do kk = 1,chl%no
-     
-     if(chl%flc(kk).eq.1 )then
-        
-        
-        i=chl%ib(kk)
-        j=chl%jb(kk)
-        
-        chl%inc(kk) = 0.0
-        
-        do l=1,grd%nchl
-           chl%inc(kk) = chl%inc(kk) + (                        &
-                chl%pq1(kk) * grd%chl(i  ,j  ,1,l) +       &
-                chl%pq2(kk) * grd%chl(i+1,j  ,1,l) +       &
-                chl%pq3(kk) * grd%chl(i  ,j+1,1,l) +       &
-                chl%pq4(kk) * grd%chl(i+1,j+1,1,l) ) * chl%dzr(1,kk)
-        enddo
-        
-     endif
-     
-  enddo
+  write(*,*) ' ALL MEMORY CLEAN'
   
-end subroutine obs_chl
+end subroutine clean_mem

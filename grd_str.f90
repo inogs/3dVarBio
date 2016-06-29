@@ -37,12 +37,10 @@ MODULE grd_str
   TYPE grid_t
      
      INTEGER(i4)              ::  grd_mod      ! Grid model
-     LOGICAL                  ::  read_grd     ! Read the grid from a file
      
      INTEGER(i4)              ::  im           ! No. points in x direction
      INTEGER(i4)              ::  jm           ! No. points in y direction
      INTEGER(i4)              ::  km           ! No. points in z direction
-     INTEGER(i4)              ::  nps          ! No. of ocean points 
      
      REAL(r8),    POINTER     ::  ro(:,:,:)    ! Reduced order control vector
      INTEGER(i4), POINTER     ::  reg(:,:)     ! Mask for EOF regions
@@ -86,7 +84,7 @@ MODULE grd_str
   END TYPE grid_t
   
   TYPE (grid_t)                 :: grd
-  INTEGER(i4), ALLOCATABLE, DIMENSION(:,:) :: SurfaceWaterpoints
+  INTEGER(i4), ALLOCATABLE, DIMENSION(:,:) :: SurfaceWaterPoints
   INTEGER(i4) :: nSurfaceWaterPoints
   REAL(r4),   ALLOCATABLE, DIMENSION(:,:,:)     ::  Dump_chl, Dump_vip
   REAL(r4),   ALLOCATABLE, DIMENSION(:,:)       ::  Dump_msk
