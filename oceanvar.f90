@@ -101,7 +101,8 @@ subroutine oceanvar
      
      ! ---
      ! Minimize the cost function (inner loop)
-     call min_cfn
+     ! call min_cfn
+     call tao_minimizer
      write(drv%dia,*) 'out of min_cfn'
      
      if(ktr.eq.drv%ntr)then

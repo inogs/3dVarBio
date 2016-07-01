@@ -139,6 +139,7 @@ OBJS    =  \
 	cnv_inn.o\
 	wrt_dia.o\
 	clean_mem.o\
+	tao_minimizer.o\
     oceanvar.o
 
 MAINEXE = main.o
@@ -156,6 +157,9 @@ $(EXEC) : $(LIBDEP)	$(KNDSTR) $(OBJSTR) $(OBJS) $(MAINEXE)
 
 $(LIB)  :       $(KNDSTR) $(OBJSTR) $(OBJS)
 	ar -r $(LIB) $(KNDSTR) $(OBJSTR) $(OBJS)
+
+tao_minimizer.o: tao_minimizer.f90
+	$(CPP) -I$(PETSC_INC) $*.f90 > cpp.$*.f90 ; $(F90) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
 
 .DEFAULTS:
 .f90.o :
