@@ -24,7 +24,7 @@ CPP += $(PREPROC)
 FFLAGS  = -O2 -I$(NETCDF_INC) -I$(NETCDFF_INC) $(OPT_FLTCONSISTENCY) -c
 CFLAGS  = -O2 -I$(NETCDF_INC)
 
-LDFLAGS += -L$(NETCDF_LIB) -L$(NETCDFF_LIB) -lnetcdff -lnetcdf
+LDFLAGS += -L$(NETCDF_LIB) -L$(NETCDFF_LIB) -L$(PETSC_LIB) -lnetcdff -lnetcdf -lpetsc
 AR      = ar
 
 # Debug options##########

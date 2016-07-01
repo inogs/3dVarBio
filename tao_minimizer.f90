@@ -4,7 +4,7 @@ subroutine tao_minimizer
 
   implicit none
 #include "finclude/petsctao.h"
-! #include "finclude/petscsys.h"
+#include "finclude/petscsys.h"
 
   PetscErrorCode       ierr
   Tao                  tao
