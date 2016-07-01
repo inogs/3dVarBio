@@ -38,8 +38,6 @@ $(info $$NETCDF_LIB  = ${NETCDF_LIB})
 $(info $$LIBFEXIT    = ${LIBFEXIT})
 $(info $$LIBNCMEDLEV = ${LIBNCMEDLEV})
 
-
-
 LDFLAGS += -L$(LIBFEXIT) -lf_exit
 
 EXEC = var_3d
@@ -60,7 +58,8 @@ OBJSTR  =  \
 	grd_str.o\
 	eof_str.o\
 	ctl_str.o\
-	rcfl_mod.o
+	rcfl_mod.o\
+	mpi_alloc.o
 
 PHYSOBS  =  \
 	get_obs_sla.o\
@@ -138,6 +137,7 @@ OBJS    =  \
 	cnv_ctv_ad.o\
 	cnv_inn.o\
 	wrt_dia.o\
+	mpi_utils.o\
 	clean_mem.o\
 	tao_minimizer.o\
     oceanvar.o

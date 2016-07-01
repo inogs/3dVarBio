@@ -38,98 +38,124 @@ subroutine oceanvar
   use set_knd
   use drv_str
   
+#ifdef key_mpp_mpi
+  use myalloc_mpi
+#endif
+  
   implicit none
   
   INTEGER(i4)   ::  ktr
   
-  ! ---
-  ! Initialize diagnostics and read namelists
-  call def_nml
-  ! ---
-  ! Outer loop - multigrid
-  do ktr = 1,drv%ntr
-     drv%ktr = ktr
-     
-     ! ---
-     ! Define grid parameters
-     if( ktr.eq.1 .or. drv%ratio(ktr).ne.1.0 )then
-        call def_grd
-        
-        write(drv%dia,*) 'out of def_grd '
-     endif
-     
-     ! ---
-     ! Get observations
-     if(ktr.eq.1) call get_obs
-     write(drv%dia,*) 'out of get_obs'
-     
-     ! ---
-     ! Define interpolation parameters
-     call int_par
-     write(drv%dia,*) 'out of int_par'
-     
-     ! ---
-     ! Define observational vector
-     call obs_vec
-     write(drv%dia,*) 'out of obs_vec'
-     
-     ! ---
-     ! Define constants for background covariances
-     if( ktr.eq.1 .or. drv%ratio(ktr).ne.1.0 ) then
-        call def_cov
-        write(drv%dia,*) 'out of def_cov '
-     endif
-     
-     ! ---
-     ! Initialize cost function and its gradient
-     call ini_cfn
-     write(drv%dia,*) 'out of ini_cfn'
-     
-     ! ---
-     ! Calculate the initial norm the gradient
-     if( ktr.gt.1 ) then
-        call ini_nrm
-        write(drv%dia,*) 'out of ini_nrm '
-     endif
-     
-     ! ---
-     ! Initialise from old iterration
-     if( ktr.gt.1 .and. drv%ratio(ktr).ne.1.0 ) then
-        call ini_itr
-        write(drv%dia,*) 'out of ini_itr '
-     endif
-     
-     ! ---
-     ! Minimize the cost function (inner loop)
-     ! call min_cfn
-     call tao_minimizer
-     write(drv%dia,*) 'out of min_cfn'
-     
-     if(ktr.eq.drv%ntr)then
-        ! ---
-        ! Convert to innovations
-        call cnv_inn
-        ! ---
-        ! Write outputs and diagnostics
-        call wrt_dia
-     endif
-     
-     ! ---
-     ! Save old iterration
-     !   if( ktr.ne.drv%ntr)then
-     !    if(drv%ratio(ktr+1).ne.1.0 ) then
-     call sav_itr
-     write(drv%dia,*) 'out of sav_itr '
-     !    endif
-     !   endif
-     
-     ! ---
-     ! End of outer loop
-  enddo
+#ifdef key_mpp_mpi
+  INTEGER(i4)   ::  MyID
   
+  call mynode
+  MyID = rank !mynode()
+  
+  print*,MyID, rank, size
+  
+  if( MyID .eq. 0) then
+     print*, "Only process ", MyID, " will works..."
+#endif
+     
+     ! ---
+     ! Initialize diagnostics and read namelists
+     call def_nml
+     ! ---
+     ! Outer loop - multigrid
+     do ktr = 1,drv%ntr
+        drv%ktr = ktr
+        
+        ! ---
+        ! Define grid parameters
+        if( ktr.eq.1 .or. drv%ratio(ktr).ne.1.0 )then
+           call def_grd
+           
+           write(drv%dia,*) 'out of def_grd '
+        endif
+        
+        ! ---
+        ! Get observations
+        if(ktr.eq.1) call get_obs
+        write(drv%dia,*) 'out of get_obs'
+        
+        ! ---
+        ! Define interpolation parameters
+        call int_par
+        write(drv%dia,*) 'out of int_par'
+        
+        ! ---
+        ! Define observational vector
+        call obs_vec
+        write(drv%dia,*) 'out of obs_vec'
+        
+        ! ---
+        ! Define constants for background covariances
+        if( ktr.eq.1 .or. drv%ratio(ktr).ne.1.0 ) then
+           call def_cov
+           write(drv%dia,*) 'out of def_cov '
+        endif
+        
+        ! ---
+        ! Initialize cost function and its gradient
+        call ini_cfn
+        write(drv%dia,*) 'out of ini_cfn'
+        
+        ! ---
+        ! Calculate the initial norm the gradient
+        if( ktr.gt.1 ) then
+           call ini_nrm
+           write(drv%dia,*) 'out of ini_nrm '
+        endif
+        
+        ! ---
+        ! Initialise from old iterration
+        if( ktr.gt.1 .and. drv%ratio(ktr).ne.1.0 ) then
+           call ini_itr
+           write(drv%dia,*) 'out of ini_itr '
+        endif
+        
+        ! ---
+        ! Minimize the cost function (inner loop)
+        ! call min_cfn
+        call tao_minimizer
+        write(drv%dia,*) 'out of min_cfn'
+        
+        if(ktr.eq.drv%ntr)then
+           ! ---
+           ! Convert to innovations
+           call cnv_inn
+           ! ---
+           ! Write outputs and diagnostics
+           call wrt_dia
+        endif
+        
+        ! ---
+        ! Save old iterration
+        !   if( ktr.ne.drv%ntr)then
+        !    if(drv%ratio(ktr+1).ne.1.0 ) then
+        call sav_itr
+        write(drv%dia,*) 'out of sav_itr '
+        !    endif
+        !   endif
+        
+        ! ---
+        ! End of outer loop
+           
+     enddo
+     !-----------------------------------------------------------------
+     
+#ifdef key_mpp_mpi
+  endif ! if( MyID .eq. 0)
+#endif
+  
+#ifdef key_mpp_mpi
+  CALL mpi_stop
+#endif
+     
   ! completely clean memory
   call clean_mem
-  
+     
   !-----------------------------------------------------------------
   close(drv%dia)
 end subroutine oceanvar
