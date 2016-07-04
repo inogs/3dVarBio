@@ -40,11 +40,12 @@ SUBROUTINE mynode()
   CALL mpi_init(ierr)
   CALL mpi_comm_rank(mpi_comm_world,rank,ierr)
   CALL mpi_comm_size(mpi_comm_world,size,ierr)
-  if(ierr .ne. MPI_SUCCESS) then
-     print*, "im here", rank
-  else
-     print*, "Error!!"   
-  end if
+
+  ! if(ierr .eq. MPI_SUCCESS) then
+  !    print*, "im here", rank
+  ! else
+  !    print*, "Error!!"   
+  ! end if
 
 #  else
   INTEGER ierr
