@@ -3,12 +3,18 @@ subroutine tao_minimizer
   use drv_str
 
   implicit none
-#include "finclude/petsctao.h"
-#include "finclude/petscsys.h"
 
-  PetscErrorCode       ierr
-  Tao                  tao
-  
+! include for petsc and tao stuffs
+#include "tao_minimizer.h"
+
+  PetscErrorCode  ::   ierr
+  Tao             ::   tao
+  Vec             ::   x
+  Mat             ::   A
+  integer         ::   size, rank
+  call MPI_Comm_size(PETSC_COMM_WORLD, size, ierr)
+  call MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr)
+
   write(drv%dia,*) ''
   write(drv%dia,*) 'call PetscInitialize'
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)

@@ -47,15 +47,17 @@ subroutine oceanvar
   INTEGER(i4)   ::  ktr
   
 #ifdef _USE_MPI
+
   INTEGER(i4)   ::  MyID
   
   call mynode
-  MyID = rank !mynode()
+  MyID = rank
   
   print*,MyID, rank, size
   
   if( MyID .eq. 0) then
      print*, "Only process ", MyID, " will works..."
+
 #endif
      
      ! ---
@@ -147,9 +149,7 @@ subroutine oceanvar
      
 #ifdef _USE_MPI
   endif ! if( MyID .eq. 0)
-#endif
-  
-#ifdef _USE_MPI
+
   CALL mpi_stop
 #endif
      

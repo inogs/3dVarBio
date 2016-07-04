@@ -1,11 +1,11 @@
 MODULE myalloc_mpi
+  use mpi
   
   IMPLICIT NONE
-  
   public
   
   
-#include <mpif.h>
+!#include <mpif.h>
   
   !-----------------------------------------------!
   !     MPI vaiables
@@ -15,7 +15,6 @@ MODULE myalloc_mpi
   !-----------------------------------------------!
   
   INTEGER  :: size,rank
-  INTEGER  :: mpi_pack_size =18
-  
+  ! INTEGER  :: comm ! MPI_COMM
   
 END MODULE myalloc_mpi

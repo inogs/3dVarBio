@@ -1,5 +1,4 @@
 SUBROUTINE mynode()
-  ! INTEGER FUNCTION mynode()
   ! ---------------------------------------------------------------------
   ! 
   !                        routine mynode
@@ -38,11 +37,15 @@ SUBROUTINE mynode()
   !         -------------
   !
   INTEGER ierr
-  
   CALL mpi_init(ierr)
   CALL mpi_comm_rank(mpi_comm_world,rank,ierr)
   CALL mpi_comm_size(mpi_comm_world,size,ierr)
-  
+  if(ierr .ne. MPI_SUCCESS) then
+     print*, "im here", rank
+  else
+     print*, "Error!!"   
+  end if
+
 #  else
   INTEGER ierr
   ierr = 0
@@ -59,7 +62,7 @@ SUBROUTINE mpi_sync
 
   INTEGER :: ierror
 #ifdef _USE_MPI  
-  CALL mpi_barrier(MPI_COMM_WORLD, ierror)
+  CALL mpi_barrier(mpi_comm_world, ierror)
 #endif
 END SUBROUTINE mpi_sync
 
