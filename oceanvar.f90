@@ -38,7 +38,7 @@ subroutine oceanvar
   use set_knd
   use drv_str
   
-#ifdef key_mpp_mpi
+#ifdef _USE_MPI
   use myalloc_mpi
 #endif
   
@@ -46,7 +46,7 @@ subroutine oceanvar
   
   INTEGER(i4)   ::  ktr
   
-#ifdef key_mpp_mpi
+#ifdef _USE_MPI
   INTEGER(i4)   ::  MyID
   
   call mynode
@@ -145,11 +145,11 @@ subroutine oceanvar
      enddo
      !-----------------------------------------------------------------
      
-#ifdef key_mpp_mpi
+#ifdef _USE_MPI
   endif ! if( MyID .eq. 0)
 #endif
   
-#ifdef key_mpp_mpi
+#ifdef _USE_MPI
   CALL mpi_stop
 #endif
      

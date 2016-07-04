@@ -29,7 +29,7 @@ SUBROUTINE mynode()
   
   IMPLICIT NONE
   
-#ifdef key_mpp_mpi
+#ifdef _USE_MPI
   ! 
   !  MPI VERSION
   ! 
@@ -58,7 +58,7 @@ SUBROUTINE mpi_sync
   IMPLICIT NONE
 
   INTEGER :: ierror
-#ifdef key_mpp_mpi  
+#ifdef _USE_MPI  
   CALL mpi_barrier(MPI_COMM_WORLD, ierror)
 #endif
 END SUBROUTINE mpi_sync
@@ -73,7 +73,8 @@ SUBROUTINE mpi_stop
   INTEGER info
 
   ! CALL mpi_sync
-#ifdef key_mpp_mpi
+#ifdef _USE_MPI
   CALL mpi_finalize(info)
 #endif
+
 END SUBROUTINE mpi_stop
