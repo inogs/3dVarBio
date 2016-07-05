@@ -22,12 +22,12 @@ SUBROUTINE mynode()
   ! -----------------------------------------------------------------------
   
   
-  USE myalloc_mpi
+  use myalloc_mpi
   
   ! -----------------------------------------------------------------------
   
   IMPLICIT NONE
-  
+
 #ifdef _USE_MPI
   ! 
   !  MPI VERSION
@@ -38,8 +38,8 @@ SUBROUTINE mynode()
   !
   INTEGER ierr
   CALL mpi_init(ierr)
-  CALL mpi_comm_rank(mpi_comm_world,rank,ierr)
-  CALL mpi_comm_size(mpi_comm_world,size,ierr)
+  CALL mpi_comm_rank(MPI_COMM_WORLD, rank,ierr)
+  CALL mpi_comm_size(MPI_COMM_WORLD, size,ierr)
 
   ! if(ierr .eq. MPI_SUCCESS) then
   !    print*, "im here", rank
@@ -63,7 +63,7 @@ SUBROUTINE mpi_sync
 
   INTEGER :: ierror
 #ifdef _USE_MPI  
-  CALL mpi_barrier(mpi_comm_world, ierror)
+  CALL mpi_barrier(MPI_COMM_WORLD, ierror)
 #endif
 END SUBROUTINE mpi_sync
 
