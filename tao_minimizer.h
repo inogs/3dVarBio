@@ -1,4 +1,4 @@
-#include "finclude/petsctao.h"
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h90"
-#include "finclude/petscmat.h90"
+#include "petsc/finclude/petsctao.h"
+#include "petsc/finclude/petscsys.h"
+#include "petsc/finclude/petscvec.h90"
+#include "petsc/finclude/petscmat.h90"

@@ -1,7 +1,6 @@
 subroutine tao_minimizer
 
   use drv_str
-
   implicit none
 
 ! include for petsc and tao stuffs
@@ -17,7 +16,9 @@ subroutine tao_minimizer
 
   write(drv%dia,*) ''
   write(drv%dia,*) 'call PetscInitialize'
+  print*,'call PetscInitialize'
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+  print*, 'PetscInitialize() done'
   write(drv%dia,*) 'PETSC init done :)'
 
   write(drv%dia,*) "Within tao_minimizer subroutine!"
