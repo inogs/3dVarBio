@@ -56,7 +56,6 @@ subroutine oceanvar
   print*,MyID, rank, size
   
   ! if( MyID .eq. 0) then
-     print*, "Only process ", MyID, " will works..."
 
 #endif
      
@@ -146,16 +145,17 @@ subroutine oceanvar
            
      enddo
      !-----------------------------------------------------------------
-     
-#ifdef _USE_MPI
-  !endif ! if( MyID .eq. 0)
-
-  CALL mpi_stop
-#endif
-     
+          
   ! completely clean memory
   call clean_mem
      
   !-----------------------------------------------------------------
   close(drv%dia)
+
+#ifdef _USE_MPI
+  !endif ! if( MyID .eq. 0)
+
+  CALL mpi_stop
+#endif
+
 end subroutine oceanvar
