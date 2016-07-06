@@ -95,10 +95,39 @@ subroutine MyFuncAndGradient(tao, x, f, g, dummy, ierr)
   Tao             ::   tao
   Vec             ::   x, g
   PetscReal       ::   f
-  integer         ::   dummy, ierr
+  integer         ::   dummy, ierr, j
 
-  print*, ""
-  print*, "Im here, within MyFuncAndGradient :)"
-  print*, ""
+  ! Working arrays
+  PetscInt, allocatable, dimension(:)     :: loc
+  PetscScalar, allocatable, dimension(:)  :: myvalues
+  PetscScalar, pointer                    :: xtmp(:)
+  ALLOCATE(loc(ctl%n), myvalues(ctl%n))
+
+  ! print*, ""
+  ! print*, "Im here, within MyFuncAndGradient :)"
+  ! print*, ""
+
+  call VecGetArrayReadF90(x, xtmp, ierr)
+
+  do j=1,ctl%n
+     ctl%x_c(j) = xtmp(j)
+  end do
+
+  ! compute function and gradient
+  call costf
+
+  f = ctl%f_c
+
+  do j = 1, ctl%n
+     loc(j) = j-1
+     myvalues(j) = ctl%g_c(j)
+  end do
+
+  call VecSetValues(x, ctl%n, loc, myvalues, INSERT_VALUES, ierr)
+  call VecAssemblyBegin(x, ierr)
+  call VecAssemblyEnd(x, ierr)
+
+  DEALLOCATE(loc, myvalues)
+  ! ierr = 0
 
 end subroutine MyFuncAndGradient
