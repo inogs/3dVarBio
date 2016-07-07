@@ -9,46 +9,44 @@ subroutine tao_minimizer
   
   PetscErrorCode  ::   ierr
   Tao             ::   tao
-  Vec             ::   x
+  Vec             ::   MyState ! array that stores the (temporary) state
   PetscInt        ::   n, M
   integer         ::   size, rank, j
   
   ! Working arrays
   PetscInt, allocatable, dimension(:)     :: loc
-  PetscScalar, allocatable, dimension(:)  :: myvalues
+  PetscScalar, allocatable, dimension(:)  :: MyValues
+  PetscScalar, pointer                    :: xtmp(:)
   
   external MyFuncAndGradient
   
-  write(drv%dia,*) ''
-  write(drv%dia,*) 'call PetscInitialize'
-  print*,'call PetscInitialize'
-  
+  print*,'Initialize Petsc and Tao stuffs'  
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
   
   call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
   call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierr)
   
-  ! Fill working arrays
+  ! Allocate working arrays
   n = ctl%n
   M = ctl%n
-  ALLOCATE(loc(n), myvalues(n))
+  ALLOCATE(loc(n), MyValues(n))
   
+  ! Take values from ctl%x_c in order to initialize the solution array
   do j = 1, ctl%n
      loc(j) = j-1
-     myvalues(j) = ctl%x_c(j)
+     MyValues(j) = ctl%x_c(j)
   end do
   
-  call VecCreateMPI(MPI_COMM_WORLD, n, M, x, ierr)
+  call VecCreateMPI(MPI_COMM_WORLD, n, M, MyState, ierr)
   
-  call VecSetValues(x, ctl%n, loc, myvalues, INSERT_VALUES, ierr)
-  call VecAssemblyBegin(x, ierr)
-  call VecAssemblyEnd(x, ierr)
+  call VecSetValues(MyState, ctl%n, loc, MyValues, INSERT_VALUES, ierr)
+  call VecAssemblyBegin(MyState, ierr)
+  call VecAssemblyEnd(MyState, ierr)
   
   print*, 'PetscInitialize() done by rank ', rank
-  write(drv%dia,*) 'PETSC init done :)'
-  
+
+  write(drv%dia,*) ''
   write(drv%dia,*) "Within tao_minimizer subroutine!"
-  ! call VecView(x, PETSC_VIEWER_STDOUT_WORLD, ierr)
 
   drv%MyCounter = 0
   
@@ -57,31 +55,38 @@ subroutine tao_minimizer
   call TaoSetType(tao,"blmvm",ierr)
   CHKERRQ(ierr)
   
-  call TaoSetInitialVector(tao, x, ierr)
+  ! Set initial solution array and MyFuncAndGradient routines
+  call TaoSetInitialVector(tao, MyState, ierr)
   CHKERRQ(ierr)
-
   call TaoSetObjectiveAndGradientRoutine(tao, MyFuncAndGradient, PETSC_NULL_OBJECT, ierr)
   CHKERRQ(ierr)
   
+  ! Perform minimization
   call TaoSolve(tao, ierr)
   CHKERRQ(ierr)
-
-  write(drv%dia,*) 'Finalizing...'
-
-  !
-  ! TaoGetSolutionVector() ???
-  !
   
-  DEALLOCATE(loc, myvalues)
+  ! Take computed solution and set in proper array
+  call TaoGetSolutionVector(tao, MyState, ierr)
+  CHKERRQ(ierr)
+  call VecGetArrayReadF90(MyState, xtmp, ierr)
+  CHKERRQ(ierr)
+
+  do j = 1, ctl%n
+     ctl%x_c(j) = xtmp(j)
+  end do
+
+  ! Deallocating variables
+  DEALLOCATE(loc, MyValues)
   
   call TaoDestroy(tao, ierr)
   CHKERRQ(ierr)
 
-  call VecDestroy(x, ierr)
+  call VecDestroy(MyState, ierr)
   CHKERRQ(ierr)
 
   call PetscFinalize(ierr)
-  write(drv%dia,*) 'PetscFinalize done'
+  write(drv%dia,*) 'Minimization done with ', drv%MyCounter
+  write(drv%dia,*) 'iterations'
   write(drv%dia,*) ''
   
   print*, "Minimization done with ", drv%MyCounter
@@ -89,7 +94,7 @@ subroutine tao_minimizer
 
 end subroutine tao_minimizer
 
-subroutine MyFuncAndGradient(tao, x, f, g, dummy, ierr)
+subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   
   use set_knd
   use drv_str
@@ -102,8 +107,8 @@ subroutine MyFuncAndGradient(tao, x, f, g, dummy, ierr)
   
 #include "tao_minimizer.h"
   Tao             ::   tao
-  Vec             ::   x, g
-  PetscReal       ::   f
+  Vec             ::   MyState, Grad
+  PetscReal       ::   CostFunc
   integer         ::   dummy, ierr, j
 
   ! Working arrays
@@ -113,11 +118,10 @@ subroutine MyFuncAndGradient(tao, x, f, g, dummy, ierr)
 
   ALLOCATE(loc(ctl%n), my_grad(ctl%n))
 
-  ! print*, ""
-  ! print*, "Im here, within MyFuncAndGradient :)"
-  ! print*, ""
-
-  call VecGetArrayReadF90(x, xtmp, ierr)
+  ! read temporary state provided by Tao Solver
+  ! and set it in ctl%x_c array in order to compute 
+  ! the actual value of Cost Function and the gradient
+  call VecGetArrayReadF90(MyState, xtmp, ierr)
   CHKERRQ(ierr)
 
   do j=1,ctl%n
@@ -127,25 +131,27 @@ subroutine MyFuncAndGradient(tao, x, f, g, dummy, ierr)
   ! compute function and gradient
   call costf
 
-  ! assign to f the value computed by costf
-  f = ctl%f_c
+  ! assign the Cost Function value computed by costf to CostFunc
+  CostFunc = ctl%f_c
 
+  ! assign the gradient value computed by costf to Grad
   do j = 1, ctl%n
      loc(j) = j-1
      my_grad(j) = ctl%g_c(j)
   end do
 
-  call VecSetValues(g, ctl%n, loc, my_grad, INSERT_VALUES, ierr)
+  call VecSetValues(Grad, ctl%n, loc, my_grad, INSERT_VALUES, ierr)
   CHKERRQ(ierr)
-  call VecAssemblyBegin(g, ierr)
+  call VecAssemblyBegin(Grad, ierr)
   CHKERRQ(ierr)
-  call VecAssemblyEnd(g, ierr)
+  call VecAssemblyEnd(Grad, ierr)
   CHKERRQ(ierr)
 
   DEALLOCATE(loc, my_grad)
 
   ! Update counter
   drv%MyCounter = drv%MyCounter + 1
+
   ! Exit without errors
   ierr = 0
 
