@@ -94,6 +94,10 @@ subroutine tao_minimizer
 
 end subroutine tao_minimizer
 
+!
+! subroutine that, given a state MyState (provided by Tao solver),
+! computes the value of cost function and the gradient
+!
 subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   
   use set_knd
