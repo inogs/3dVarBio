@@ -11,6 +11,7 @@ subroutine tao_minimizer
   Tao             ::   tao
   Vec             ::   MyState ! array that stores the (temporary) state
   PetscInt        ::   n, M
+  PetscReal       ::   MyTolerance
   integer         ::   size, rank, j
   
   ! Working arrays
@@ -18,7 +19,7 @@ subroutine tao_minimizer
   PetscScalar, allocatable, dimension(:)  :: MyValues
   PetscScalar, pointer                    :: xtmp(:)
   
-  external MyFuncAndGradient, MyBounds
+  external MyFuncAndGradient, MyBounds, MyConvTest
   
   print*,'Initialize Petsc and Tao stuffs'  
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -63,10 +64,20 @@ subroutine tao_minimizer
   call TaoSetObjectiveAndGradientRoutine(tao, MyFuncAndGradient, PETSC_NULL_OBJECT, ierr)
   CHKERRQ(ierr)
   
+  MyTolerance = 2.0d-2
+  call TaoSetTolerances(tao, MyTolerance, PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr)
+  CHKERRQ(ierr)
+  call TaoSetConvergenceTest(tao, MyConvTest, PETSC_NULL_OBJECT, ierr)
+  CHKERRQ(ierr)
+
   ! Perform minimization
   call TaoSolve(tao, ierr)
   CHKERRQ(ierr)
   
+  print*, ''
+  call TaoView(tao, PETSC_VIEWER_STDOUT_WORLD, ierr)
+  print*, ''
+
   ! Take computed solution and set in proper array
   call TaoGetSolutionVector(tao, MyState, ierr)
   CHKERRQ(ierr)
@@ -206,3 +217,50 @@ subroutine MyBounds(tao, lb, ub, dummy, ierr)
   DEALLOCATE(loc, lbound, ubound)
   
 end subroutine MyBounds
+
+subroutine MyConvTest(tao, dummy, ierr)
+
+  use ctl_str
+
+  implicit none
+#include "tao_minimizer.h"
+  Tao                  :: tao
+  integer              :: dummy, ierr, j, n, M, CheckVal
+  Vec                  :: TmpGrad
+  PetscScalar, pointer :: ReadGrad(:)
+  PetscReal            :: MyTol, grtol, gttol
+
+  ! set useful variables
+  n = ctl%n
+  M = ctl%n
+  CheckVal = 0
+
+  ! taking tolerance value
+  ! skipping useless values
+  call TaoGetTolerances(tao, MyTol, PETSC_NULL_REAL, PETSC_NULL_REAL, ierr)
+  CHKERRQ(ierr)
+
+  call VecCreateMPI(MPI_COMM_WORLD, n, M, TmpGrad, ierr)
+  CHKERRQ(ierr)
+
+  call TaoGetGradientVector(tao, TmpGrad, ierr)
+  CHKERRQ(ierr)  
+
+  call VecGetArrayReadF90(TmpGrad, ReadGrad, ierr)
+  CHKERRQ(ierr)
+
+  ! check with infinity norm of gradient...
+  do j=1, ctl%n
+     if( ReadGrad(j) .gt. MyTol ) then
+        CheckVal = 1
+        EXIT
+     end if
+  end do
+
+  if( CheckVal .eq. 1) then
+     call TaoSetConvergedReason(tao, TAO_CONTINUE_ITERATING, ierr)
+  else
+     call TaoSetConvergedReason(tao, TAO_CONVERGED_USER, ierr)
+  end if
+
+end subroutine MyConvTest
