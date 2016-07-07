@@ -50,6 +50,8 @@ MODULE drv_str
      REAL(r8),    POINTER  ::  ro(:,:,:)    ! Vector v
      REAL(r8),    POINTER  ::  msk(:,:)   ! Mask of the old grid
      
+     INTEGER(i4)           ::  MyCounter    ! Number of iteration done by Tao solver
+
   END TYPE drv_t
   
   TYPE (drv_t)              :: drv

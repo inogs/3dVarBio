@@ -5,7 +5,6 @@ subroutine tao_minimizer
   
   implicit none
   
-  ! include for petsc and tao stuffs
 #include "tao_minimizer.h"
   
   PetscErrorCode  ::   ierr
@@ -50,6 +49,8 @@ subroutine tao_minimizer
   
   write(drv%dia,*) "Within tao_minimizer subroutine!"
   ! call VecView(x, PETSC_VIEWER_STDOUT_WORLD, ierr)
+
+  drv%MyCounter = 0
   
   call TaoCreate(MPI_COMM_WORLD, tao, ierr)
   CHKERRQ(ierr)
@@ -65,7 +66,11 @@ subroutine tao_minimizer
   call TaoSolve(tao, ierr)
   CHKERRQ(ierr)
 
-  write(drv%dia,*) 'call PetscFinalize'
+  write(drv%dia,*) 'Finalizing...'
+
+  !
+  ! TaoGetSolutionVector() ???
+  !
   
   DEALLOCATE(loc, myvalues)
   
@@ -78,12 +83,16 @@ subroutine tao_minimizer
   call PetscFinalize(ierr)
   write(drv%dia,*) 'PetscFinalize done'
   write(drv%dia,*) ''
+  
+  print*, "Minimization done with ", drv%MyCounter
+  print*, "iterations"
 
 end subroutine tao_minimizer
 
 subroutine MyFuncAndGradient(tao, x, f, g, dummy, ierr)
   
   use set_knd
+  use drv_str
   use obs_str
   use grd_str
   use eof_str
@@ -99,15 +108,17 @@ subroutine MyFuncAndGradient(tao, x, f, g, dummy, ierr)
 
   ! Working arrays
   PetscInt, allocatable, dimension(:)     :: loc
-  PetscScalar, allocatable, dimension(:)  :: myvalues
+  PetscScalar, allocatable, dimension(:)  :: my_grad
   PetscScalar, pointer                    :: xtmp(:)
-  ALLOCATE(loc(ctl%n), myvalues(ctl%n))
+
+  ALLOCATE(loc(ctl%n), my_grad(ctl%n))
 
   ! print*, ""
   ! print*, "Im here, within MyFuncAndGradient :)"
   ! print*, ""
 
   call VecGetArrayReadF90(x, xtmp, ierr)
+  CHKERRQ(ierr)
 
   do j=1,ctl%n
      ctl%x_c(j) = xtmp(j)
@@ -116,18 +127,26 @@ subroutine MyFuncAndGradient(tao, x, f, g, dummy, ierr)
   ! compute function and gradient
   call costf
 
+  ! assign to f the value computed by costf
   f = ctl%f_c
 
   do j = 1, ctl%n
      loc(j) = j-1
-     myvalues(j) = ctl%g_c(j)
+     my_grad(j) = ctl%g_c(j)
   end do
 
-  call VecSetValues(x, ctl%n, loc, myvalues, INSERT_VALUES, ierr)
-  call VecAssemblyBegin(x, ierr)
-  call VecAssemblyEnd(x, ierr)
+  call VecSetValues(g, ctl%n, loc, my_grad, INSERT_VALUES, ierr)
+  CHKERRQ(ierr)
+  call VecAssemblyBegin(g, ierr)
+  CHKERRQ(ierr)
+  call VecAssemblyEnd(g, ierr)
+  CHKERRQ(ierr)
 
-  DEALLOCATE(loc, myvalues)
-  ! ierr = 0
+  DEALLOCATE(loc, my_grad)
+
+  ! Update counter
+  drv%MyCounter = drv%MyCounter + 1
+  ! Exit without errors
+  ierr = 0
 
 end subroutine MyFuncAndGradient
