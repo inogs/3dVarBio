@@ -18,7 +18,7 @@ subroutine tao_minimizer
   PetscScalar, allocatable, dimension(:)  :: MyValues
   PetscScalar, pointer                    :: xtmp(:)
   
-  external MyFuncAndGradient
+  external MyFuncAndGradient, MyBounds
   
   print*,'Initialize Petsc and Tao stuffs'  
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -57,6 +57,8 @@ subroutine tao_minimizer
   
   ! Set initial solution array and MyFuncAndGradient routines
   call TaoSetInitialVector(tao, MyState, ierr)
+  CHKERRQ(ierr)
+  call TaoSetVariableBoundsRoutine(tao, MyBounds, PETSC_NULL_OBJECT)
   CHKERRQ(ierr)
   call TaoSetObjectiveAndGradientRoutine(tao, MyFuncAndGradient, PETSC_NULL_OBJECT, ierr)
   CHKERRQ(ierr)
@@ -160,3 +162,47 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   ierr = 0
 
 end subroutine MyFuncAndGradient
+
+!
+! Subroutine that sets upper and lower
+! bounds of the solution state array
+! This routine is called only one time at the
+! beginning of the iteration 
+!
+subroutine MyBounds(tao, lb, ub, dummy, ierr)
+  use ctl_str
+
+  implicit none
+#include "tao_minimizer.h"
+  Tao        :: tao
+  Vec        :: lb, ub
+  integer    :: dummy, ierr, j
+
+  PetscInt, allocatable, dimension(:)       :: loc
+  PetscScalar, allocatable, dimension(:)    :: lbound, ubound
+
+  ALLOCATE(loc(ctl%n), lbound(ctl%n), ubound(ctl%n))
+  
+  do j = 1, ctl%n
+     loc(j) = j-1
+     lbound(j) = ctl%l_c(j)
+     ubound(j) = ctl%u_c(j)
+  end do
+
+  call VecSetValues(lb, ctl%n, loc, lbound, INSERT_VALUES, ierr)
+  CHKERRQ(ierr)
+  call VecAssemblyBegin(lb, ierr)
+  CHKERRQ(ierr)
+  call VecAssemblyEnd(lb, ierr)
+  CHKERRQ(ierr)
+
+  call VecSetValues(ub, ctl%n, loc, ubound, INSERT_VALUES, ierr)
+  CHKERRQ(ierr)
+  call VecAssemblyBegin(ub, ierr)
+  CHKERRQ(ierr)
+  call VecAssemblyEnd(ub, ierr)
+  CHKERRQ(ierr)
+
+  DEALLOCATE(loc, lbound, ubound)
+  
+end subroutine MyBounds
