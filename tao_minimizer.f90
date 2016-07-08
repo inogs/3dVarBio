@@ -95,6 +95,9 @@ subroutine tao_minimizer
      ctl%x_c(j) = xtmp(j)
   end do
 
+  call VecRestoreArrayReadF90(MyState, xtmp, ierr)
+  CHKERRQ(ierr)
+
   ! Deallocating variables
   DEALLOCATE(loc, MyValues)
   
@@ -155,6 +158,9 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   do j=1,ctl%n
      ctl%x_c(j) = xtmp(j)
   end do
+
+  call VecRestoreArrayReadF90(MyState, xtmp, ierr)
+  CHKERRQ(ierr)
 
   ! compute function and gradient
   call costf
@@ -272,6 +278,9 @@ subroutine MyConvTest(tao, dummy, ierr)
         EXIT
      end if
   end do
+
+  call VecRestoreArrayReadF90(TmpGrad, ReadGrad, ierr)
+  CHKERRQ(ierr)
 
   if( CheckVal .eq. 1) then
      call TaoSetConvergedReason(tao, TAO_CONTINUE_ITERATING, ierr)

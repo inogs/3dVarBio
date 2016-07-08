@@ -162,12 +162,10 @@ tao_minimizer.o: tao_minimizer.f90
 	$(CPP) -I$(PETSC_INC) $*.f90 > cpp.$*.f90 ; $(F90) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
 
 .DEFAULTS:
-# .f90.o:
-%.o :
+.f90.o :
 	$(CPP) $*.f90 > cpp.$*.f90 ; $(F90) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
 
-# .f.o :
-routines.o:
+.f.o :
 	$(CPP) $*.f > cpp.$*.f ; $(F77) $(FFLAGS) cpp.$*.f  ; $(MV) cpp.$*.o $*.o
 
 libf_exit.a :
@@ -177,7 +175,7 @@ libnc-medlevel.a :
 		cd $(LIBNCMEDLEV) && $(MAKE)
 
 clean:
-	$(RM) *.o *.mod cpp.* *.L $(EXEC) *.s
+	$(RM) *.o *.mod cpp.* *.L $(EXEC)
 	cd $(LIBFEXIT) && $(MAKE) erase
 	cd ..
 	cd $(LIBNCMEDLEV) && $(MAKE) erase
