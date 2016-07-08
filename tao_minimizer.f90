@@ -23,40 +23,44 @@ subroutine tao_minimizer
   
   print*,'Initialize Petsc and Tao stuffs'  
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-  
+  CHKERRQ(ierr)
+
   call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
   call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierr)
-  
-  ! Allocate working arrays
-  n = ctl%n
-  M = ctl%n
-  ALLOCATE(loc(n), MyValues(n))
-  
-  ! Take values from ctl%x_c in order to initialize the solution array
-  do j = 1, ctl%n
-     loc(j) = j-1
-     MyValues(j) = ctl%x_c(j)
-  end do
-  
-  call VecCreateMPI(MPI_COMM_WORLD, n, M, MyState, ierr)
-  
-  call VecSetValues(MyState, ctl%n, loc, MyValues, INSERT_VALUES, ierr)
-  call VecAssemblyBegin(MyState, ierr)
-  call VecAssemblyEnd(MyState, ierr)
   
   print*, 'PetscInitialize() done by rank ', rank
 
   write(drv%dia,*) ''
   write(drv%dia,*) "Within tao_minimizer subroutine!"
 
-  drv%MyCounter = 0
+  ! Allocate working arrays
+  n = ctl%n
+  M = ctl%n
+  ALLOCATE(loc(n), MyValues(n))
   
+  ! Take values from ctl%x_c in order to initialize 
+  ! the solution array for Tao solver
+  do j = 1, ctl%n
+     loc(j) = j-1
+     MyValues(j) = ctl%x_c(j)
+  end do
+  
+  ! Create MyState array and fill it
+  call VecCreateMPI(MPI_COMM_WORLD, n, M, MyState, ierr)
+  
+  call VecSetValues(MyState, ctl%n, loc, MyValues, INSERT_VALUES, ierr)
+  call VecAssemblyBegin(MyState, ierr)
+  call VecAssemblyEnd(MyState, ierr)
+  
+  drv%MyCounter = 0
+
+  ! Create Tao object and set type BLMVM (ones that use BFGS minimization algorithm)
   call TaoCreate(MPI_COMM_WORLD, tao, ierr)
   CHKERRQ(ierr)
   call TaoSetType(tao,"blmvm",ierr)
   CHKERRQ(ierr)
   
-  ! Set initial solution array and MyFuncAndGradient routines
+  ! Set initial solution array, MyBounds and MyFuncAndGradient routines
   call TaoSetInitialVector(tao, MyState, ierr)
   CHKERRQ(ierr)
   call TaoSetVariableBoundsRoutine(tao, MyBounds, PETSC_NULL_OBJECT)
@@ -64,6 +68,7 @@ subroutine tao_minimizer
   call TaoSetObjectiveAndGradientRoutine(tao, MyFuncAndGradient, PETSC_NULL_OBJECT, ierr)
   CHKERRQ(ierr)
   
+  ! Set MyTolerance and ConvergenceTest
   MyTolerance = 2.0d-2
   call TaoSetTolerances(tao, MyTolerance, PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr)
   CHKERRQ(ierr)
@@ -78,7 +83,7 @@ subroutine tao_minimizer
   call TaoView(tao, PETSC_VIEWER_STDOUT_WORLD, ierr)
   print*, ''
 
-  ! Take computed solution and set in proper array
+  ! Take computed solution and copy into ctl%x_c array
   call TaoGetSolutionVector(tao, MyState, ierr)
   CHKERRQ(ierr)
   call VecGetArrayReadF90(MyState, xtmp, ierr)
@@ -107,10 +112,13 @@ subroutine tao_minimizer
 
 end subroutine tao_minimizer
 
-!
-! subroutine that, given a state MyState (provided by Tao solver),
-! computes the value of cost function and the gradient
-!
+!-------------------------------------------------!
+! subroutine that, given a state                  !
+! MyState (provided by Tao solver),               !
+! computes the value of cost function             !
+! and the gradient                                !
+!-------------------------------------------------!
+
 subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   
   use set_knd
@@ -174,12 +182,13 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
 
 end subroutine MyFuncAndGradient
 
-!
-! Subroutine that sets upper and lower
-! bounds of the solution state array
-! This routine is called only one time at the
-! beginning of the iteration 
-!
+!-------------------------------------------------!
+! Subroutine that sets upper and lower            !
+! bounds of the solution state array              !
+! This routine is called only one time at the     !
+! beginning of the iteration                      !
+!-------------------------------------------------!
+
 subroutine MyBounds(tao, lb, ub, dummy, ierr)
   use ctl_str
 
@@ -218,6 +227,14 @@ subroutine MyBounds(tao, lb, ub, dummy, ierr)
   
 end subroutine MyBounds
 
+
+!-------------------------------------------------!
+! subroutine that performs the computation of     !
+! the infinity norm of the gradient. If that norm !
+! is less than the provided tolerance             !
+! the solution is convergent                      !
+!-------------------------------------------------!
+
 subroutine MyConvTest(tao, dummy, ierr)
 
   use ctl_str
@@ -235,8 +252,7 @@ subroutine MyConvTest(tao, dummy, ierr)
   M = ctl%n
   CheckVal = 0
 
-  ! taking tolerance value
-  ! skipping useless values
+  ! taking tolerance value (skipping useless values)
   call TaoGetTolerances(tao, MyTol, PETSC_NULL_REAL, PETSC_NULL_REAL, ierr)
   CHKERRQ(ierr)
 
@@ -259,8 +275,10 @@ subroutine MyConvTest(tao, dummy, ierr)
 
   if( CheckVal .eq. 1) then
      call TaoSetConvergedReason(tao, TAO_CONTINUE_ITERATING, ierr)
+     CHKERRQ(ierr)
   else
      call TaoSetConvergedReason(tao, TAO_CONVERGED_USER, ierr)
+     CHKERRQ(ierr)
   end if
 
 end subroutine MyConvTest
