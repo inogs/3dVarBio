@@ -63,7 +63,7 @@ subroutine tao_minimizer
   ! Set initial solution array, MyBounds and MyFuncAndGradient routines
   call TaoSetInitialVector(tao, MyState, ierr)
   CHKERRQ(ierr)
-  call TaoSetVariableBoundsRoutine(tao, MyBounds, PETSC_NULL_OBJECT)
+  call TaoSetVariableBoundsRoutine(tao, MyBounds, PETSC_NULL_OBJECT, ierr)
   CHKERRQ(ierr)
   call TaoSetObjectiveAndGradientRoutine(tao, MyFuncAndGradient, PETSC_NULL_OBJECT, ierr)
   CHKERRQ(ierr)
@@ -79,6 +79,8 @@ subroutine tao_minimizer
   call TaoSolve(tao, ierr)
   CHKERRQ(ierr)
   
+  print*, ''
+  print*, 'Tao Solver Info:'
   print*, ''
   call TaoView(tao, PETSC_VIEWER_STDOUT_WORLD, ierr)
   print*, ''
@@ -109,6 +111,7 @@ subroutine tao_minimizer
   
   print*, "Minimization done with ", drv%MyCounter
   print*, "iterations"
+  print*, ""
 
 end subroutine tao_minimizer
 
@@ -116,7 +119,7 @@ end subroutine tao_minimizer
 ! subroutine that, given a state                  !
 ! MyState (provided by Tao solver),               !
 ! computes the value of cost function             !
-! and the gradient                                !
+! in MyState and its gradient                     !
 !-------------------------------------------------!
 
 subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
@@ -254,9 +257,6 @@ subroutine MyConvTest(tao, dummy, ierr)
 
   ! taking tolerance value (skipping useless values)
   call TaoGetTolerances(tao, MyTol, PETSC_NULL_REAL, PETSC_NULL_REAL, ierr)
-  CHKERRQ(ierr)
-
-  call VecCreateMPI(MPI_COMM_WORLD, n, M, TmpGrad, ierr)
   CHKERRQ(ierr)
 
   call TaoGetGradientVector(tao, TmpGrad, ierr)
