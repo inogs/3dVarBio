@@ -1,10 +1,10 @@
-FC      = mpif90 $(OPENMP_FLAG)
+FC      = mpifort $(OPENMP_FLAG)
 CC      = mpicc
-F90     = mpif90 $(OPENMP_FLAG)
-F77     = mpif77
+F90     = mpifort $(OPENMP_FLAG)
+F77     = mpifort
 CPP     = mpifort -cpp -E
 LD      = $(FC) $(OPENMP_FLAG)
-MPFC    = mpif90
+MPFC    = mpifort
 MPCC    = mpicc
 MPLD    = $(MPFC)
 
