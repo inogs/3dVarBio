@@ -1,5 +1,5 @@
 subroutine tao_minimizer
-! test gits..  
+! test gits...  
   use drv_str
   use ctl_str
   
