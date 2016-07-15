@@ -1,4 +1,4 @@
-SUBROUTINE mynode()
+subroutine mynode()
   ! ---------------------------------------------------------------------
   ! 
   !                        routine mynode
@@ -26,7 +26,7 @@ SUBROUTINE mynode()
   
   ! -----------------------------------------------------------------------
   
-  IMPLICIT NONE
+  implicit none
 
   ! 
   !  MPI VERSION
@@ -41,26 +41,26 @@ SUBROUTINE mynode()
   CALL mpi_comm_rank(MPI_COMM_WORLD, rank,ierr)
   CALL mpi_comm_size(MPI_COMM_WORLD, size,ierr)
 
-END SUBROUTINE mynode
+end subroutine mynode
 
-SUBROUTINE mpi_sync
+subroutine mpi_sync
 
-  USE myalloc_mpi
+  use myalloc_mpi
   
-  IMPLICIT NONE
+  implicit none
 
   INTEGER :: ierror
 
   CALL mpi_barrier(MPI_COMM_WORLD, ierror)
 
-END SUBROUTINE mpi_sync
+end subroutine mpi_sync
 
 
-SUBROUTINE mpi_stop
+subroutine mpi_stop
 
-  USE myalloc_mpi
+  use myalloc_mpi
 
-  IMPLICIT NONE
+  implicit none
 
   INTEGER info
 
@@ -69,4 +69,4 @@ SUBROUTINE mpi_stop
   CALL mpi_finalize(info)
 
 
-END SUBROUTINE mpi_stop
+end subroutine mpi_stop
