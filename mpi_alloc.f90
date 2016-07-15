@@ -5,8 +5,6 @@ MODULE myalloc_mpi
   public
   
   
-!#include <mpif.h>
-  
   !-----------------------------------------------!
   !     MPI vaiables
   !
@@ -15,6 +13,5 @@ MODULE myalloc_mpi
   !-----------------------------------------------!
   
   INTEGER  :: size,rank
-  ! INTEGER  :: comm ! MPI_COMM
   
 END MODULE myalloc_mpi
