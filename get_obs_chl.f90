@@ -121,7 +121,6 @@ subroutine get_obs_chl
      chl%err(k) = chl_err(i,j)
   enddo
   
-  
   DEALLOCATE( chl_mis )
   DEALLOCATE( chl_err )
   

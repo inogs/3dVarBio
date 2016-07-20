@@ -109,6 +109,7 @@ OBJS    =  \
 	rdeofs.o\
 	netcdf_err.o\
 	get_obs.o\
+	get_obs_arg.o\
 	get_obs_chl.o\
 	int_par.o\
 	obs_vec.o\
@@ -123,10 +124,12 @@ OBJS    =  \
 	rcfl_y.o\
 	veof.o\
 	obsop.o\
+	obs_arg.o\
 	obs_chl.o\
 	resid.o\
 	res_inc.o\
 	obsop_ad.o\
+	obs_arg_ad.o\
 	obs_chl_ad.o\
 	veof_ad.o\
 	ver_hor_ad.o\

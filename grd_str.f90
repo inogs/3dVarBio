@@ -80,6 +80,8 @@ MODULE grd_str
      REAL(r8),    POINTER     ::  bex(:,:,:)   ! Beta x direction on extended grid
      REAL(r8),    POINTER     ::  bey(:,:,:)   ! Beta y direction on extended grid
      
+     REAL(r8),    POINTER     ::  lon(:,:)       ! Longitude
+     REAL(r8),    POINTER     ::  lat(:,:)       ! Latitude
      
   END TYPE grid_t
   

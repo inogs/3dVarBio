@@ -51,6 +51,48 @@ MODULE obs_str
   TYPE (obs_t)                 :: obs
   
   ! ---
+  ! Observational vector for ARGO floats
+  TYPE arg_t
+
+     INTEGER(i8)              ::  no         ! Number of all observations
+     INTEGER(i8)              ::  nc         ! Number of good observations
+     REAL(r8)                 ::  dep        ! Minimum depth for observations
+     INTEGER(i8)              ::  kdp        ! Model level corresponding to dep
+     INTEGER(i8), POINTER     ::  ino(:)     ! Float number
+     INTEGER(i8), POINTER     ::  par(:)     ! Parameter flag (1-temperature, 2-salinity)
+     INTEGER(i8), POINTER     ::  flg(:)     ! Quality flag
+     INTEGER(i8), POINTER     ::  flc(:)     ! Temporary flag for multigrid
+     REAL(r8),    POINTER     ::  lon(:)     ! Longitute
+     REAL(r8),    POINTER     ::  lat(:)     ! Latitude
+     REAL(r8),    POINTER     ::  dpt(:)     ! Depth
+     REAL(r8),    POINTER     ::  tim(:)     ! Time
+     REAL(r8),    POINTER     ::  val(:)     ! Observed value
+     REAL(r8),    POINTER     ::  bac(:)     ! Background value
+     REAL(r8),    POINTER     ::  inc(:)     ! Increments
+     REAL(r8),    POINTER     ::  bia(:)     ! Bias
+     REAL(r8),    POINTER     ::  err(:)     ! Observational error
+     REAL(r8),    POINTER     ::  res(:)     ! residual
+     REAL(r8),    POINTER     ::  b_a(:)     ! Background - analyses
+     INTEGER(i8), POINTER     ::  ib(:)      ! i index of the nearest west point
+     REAL(r8)   , POINTER     ::  pb(:)      ! distance from the nearest west point
+     INTEGER(i8), POINTER     ::  jb(:)      ! j index of the nearest south point
+     REAL(r8)   , POINTER     ::  qb(:)      ! distance from the nearest south point
+     INTEGER(i8), POINTER     ::  kb(:)      ! k index of the nearest point below
+     REAL(r8)   , POINTER     ::  rb(:)      ! distance from the nearest point below
+     REAL(r8)   , POINTER     ::  pq1(:)     ! Interpolation parameter for masked grids
+     REAL(r8)   , POINTER     ::  pq2(:)     ! Interpolation parameter for masked grids
+     REAL(r8)   , POINTER     ::  pq3(:)     ! Interpolation parameter for masked grids
+     REAL(r8)   , POINTER     ::  pq4(:)     ! Interpolation parameter for masked grids
+     REAL(r8)   , POINTER     ::  pq5(:)     ! Interpolation parameter for masked grids
+     REAL(r8)   , POINTER     ::  pq6(:)     ! Interpolation parameter for masked grids
+     REAL(r8)   , POINTER     ::  pq7(:)     ! Interpolation parameter for masked grids
+     REAL(r8)   , POINTER     ::  pq8(:)     ! Interpolation parameter for masked grids
+
+  END TYPE arg_t
+
+  TYPE (arg_t)                 :: arg
+
+  ! ---
   ! Observational vector for Chlorophyll
   TYPE chl_t
      

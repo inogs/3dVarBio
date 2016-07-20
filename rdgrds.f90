@@ -95,7 +95,11 @@ subroutine rdgrd
   ALLOCATE ( x3(grd%im,grd%jm,grd%km)) ;  x3 = huge(x3(1,1,1))
   ALLOCATE ( x2(grd%im,grd%jm))        ; x2 = huge(x2(1,1))
   ALLOCATE ( x1(grd%km) )              ;  x1 = huge(x1(1))
-  
+
+  if (drv%argo .eq. 1) then
+     ALLOCATE ( grd%lon(grd%im,grd%jm)) ; grd%lon = huge(grd%lon(1,1))
+     ALLOCATE ( grd%lat(grd%im,grd%jm)) ; grd%lat = huge(grd%lat(1,1))
+  endif
   
   stat = nf90_inq_varid (ncid, 'dx', idvar)
   if (stat /= nf90_noerr) call netcdf_err(stat)
@@ -105,6 +109,16 @@ subroutine rdgrd
   if (stat /= nf90_noerr) call netcdf_err(stat)
   stat = nf90_get_var (ncid,idvar,grd%dy)
   if (stat /= nf90_noerr) call netcdf_err(stat)
+
+  if (drv%argo .eq. 1) then
+     stat = nf90_inq_varid (ncid, 'lon', idvar)
+     if (stat /= nf90_noerr) call netcdf_err(stat)
+     stat = nf90_get_var (ncid,idvar,grd%lon)
+     stat = nf90_inq_varid (ncid, 'lat', idvar)
+     if (stat /= nf90_noerr) call netcdf_err(stat)
+     stat = nf90_get_var (ncid,idvar,grd%lat)
+  endif
+  
   
   stat = nf90_inq_varid (ncid, 'dep', idvar)
   if (stat /= nf90_noerr) call netcdf_err(stat)

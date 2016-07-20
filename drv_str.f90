@@ -48,10 +48,11 @@ MODULE drv_str
      INTEGER(i4), POINTER  ::  dda(:)       ! 1 - divergence damping in analysis, else no filter
      INTEGER(i4), POINTER  ::  ddi(:)       ! 1 - divergence damping in initialisation, else no filter
      REAL(r8),    POINTER  ::  ro(:,:,:)    ! Vector v
-     REAL(r8),    POINTER  ::  msk(:,:)   ! Mask of the old grid
+     REAL(r8),    POINTER  ::  msk(:,:)     ! Mask of the old grid
      
      INTEGER(i4)           ::  MyCounter    ! Number of iteration done by Tao solver
-
+     INTEGER(i4)           ::  argo         ! Flag for the assimilation of argo float observations
+     
   END TYPE drv_t
   
   TYPE (drv_t)              :: drv
