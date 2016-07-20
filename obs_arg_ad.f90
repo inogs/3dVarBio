@@ -40,7 +40,7 @@ subroutine obs_arg_ad
 
  do kk = 1,arg%no
 
-  if(arg%flc(kk).eq.1 .and. arg%par(kk).eq.1 )then
+  if(arg%flc(kk).eq.1)then
 
     obs%k = obs%k + 1
 

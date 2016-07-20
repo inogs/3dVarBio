@@ -41,7 +41,7 @@ subroutine obs_vec
   ! -------
   ! Define observational vector
   
-  obs%no = chl%nc
+  obs%no = chl%nc + arg%no
   
   write(drv%dia,*) ' Total number of observations: ', obs%no
   
@@ -53,16 +53,18 @@ subroutine obs_vec
   
   
  k=0
- 
- ! ARGO observations
- do i=1,arg%no
-    if(arg%flc(i).eq.1)then
-       k=k+1
-       obs%res(k) = arg%res(i)
-       obs%err(k) = arg%err(i)
-    endif
- enddo
 
+ if (drv%argo .eq. 1) then
+    ! ARGO observations
+    do i=1,arg%no
+       if(arg%flc(i).eq.1)then
+          k=k+1
+          obs%res(k) = arg%res(i)
+          obs%err(k) = arg%err(i)
+       endif
+    enddo
+ endif
+ 
  ! Observations of chlorophyll
  do i=1,chl%no
     if(chl%flc(i).eq.1)then

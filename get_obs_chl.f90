@@ -121,6 +121,10 @@ subroutine get_obs_chl
      chl%err(k) = chl_err(i,j)
   enddo
   
+  ! DECOMMENT FOLLOWING TWO LINES TO MAKE FILTER TEST
+  ! chl%res(:) = 0.
+  ! chl%err(:) = 1.
+
   DEALLOCATE( chl_mis )
   DEALLOCATE( chl_err )
   

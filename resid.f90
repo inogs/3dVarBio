@@ -31,6 +31,7 @@ subroutine resid
   
   use set_knd
   use obs_str
+  use drv_str
   
   implicit none
   
@@ -40,13 +41,15 @@ subroutine resid
   
   ! ---
   ! ARGO observations
-  do i=1,arg%no
-     if(arg%flc(i).eq.1)then
-        k = k + 1
-        obs%inc(k) = arg%inc(i)
-        obs%amo(k) = ( obs%inc(k) - obs%res(k) ) / obs%err(k)
-     endif
-  enddo
+  if (drv%argo .eq. 1) then
+     do i=1,arg%no
+        if(arg%flc(i).eq.1)then
+           k = k + 1
+           obs%inc(k) = arg%inc(i)
+           obs%amo(k) = ( obs%inc(k) - obs%res(k) ) / obs%err(k)
+        endif
+     enddo
+  endif
   
   ! ---
   ! Observations of chlorophyll

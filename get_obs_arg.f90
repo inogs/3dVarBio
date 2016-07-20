@@ -42,22 +42,17 @@ subroutine get_obs_arg
   arg%nc = 0
 
   
-  open(511,file='arg_mis.dat',form='formatted') !,form='unformatted',status='old',err=1111)
+  open(511,file='arg_mis.dat',form='formatted')
   
   ! ---
-  ! Allocate memory for observations 
-  
+  ! Allocate memory for observations   
   read(511,'(I5)') arg%no
-  
   write(drv%dia,*)'Number of ARGO observations: ',arg%no
   
   if(arg%no.eq.0)then
      close(511)
      return
   endif
-  write(*,*)''
-  write(*,*)'ARGO DATA FILE OPEN!!!!!!!!!!',arg%no
-  write(*,*)''
   ALLOCATE ( arg%ino(arg%no), arg%flg(arg%no), arg%flc(arg%no), arg%par(arg%no))
   ALLOCATE ( arg%lon(arg%no), arg%lat(arg%no), arg%dpt(arg%no), arg%tim(arg%no))
   ALLOCATE ( arg%val(arg%no), arg%bac(arg%no), arg%inc(arg%no))
@@ -77,20 +72,16 @@ subroutine get_obs_arg
           arg%lon(k), arg%lat(k), &
           arg%dpt(k), arg%tim(k), &
           arg%res(k), arg%err(k), arg%ino(k)
-          ! arg%flc(1:arg%no), arg%par(1:arg%no), &
-          ! arg%lon(1:arg%no), arg%lat(1:arg%no), &
-          ! arg%dpt(1:arg%no), arg%tim(1:arg%no), &
-          ! arg%val(1:arg%no), arg%err(1:arg%no), arg%ino(1:arg%no)
   end do
   close (511)
 
   ! DECOMMENT FOLLOWING TWO LINES TO MAKE FILTER TEST
   ! arg%res(:) = 1
-  ! arg%err(:) = 1.d-5
+  ! arg%err(:) = 1.d-2
 
+  
   ! ---
   ! Initialise quality flag
-  ! if(obs%arg.eq.0) arg%flg(:) = -1
   arg%flg(:) = 1
   
   ! ---
@@ -109,12 +100,10 @@ subroutine get_obs_arg
   
   
   ! residual check
-  do k=1,arg%no
-     ! if(arg%par(k).eq.1 .and. abs(arg%res(k)).gt.5.0) arg%flg(k) = 0
-     if(arg%par(k).eq.2 .and. abs(arg%res(k)).gt.2.0) arg%flg(k) = 0
-  enddo
-  
-  
+  ! do k=1,arg%no
+  !    if(arg%par(k).eq.1 .and. abs(arg%res(k)).gt.5.0) arg%flg(k) = 0
+  ! enddo
+    
   ! ---
   ! Count good observations
   arg%nc = 0
@@ -138,10 +127,6 @@ subroutine get_obs_arg
   enddo
   
   arg%flc(:) = arg%flg(:)
-  
-  
-1111 continue
-  
   
 end subroutine get_obs_arg
 
