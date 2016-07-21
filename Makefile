@@ -58,8 +58,7 @@ OBJSTR  =  \
 	grd_str.o\
 	eof_str.o\
 	ctl_str.o\
-	rcfl_mod.o\
-	mpi_alloc.o
+	rcfl_mod.o
 
 PHYSOBS  =  \
 	get_obs_sla.o\
@@ -140,7 +139,6 @@ OBJS    =  \
 	cnv_ctv_ad.o\
 	cnv_inn.o\
 	wrt_dia.o\
-	mpi_utils.o\
 	clean_mem.o\
 	tao_minimizer.o\
     oceanvar.o
@@ -178,6 +176,13 @@ libnc-medlevel.a :
 		cd $(LIBNCMEDLEV) && $(MAKE)
 
 clean:
+	$(RM) *.o *.mod cpp.* *.L
+	cd $(LIBFEXIT) && $(MAKE) erase
+	cd ..
+	cd $(LIBNCMEDLEV) && $(MAKE) erase
+	cd ..
+
+erase:
 	$(RM) *.o *.mod cpp.* *.L $(EXEC)
 	cd $(LIBFEXIT) && $(MAKE) erase
 	cd ..
