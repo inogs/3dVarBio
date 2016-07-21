@@ -88,9 +88,9 @@ subroutine sav_itr
      ! deallocate argo arrays
      DEALLOCATE ( arg%ino, arg%flg, arg%flc, arg%par)
      DEALLOCATE ( arg%lon, arg%lat, arg%dpt, arg%tim)
-     DEALLOCATE ( arg%val, arg%bac, arg%inc)
-     DEALLOCATE ( arg%bia, arg%err)
-     DEALLOCATE ( arg%res, arg%b_a)
+     DEALLOCATE ( arg%inc)
+     DEALLOCATE ( arg%err)
+     DEALLOCATE ( arg%res)
      DEALLOCATE ( arg%ib, arg%jb, arg%kb)
      DEALLOCATE ( arg%pb, arg%qb, arg%rb)
      DEALLOCATE ( arg%pq1, arg%pq2, arg%pq3, arg%pq4)
