@@ -44,21 +44,31 @@ subroutine tao_minimizer
   print*, "newmodule: ", NewCtl%n_global
   ALLOCATE(loc(n), MyValues(n))
   
-  ! Take values from ctl%x_c in order to initialize 
-  ! the solution array for Tao solver
-  do j = 1, ctl%n
-     loc(j) = j-1
-     MyValues(j) = 0. !ctl%x_c(j)
-  end do
-  
   ! Create MyState array and fill it
   call VecCreateMPI(MPI_COMM_WORLD, n, M, MyState, ierr)
   call VecGetOwnershipRange(MyState, MyStart, MyEnd, ierr)
   print*, "MyState initialization by rank ", rank, "with indices: ", MyStart, MyEnd
 
+  if( ctl%n .ne. MyEnd - MyStart ) then
+     print*, ""
+     print*, "WARNING!!"
+     print*, "ctl%n .ne. MyStart - MyEnd"
+     print*, "ctl%n = ", ctl%n
+     print*, "MyStart = ", MyStart
+     print*, "MyEnd = ", MyEnd
+     print*, ""
+  endif
+
+  ! Take values from ctl%x_c in order to initialize 
+  ! the solution array for Tao solver
+  do j = 1, ctl%n
+     loc(j) = MyStart + j - 1
+     MyValues(j) = 0. !ctl%x_c(j)
+  end do
+  
   ! Setting only local values (since each process can access at all entries of MyState)
-  do j=MyStart, MyEnd-1
-     call VecSetValues(MyState, 1, j, MyValues(j-MyStart+1), INSERT_VALUES, ierr)
+  do j=1, ctl%n
+     call VecSetValues(MyState, 1, loc(j), MyValues(j), INSERT_VALUES, ierr)
   end do
 
   ! call VecSetValues(MyState, ctl%n, loc, MyValues, INSERT_VALUES, ierr)
