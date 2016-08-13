@@ -117,7 +117,7 @@ subroutine oceanvar
         endif
         
         ! ---
-        ! Minimize the cost function (inner loop)7
+        ! Minimize the cost function (inner loop)
 #ifndef _USE_MPI
         call min_cfn
 #else

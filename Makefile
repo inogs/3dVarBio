@@ -140,8 +140,9 @@ OBJS    =  \
 	cnv_ctv_ad.o\
 	cnv_inn.o\
 	wrt_dia.o\
-	mpi_utils.o\
 	clean_mem.o\
+	mpi_utils.o\
+	parallel_costf.o\
 	tao_minimizer.o\
     oceanvar.o
 
@@ -178,6 +179,13 @@ libnc-medlevel.a :
 		cd $(LIBNCMEDLEV) && $(MAKE)
 
 clean:
+	$(RM) *.o *.mod cpp.* *.L
+	cd $(LIBFEXIT) && $(MAKE) erase
+	cd ..
+	cd $(LIBNCMEDLEV) && $(MAKE) erase
+	cd ..
+
+erase:
 	$(RM) *.o *.mod cpp.* *.L $(EXEC)
 	cd $(LIBFEXIT) && $(MAKE) erase
 	cd ..

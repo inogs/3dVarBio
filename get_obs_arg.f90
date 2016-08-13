@@ -75,8 +75,8 @@ subroutine get_obs_arg
   close (511)
 
   ! DECOMMENT FOLLOWING TWO LINES TO MAKE FILTER TEST
-  ! arg%res(:) = 1
-  ! arg%err(:) = 1.d-2
+  arg%res(:) = 1
+  arg%err(:) = 1.d-2
 
   
   ! ---
