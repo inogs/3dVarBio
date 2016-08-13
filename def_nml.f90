@@ -152,7 +152,7 @@ subroutine def_nml
 
   grd%nchl = nchl
   chl%dep  = chl_dep
-  drv%argo = 1
+  drv%argo = 0 !1
   
   write(drv%dia,*) '------------------------------------------------------------'
 
