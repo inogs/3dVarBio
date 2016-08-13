@@ -140,7 +140,6 @@ OBJS    =  \
 	cnv_inn.o\
 	wrt_dia.o\
 	clean_mem.o\
-	tao_minimizer.o\
     oceanvar.o
 
 MAINEXE = main.o
