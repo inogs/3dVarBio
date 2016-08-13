@@ -58,7 +58,8 @@ OBJSTR  =  \
 	grd_str.o\
 	eof_str.o\
 	ctl_str.o\
-	rcfl_mod.o
+	rcfl_mod.o\
+	mpi_alloc.o
 
 PHYSOBS  =  \
 	get_obs_sla.o\
@@ -140,6 +141,8 @@ OBJS    =  \
 	cnv_inn.o\
 	wrt_dia.o\
 	clean_mem.o\
+	mpi_utils.o\
+	tao_minimizer.o\
     oceanvar.o
 
 MAINEXE = main.o
