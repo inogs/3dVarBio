@@ -1,11 +1,15 @@
 subroutine tao_minimizer
 
+#include "petsc/finclude/petscvecdef.h"
+
   use drv_str
   use ctl_str
-  
+  use petscvec
+  use tao_str
+
   implicit none
   
-#include "tao_minimizer.h"
+#include "petsc/finclude/petsctao.h"
   
   PetscErrorCode  ::   ierr
   Tao             ::   tao
@@ -36,6 +40,8 @@ subroutine tao_minimizer
   ! Allocate working arrays
   n = ctl%n
   M = ctl%n_global
+  NewCtl%n_global = ctl%n_global
+  print*, "newmodule: ", NewCtl%n_global
   ALLOCATE(loc(n), MyValues(n))
   
   ! Take values from ctl%x_c in order to initialize 
@@ -136,20 +142,24 @@ end subroutine tao_minimizer
 
 subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   
+#include "petsc/finclude/petscvecdef.h"
+
   use set_knd
   use drv_str
-  use obs_str
-  use grd_str
-  use eof_str
   use ctl_str
+  use tao_str
+  use petscvec
   
+  use tao_str
+
   implicit none
   
-#include "tao_minimizer.h"
+#include "petsc/finclude/petsctao.h"
+
   Tao             ::   tao
   Vec             ::   MyState, Grad
   PetscReal       ::   CostFunc
-  integer         ::   dummy, ierr, j
+  integer(i4)     ::   dummy, ierr, j
 
   ! Working arrays
   PetscInt, allocatable, dimension(:)     :: loc
@@ -208,10 +218,17 @@ end subroutine MyFuncAndGradient
 !-------------------------------------------------!
 
 subroutine MyBounds(tao, lb, ub, dummy, ierr)
+#include "petsc/finclude/petscvecdef.h"
+
   use ctl_str
+  use tao_str
+  use petscvec
+  use tao_str
 
   implicit none
-#include "tao_minimizer.h"
+  
+#include "petsc/finclude/petsctao.h"
+
   Tao        :: tao
   Vec        :: lb, ub
   integer    :: dummy, ierr, j
@@ -255,10 +272,17 @@ end subroutine MyBounds
 
 subroutine MyConvTest(tao, dummy, ierr)
 
+#include "petsc/finclude/petscvecdef.h"
+
   use ctl_str
+  use tao_str
+  use petscvec
+  use tao_str
 
   implicit none
-#include "tao_minimizer.h"
+  
+#include "petsc/finclude/petsctao.h"
+
   Tao                  :: tao
   integer              :: dummy, ierr, j, n, M, CheckVal
   Vec                  :: TmpGrad
