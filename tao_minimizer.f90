@@ -10,7 +10,7 @@ subroutine tao_minimizer
   PetscErrorCode  ::   ierr
   Tao             ::   tao
   Vec             ::   MyState ! array that stores the (temporary) state
-  PetscInt        ::   n, M
+  PetscInt        ::   n, M, MyStart, MyEnd
   PetscReal       ::   MyTolerance
   integer         ::   size, rank, j
   
@@ -42,16 +42,24 @@ subroutine tao_minimizer
   ! the solution array for Tao solver
   do j = 1, ctl%n
      loc(j) = j-1
-     MyValues(j) = ctl%x_c(j)
+     MyValues(j) = 0. !ctl%x_c(j)
   end do
   
   ! Create MyState array and fill it
   call VecCreateMPI(MPI_COMM_WORLD, n, M, MyState, ierr)
-  
-  call VecSetValues(MyState, ctl%n, loc, MyValues, INSERT_VALUES, ierr)
+  call VecGetOwnershipRange(MyState, MyStart, MyEnd, ierr)
+  print*, "MyState initialization by rank ", rank, "with indices: ", MyStart, MyEnd
+
+  ! Setting only local values (since each process can access at all entries of MyState)
+  do j=MyStart, MyEnd-1
+     call VecSetValues(MyState, 1, j, MyValues(j-MyStart+1), INSERT_VALUES, ierr)
+  end do
+
+  ! call VecSetValues(MyState, ctl%n, loc, MyValues, INSERT_VALUES, ierr)
   call VecAssemblyBegin(MyState, ierr)
   call VecAssemblyEnd(MyState, ierr)
-  
+
+  ! Counter init
   drv%MyCounter = 0
 
   ! Create Tao object and set type BLMVM (ones that use BFGS minimization algorithm)
@@ -69,7 +77,8 @@ subroutine tao_minimizer
   CHKERRQ(ierr)
 
   ! Set MyTolerance and ConvergenceTest
-  MyTolerance = 2.0d-2
+  MyTolerance = 1.0d1
+  ! MyTolerance = 2.0d-2
   call TaoSetTolerances(tao, MyTolerance, PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr)
   CHKERRQ(ierr)
   call TaoSetConvergenceTest(tao, MyConvTest, PETSC_NULL_OBJECT, ierr)
