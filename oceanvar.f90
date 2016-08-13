@@ -117,9 +117,12 @@ subroutine oceanvar
         endif
         
         ! ---
-        ! Minimize the cost function (inner loop)
-        ! call min_cfn
+        ! Minimize the cost function (inner loop)7
+#ifndef _USE_MPI
+        call min_cfn
+#else
         call tao_minimizer
+#endif
         write(drv%dia,*) 'out of min_cfn'
         
         if(ktr.eq.drv%ntr)then
