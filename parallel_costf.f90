@@ -1,4 +1,4 @@
-MODULE ctl_str
+subroutine parallel_costf
 
 !---------------------------------------------------------------------------
 !                                                                          !
@@ -23,52 +23,84 @@ MODULE ctl_str
 
 !-----------------------------------------------------------------------
 !                                                                      !
-! Cost function, control vector and optimisation arrays                !
+! Calclate the cost function and its gradient                          !
 !                                                                      !
 ! Version 1: S.Dobricic 2006                                           !
 !-----------------------------------------------------------------------
 
+
  use set_knd
+ use obs_str
+ use grd_str
+ use eof_str
+ use ctl_str
 
-implicit none
+ implicit none
 
-public
+! -------------------------------------------------------
+! calculate backgorund cost term
+! -------------------------------------------------------
 
-! ---
-! Structure for lbfgs
+    ctl%f_b = 0.5 * dot_product( ctl%x_c, ctl%x_c)
+!    write(*,*) 'COSTF f_b = ', ctl%f_b
 
-   TYPE lbfgs_t
+! -------------------------------------------------------
+! calculate observational cost term
+! -------------------------------------------------------
+! --------
+! Convert the control vector to v
+   call cnv_ctv
 
-        INTEGER(i4)               ::  n          ! size of the optimisation vector
-        INTEGER(i4)               ::  m          ! number of copies to be saved
-        CHARACTER(LEN=60)         ::  task, csave
-        LOGICAL, DIMENSION(4)     ::  lsave
-        INTEGER(i4), DIMENSION(44)::  isave
-        INTEGER(i4), POINTER      ::  nbd(:), iwa(:)
-        INTEGER(i4)               ::  iprint       
-        REAL(r8)                  ::  f_b        ! The background cost function
-        REAL(r8)                  ::  f_o        ! The observational cost function
-       real(r8)          ::  f_c, factr ! The cost function, accuracy
-       real(r8)          ::  pgtol, pgper ! Stopping criteria, percentage of initial gradient
-       real(r8),  &
-                 DIMENSION(29)    ::  dsave
-       real(r8),  &
-                 POINTER          ::  x_c(:)     ! The control vector (background - analyses)
-       real(r8),  &
-                 POINTER          ::  g_c(:)     ! The gradient of f_c 
-       real(r8),  &
-                 POINTER          ::  l_c(:), u_c(:)
-       real(r8),  &
-                 POINTER          ::  wa(:), sg(:), sgo(:), yg(:), ygo(:),      &
-                                  ws(:,:), wy(:,:), sy(:,:), ss(:,:),       &
-                                  yy(:,:), wt(:,:), wn(:,:), snd(:,:),      &
-                                  z_c(:), r_c(:), d_c(:), t_c(:)        ! Working arrays
-#ifdef _USE_MPI
-       INTEGER(i4)                :: n_global   ! global size of the optimization vector (n is the local size)
-#endif
+! --------
+! Control to physical space 
+   call ver_hor
 
-   END TYPE lbfgs_t
+! --------
+! Apply observational operators
+   call obsop
 
-   TYPE (lbfgs_t)                 :: ctl
+! --------
+! Calculate residuals
+   call resid
 
-END MODULE ctl_str
+! --------
+! calculate cost
+    ctl%f_o = 0.5 * dot_product( obs%amo, obs%amo)
+
+! -------------------------------------------------------
+! Cost function
+! -------------------------------------------------------
+
+    ctl%f_c = ctl%f_b + ctl%f_o
+
+    print*,' Cost function ',ctl%f_c
+
+! -------------------------------------------------------
+! calculate the cost function gradient
+! -------------------------------------------------------
+
+! --------
+! Reset the increments
+   call res_inc
+
+! --------
+! Observational operators
+   call obsop_ad
+
+! --------
+! Control to physical space 
+   call ver_hor_ad
+
+!   write(*,*) 'COSTF sum(ro_ad) = ' , sum(grd%ro_ad)
+! --------
+! Convert the control vector 
+   call cnv_ctv_ad
+
+! -------------------------------------------------------
+! Cost function gradient
+! -------------------------------------------------------
+
+!   write(*,*) 'COSTF sum(g_c) = ' , sum( ctl%g_c)
+   ctl%g_c(:) = ctl%x_c(:) + ctl%g_c(:) ! OMP
+
+end subroutine parallel_costf

@@ -142,6 +142,7 @@ OBJS    =  \
 	wrt_dia.o\
 	clean_mem.o\
 	mpi_utils.o\
+	parallel_costf.o\
 	tao_minimizer.o\
     oceanvar.o
 

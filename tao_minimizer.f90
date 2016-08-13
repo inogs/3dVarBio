@@ -28,14 +28,14 @@ subroutine tao_minimizer
   call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
   call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierr)
   
-  print*, 'PetscInitialize() done by rank ', rank
+  print*, 'PetscInitialize() done by rank ', rank, ctl%n, ctl%n_global
 
   write(drv%dia,*) ''
   write(drv%dia,*) "Within tao_minimizer subroutine!"
 
   ! Allocate working arrays
   n = ctl%n
-  M = ctl%n
+  M = ctl%n_global
   ALLOCATE(loc(n), MyValues(n))
   
   ! Take values from ctl%x_c in order to initialize 
@@ -164,7 +164,7 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   CHKERRQ(ierr)
 
   ! compute function and gradient
-  call costf
+  call parallel_costf
 
   ! assign the Cost Function value computed by costf to CostFunc
   CostFunc = ctl%f_c
