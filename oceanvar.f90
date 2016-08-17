@@ -51,9 +51,7 @@ subroutine oceanvar
   INTEGER(i4)   ::  MyID
   
   call mynode
-  MyID = rank
-  
-  print*,MyID, rank, size
+  MyID = MyRank
   
   ! if( MyID .eq. 0) then
 

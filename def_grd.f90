@@ -42,7 +42,12 @@ subroutine def_grd
   grd%grd_mod  = drv%grid (drv%ktr)
   
   !Read grid definition
+#ifndef _USE_MPI
   call rdgrd
+#else
+  ! call rdgrd
+  call parallel_rdgrd
+#endif
   
   ! Define grid for horizontal covariances
   if( drv%mask(drv%ktr).eq.1)then

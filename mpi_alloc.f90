@@ -9,9 +9,10 @@ MODULE myalloc_mpi
   !     MPI vaiables
   !
   !     size : number of process
-  !     rank : process number  [ 0 - size-1 ]
+  !     MyRank : process number  [ 0 - size-1 ]
   !-----------------------------------------------!
   
-  INTEGER  :: size,rank
+  INTEGER  :: size, MyRank
+  INTEGER  :: jpni, jpnj, jpnij
   
 END MODULE myalloc_mpi
