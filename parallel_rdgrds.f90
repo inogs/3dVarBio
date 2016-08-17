@@ -168,7 +168,7 @@ subroutine parallel_rdgrd
   
   ! *****************************************************************************************
   ! *****************************************************************************************
-  ! (almost) copy - paste from rdgrds.f90
+  ! (almost) copy-paste from rdgrds.f90
   ! Allocate grid arrays
 
   ALLOCATE ( grd%reg(grd%im,grd%jm))        ; grd%reg = huge(grd%reg(1,1))
@@ -208,26 +208,26 @@ subroutine parallel_rdgrd
   
   ierr = nf90mpi_inq_varid (ncid, 'dx', VarId)
   if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_inq_varid', ierr)
-  ierr = nfmpi_get_vara_real_all (ncid, VarId, MyStart, MyCount, x2) !grd%dx)
+  ierr = nfmpi_get_vara_real_all (ncid, VarId, MyStart, MyCount, x2)
   if (ierr .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all', ierr)
   grd%dx(:,:) = x2(:,:)
 
   ierr = nf90mpi_inq_varid (ncid, 'dy', VarId)
   if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_inq_varid', ierr)
-  ierr = nfmpi_get_vara_real_all (ncid, VarId, MyStart, MyCount, x2) !grd%dy)
+  ierr = nfmpi_get_vara_real_all (ncid, VarId, MyStart, MyCount, x2)
   if (ierr .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all dy', ierr)
   grd%dy(:,:) = x2(:,:)
   
   if (drv%argo .eq. 1) then
      ierr = nf90mpi_inq_varid (ncid, 'lon', VarId)
      if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_inq_varid', ierr)
-     ierr = nfmpi_get_vara_real_all (ncid, VarId, MyStart, MyCount, x2) !grd%lon)
+     ierr = nfmpi_get_vara_real_all (ncid, VarId, MyStart, MyCount, x2)
      if (ierr .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all lon', ierr)
      grd%lon(:,:) = x2(:,:)
 
      ierr = nf90mpi_inq_varid (ncid, 'lat', VarId)
      if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_inq_varid', ierr)
-     ierr = nfmpi_get_vara_real_all (ncid, VarId, MyStart, MyCount, x2) !grd%lat)
+     ierr = nfmpi_get_vara_real_all (ncid, VarId, MyStart, MyCount, x2)
      if (ierr .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all lat', ierr)
      grd%lat(:,:) = x2(:,:)
   endif
@@ -258,7 +258,7 @@ subroutine parallel_rdgrd
   DEALLOCATE ( x3, x2, x1 )
 
 
-  ! end copy - paste from rdgrds.f90
+  ! end copy-paste from rdgrds.f90
   ! *****************************************************************************************
   ! *****************************************************************************************
   
