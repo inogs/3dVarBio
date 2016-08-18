@@ -63,9 +63,7 @@ public
                                   ws(:,:), wy(:,:), sy(:,:), ss(:,:),       &
                                   yy(:,:), wt(:,:), wn(:,:), snd(:,:),      &
                                   z_c(:), r_c(:), d_c(:), t_c(:)        ! Working arrays
-#ifdef _USE_MPI
        INTEGER(i4)                :: n_global   ! global size of the optimization vector (n is the local size)
-#endif
 
    END TYPE lbfgs_t
 
