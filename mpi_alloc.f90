@@ -14,5 +14,6 @@ MODULE myalloc_mpi
   
   INTEGER  :: size, MyRank
   INTEGER  :: jpni, jpnj, jpnij
+  integer(KIND=MPI_OFFSET_KIND) :: MyStart(2), MyCount(2)
   
 END MODULE myalloc_mpi

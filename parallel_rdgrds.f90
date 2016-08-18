@@ -25,7 +25,7 @@ subroutine parallel_rdgrd
   
   integer(KIND=MPI_OFFSET_KIND) MyOffset
   integer(KIND=MPI_OFFSET_KIND) LastStart(1), LastCount(1)
-  integer(KIND=MPI_OFFSET_KIND) MyStart(2), MyCount(2)
+  ! integer(KIND=MPI_OFFSET_KIND) MyStart(2), MyCount(2)
   integer(KIND=MPI_OFFSET_KIND) NewStart(3), NewCount(3)
   character(LEN=256) :: filename, MyVar
   

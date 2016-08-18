@@ -112,6 +112,7 @@ OBJS    =  \
 	get_obs.o\
 	get_obs_arg.o\
 	get_obs_chl.o\
+	parallel_get_obs_chl.o\
 	int_par.o\
 	obs_vec.o\
 	def_cov.o\
