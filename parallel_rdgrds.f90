@@ -11,43 +11,26 @@ subroutine parallel_rdgrd
   
   implicit none
 
-  integer :: ierr, cmode, ncid
-  integer :: jpreci, jprecj
-  integer :: jpiglo, jpjglo, jpk, DimId, VarId
-  integer :: TmpInt
+  integer(i8) :: ierr, ncid
+  integer(i8) :: jpreci, jprecj
+  integer(i8) :: jpiglo, jpjglo
+  integer(i8) :: TmpInt, VarId
   real(r4), ALLOCATABLE          :: x3(:,:,:), x2(:,:), x1(:)
-  real, allocatable :: values(:,:)
 
   integer, allocatable :: ilcit(:,:), ilcjt(:,:)
-  integer :: ji, jj, jpi, jpj, nn !, jpij, jpim1, jpjm1, jpkm1, jpkbm1
-  integer :: MyRestRow, MyRestCol, OffsetRow, OffsetCol, dimd, xtype, ndims
-  integer, allocatable :: dimids(:)
+  integer(i8) :: ji, jj, jpi, jpj, nn
+  integer(i8) :: MyRestRow, MyRestCol, OffsetRow, OffsetCol
   
   integer(KIND=MPI_OFFSET_KIND) MyOffset
-  integer(KIND=MPI_OFFSET_KIND) LastStart(1), LastCount(1)
-  ! integer(KIND=MPI_OFFSET_KIND) MyStart(2), MyCount(2)
-  integer(KIND=MPI_OFFSET_KIND) NewStart(3), NewCount(3)
-  character(LEN=256) :: filename, MyVar
   
   !
-  ! open meshmask_872.nc in read-only mode
-  !
-  ! filename = "meshmask_872.nc"
-  filename = "grid1.nc"
-
-  !
-  ! open testfile.nc produced by pnetcdf-write-bufferedf.f90 in read-only mode
-  !
-  ! filename = "testfile.nc"
-  cmode = NF90_NOWRITE
-  ierr = nf90mpi_open(MPI_COMM_WORLD, filename, cmode, MPI_INFO_NULL, ncid)
-
+  ! open grid1.nc in read-only mode
+  ierr = nf90mpi_open(MPI_COMM_WORLD, GRID_FILE, NF90_NOWRITE, MPI_INFO_NULL, ncid)
   if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_open', ierr)
 
   !
   ! get grid dimensions
   !
-
   call MyGetDimension(ncid, 'im', MyOffset)
   grd%im = MyOffset
   jpiglo = MyOffset
@@ -66,10 +49,6 @@ subroutine parallel_rdgrd
      WRITE(*,*) ' '
      WRITE(*,*) ' jpiglo  : first  dimension of global domain --> i ',jpiglo
      WRITE(*,*) ' jpjglo  : second dimension of global domain --> j ',jpjglo
-     ! WRITE(*,*) ' jpk     : number of levels           > or = jpk   ',jpk
-     ! WRITE(*,*) ' jpkb    : first vertical layers where biology is active > or = jpkb   ',jpkb
-     ! WRITE(*,*) ' WorkLoad: jpiglo / size                           ',jpiglo/ size
-     ! WRITE(*,*) ' Rest    : mod(jpiglo, size)                       ',mod(jpiglo, size)
      WRITE(*,*) ' '
   endif
 
@@ -92,15 +71,7 @@ subroutine parallel_rdgrd
         jpi =  ilcit(ji,jj) 
         jpj =  ilcjt(ji,jj)
      endif
-  enddo
-  
-  ! "global" value not needed at this moment
-  ! jpim1=jpi-1
-  ! jpjm1=jpj-1
-  ! jpkm1=jpk-1
-  ! jpij=jpi*jpj
-  ! jpkbm1=jpkb-1  
-  
+  enddo  
   
   !*******************************************
   !
@@ -147,14 +118,10 @@ subroutine parallel_rdgrd
   MyStart(2) = mod(MyCount(2) * TmpInt + OffsetRow, jpjglo) + 1
   MyCount(2) = MyCount(2)
 
-  NewStart(1) = MyStart(1)
-  NewStart(2) = MyStart(2)
-  NewStart(3) = 1
-
-  NewCount(1) = MyCount(1)
-  NewCount(2) = MyCount(2)
-  NewCount(3) = grd%km
-
+  ! taking all values along k direction
+  MyStart(3) = 1
+  MyCount(3) = grd%km
+  
   if(MyRank .eq. 0) then
      write(*,*) "MyRank = ", MyRank, " MyStart = ", MyStart, " MyCount = ", &
           MyCount, " Sum = ", MyCount + MyStart
@@ -162,8 +129,6 @@ subroutine parallel_rdgrd
      write(*,*) "MyRank = ", MyRank, " MyStart = ", MyStart, " MyCount = ", &
           MyCount, " Sum = ", MyCount +MyStart
   end if
-  
-  allocate(values(MyCount(1), MyCount(2)))
   
   
   ! *****************************************************************************************
@@ -235,13 +200,13 @@ subroutine parallel_rdgrd
 
   ierr = nf90mpi_inq_varid (ncid, 'dep', VarId)
   if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_inq_varid', ierr)
-  ierr = nfmpi_get_vara_real_all (ncid, VarId, NewStart(3), NewCount(3), x1)
+  ierr = nfmpi_get_vara_real_all (ncid, VarId, MyStart(3), MyCount(3), x1)
   if (ierr .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all dep', ierr)
   grd%dep(:) = x1(:)
 
   ierr = nf90mpi_inq_varid (ncid, 'tmsk', VarId)
   if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_inq_varid', ierr)
-  ierr = nfmpi_get_vara_real_all (ncid, VarId, NewStart, NewCount, x3)
+  ierr = nfmpi_get_vara_real_all (ncid, VarId, MyStart, MyCount, x3)
   if (ierr .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all msk', ierr)
   grd%msk(:,:,:) = x3(:,:,:)
 
@@ -253,29 +218,12 @@ subroutine parallel_rdgrd
 
   ierr = nf90mpi_close(ncid)
 
-  ! ----------------------------------------------------------------                                            
-
   DEALLOCATE ( x3, x2, x1 )
 
 
   ! end copy-paste from rdgrds.f90
   ! *****************************************************************************************
   ! *****************************************************************************************
-  
-  !
-  ! reading nav_lon variable
-  !
-  ! ierr = nf90mpi_inq_varid(ncid, "nav_lon", VarId)
-  ! if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_inq_varid', ierr)
-
-  ! ierr = nfmpi_get_vara_real_all(ncid, VarId, MyStart, MyCount, values)
-  ! if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_get_vara_real', ierr)
-
-  ! write(*,*) "MyRank = ", MyRank, " shape(values) = ", shape(values)
-  ! write(*,*) "MyRank = ", MyRank, " values = ", values
-
-  ! ierr = nf90mpi_close(ncid)
-  ! if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_close', ierr)
 
 end subroutine parallel_rdgrd
 
@@ -287,7 +235,6 @@ subroutine MyGetDimension(ncid, name, n)
   character name*(*)
   integer :: ncid, ierr
   integer(KIND=MPI_OFFSET_KIND) :: n
-  ! integer(8) :: n
   integer dimid
 
   ierr = nf90mpi_inq_dimid(ncid, name, DimId)

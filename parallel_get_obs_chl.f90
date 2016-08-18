@@ -51,8 +51,6 @@ subroutine parallel_get_obs_chl
   stat = nf90mpi_open(MPI_COMM_WORLD, trim(MISFIT_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
   if (stat .ne. NF90_NOERR ) call handle_err('nf90mpi_open', stat)
   
-  ! stat = nf90_open(trim(MISFIT_FILE), NF90_NOWRITE, ncid)
-  
   if(stat.ne.0)then
      chl%no = 0
      return
@@ -76,8 +74,7 @@ subroutine parallel_get_obs_chl
   
   
   ! ---
-  ! Allocate memory for observations 
-  
+  ! Allocate memory for observations   
   
   ALLOCATE ( chl_mis(grd%im,grd%jm) ) ; chl_mis = huge(chl_mis(1,1))
   ALLOCATE ( chl_err(grd%im,grd%jm) ) ; chl_err = huge(chl_err(1,1))
@@ -95,29 +92,6 @@ subroutine parallel_get_obs_chl
   ALLOCATE ( chl%pq3(chl%no)) ; chl%pq3 = huge(chl%pq3(1))
   ALLOCATE ( chl%pq4(chl%no)) ; chl%pq4 = huge(chl%pq4(1))
   ALLOCATE ( chl%dzr(grd%km,chl%no)) ; chl%dzr=huge(chl%dzr(1,1))
-  
-  
-  
-  
-  ! stat = nf90_inq_varid (ncid, 'misfchl', idvar)
-  ! if(stat .ne. 0) then
-  !    call f_exit_message(10, 'var misfchl not found')
-  ! endif
-  
-  ! stat = nf90_get_var (ncid, idvar, chl_mis)
-  ! if(stat .ne. 0) then
-  !    call f_exit_message(10, 'cannot read var misfchl')
-  ! endif
-  
-  ! stat = nf90_inq_varid (ncid, 'errchl', idvar)
-  ! if(stat .ne. 0) then
-  !    call f_exit_message(10, 'var errchl not found')
-  ! endif
-  
-  ! stat = nf90_get_var (ncid, idvar, chl_err)
-  ! if(stat .ne. 0) then
-  !    call f_exit_message(10, 'cannot read var errchl')
-  ! endif
   
 
   stat = nf90mpi_inq_varid (ncid, 'misfchl', VarId)
