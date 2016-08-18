@@ -4,7 +4,7 @@ subroutine tao_minimizer
 
   use drv_str
   use ctl_str
-  ! use myalloc_mpi
+  use myalloc_mpi
   use petscvec
   use tao_str
 
@@ -14,10 +14,10 @@ subroutine tao_minimizer
   
   PetscErrorCode  ::   ierr
   Tao             ::   tao
-  Vec             ::   MyState ! array that stores the (temporary) state
-  PetscInt        ::   n, M, MyStart, MyEnd
+  Vec             ::   MyState    ! array that stores the (temporary) state
+  PetscInt        ::   n, M, GlobalStart, MyEnd
   PetscReal       ::   MyTolerance
-  integer         ::   size, rank, j
+  integer(i4)     ::   j
   
   ! Working arrays
   PetscInt, allocatable, dimension(:)     :: loc
@@ -26,17 +26,14 @@ subroutine tao_minimizer
   
   external MyFuncAndGradient, MyBounds, MyConvTest
 
-  ! if(MyRank .eq. 0) print*,'Initialize Petsc and Tao stuffs'
+  if(MyRank .eq. 0) print*,'Initialize Petsc and Tao stuffs'
   
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
   CHKERRQ(ierr)
 
-  call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
-  call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierr)
-  
-  print*, 'PetscInitialize() done by rank ', rank, ctl%n, ctl%n_global
+  print*, 'PetscInitialize(...) done by MyRank ', MyRank, ctl%n, ctl%n_global
 
-  if(rank .eq. 0) then
+  if(MyRank .eq. 0) then
      write(drv%dia,*) ''
      write(drv%dia,*) "Within tao_minimizer subroutine!"
   endif
@@ -50,15 +47,16 @@ subroutine tao_minimizer
   
   ! Create MyState array and fill it
   call VecCreateMPI(MPI_COMM_WORLD, n, M, MyState, ierr)
-  call VecGetOwnershipRange(MyState, MyStart, MyEnd, ierr)
-  print*, "MyState initialization by rank ", rank, "with indices: ", MyStart, MyEnd
+  call VecGetOwnershipRange(MyState, GlobalStart, MyEnd, ierr)
 
-  if( ctl%n .ne. MyEnd - MyStart ) then
+  print*, "MyState initialization by MyRank ", MyRank, "with indices: ", GlobalStart, MyEnd
+
+  if( ctl%n .ne. MyEnd - GlobalStart ) then
      print*, ""
      print*, "WARNING!!"
-     print*, "ctl%n .ne. MyStart - MyEnd"
+     print*, "ctl%n .ne. GlobalStart - MyEnd"
      print*, "ctl%n = ", ctl%n
-     print*, "MyStart = ", MyStart
+     print*, "GlobalStart = ", GlobalStart
      print*, "MyEnd = ", MyEnd
      print*, ""
   endif
@@ -66,7 +64,7 @@ subroutine tao_minimizer
   ! Take values from ctl%x_c in order to initialize 
   ! the solution array for Tao solver
   do j = 1, ctl%n
-     loc(j) = MyStart + j - 1
+     loc(j) = GlobalStart + j - 1
      MyValues(j) = 0. !ctl%x_c(j)
   end do
   
@@ -108,7 +106,7 @@ subroutine tao_minimizer
   call TaoSolve(tao, ierr)
   CHKERRQ(ierr)
 
-  if(rank .eq. 0) then
+  if(MyRank .eq. 0) then
 
      print*, ''
      print*, 'Tao Solver Info:'
@@ -141,7 +139,7 @@ subroutine tao_minimizer
   CHKERRQ(ierr)
 
   call PetscFinalize(ierr)
-  if(rank .eq. 0) then
+  if(MyRank .eq. 0) then
      write(drv%dia,*) 'Minimization done with ', drv%MyCounter
      write(drv%dia,*) 'iterations'
      write(drv%dia,*) ''
