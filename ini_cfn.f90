@@ -34,8 +34,10 @@ subroutine ini_cfn
   use grd_str
   use eof_str
   use ctl_str
+
 #ifdef _USE_MPI
   use mpi
+  use myalloc_mpi
 #endif
   
   implicit none
@@ -63,9 +65,14 @@ subroutine ini_cfn
      ctl%n = nSurfaceWaterPoints * ros%neof
 #ifdef _USE_MPI
      call MPI_Allreduce(ctl%n, ctl%n_global, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD, ierr)
-#endif
-     
+
+     if (MyRank .eq. 0) then
+        write(drv%dia,*) 'Size of the control vector: ',ctl%n
+     endif
+#else
      write(drv%dia,*) 'Size of the control vector: ',ctl%n
+#endif
+
      ALLOCATE( ctl%nbd(ctl%n)) ; ctl%nbd = huge(ctl%nbd(1))
      ALLOCATE(ctl%iwa(3*ctl%n)); ctl%iwa = huge(ctl%iwa(1))
      ALLOCATE( ctl%x_c(ctl%n)) ; ctl%x_c = huge(ctl%x_c(1))

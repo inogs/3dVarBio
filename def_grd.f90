@@ -33,6 +33,10 @@ subroutine def_grd
   use drv_str
   use grd_str
   
+#ifdef _USE_MPI
+  use myalloc_mpi
+#endif
+  
   implicit none
   
   INTEGER(I4)    :: i, j, k
@@ -67,10 +71,18 @@ subroutine def_grd
      enddo
      !         grd%msr(:,:,:) = grd%msk(:,:,:)
   else
+#ifdef _USE_MPI
+     if(MyRank .eq. 0) then
+#endif
      write(drv%dia,*)'Wrong mask for horizontal covariances ',  &
           drv%mask(drv%ktr)
      !stop
+#ifdef _USE_MPI
+  endif
+  call MPI_Abort(MPI_COMM_WORLD, -1, i)
+#else
      call f_exit(21)
+#endif
   endif
   
   

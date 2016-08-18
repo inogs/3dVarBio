@@ -150,7 +150,6 @@ subroutine parallel_get_obs_chl
   enddo
 
   if(MyRank .eq. 0) then
-     print*, 'WHITIN PARALLEL_GET_OBS_CHL subroutine!!!!!!!!!!!!!!!!!!1'
      print*,'Good chl observations: ',chl%nc
   endif
   chl%flc(:) = chl%flg(:)

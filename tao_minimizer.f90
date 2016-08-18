@@ -4,6 +4,7 @@ subroutine tao_minimizer
 
   use drv_str
   use ctl_str
+  ! use myalloc_mpi
   use petscvec
   use tao_str
 
@@ -24,8 +25,9 @@ subroutine tao_minimizer
   PetscScalar, pointer                    :: xtmp(:)
   
   external MyFuncAndGradient, MyBounds, MyConvTest
+
+  ! if(MyRank .eq. 0) print*,'Initialize Petsc and Tao stuffs'
   
-  print*,'Initialize Petsc and Tao stuffs'  
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
   CHKERRQ(ierr)
 
@@ -34,14 +36,16 @@ subroutine tao_minimizer
   
   print*, 'PetscInitialize() done by rank ', rank, ctl%n, ctl%n_global
 
-  write(drv%dia,*) ''
-  write(drv%dia,*) "Within tao_minimizer subroutine!"
+  if(rank .eq. 0) then
+     write(drv%dia,*) ''
+     write(drv%dia,*) "Within tao_minimizer subroutine!"
+  endif
 
   ! Allocate working arrays
   n = ctl%n
   M = ctl%n_global
   NewCtl%n_global = ctl%n_global
-  print*, "newmodule: ", NewCtl%n_global
+
   ALLOCATE(loc(n), MyValues(n))
   
   ! Create MyState array and fill it
@@ -103,12 +107,16 @@ subroutine tao_minimizer
   ! Perform minimization
   call TaoSolve(tao, ierr)
   CHKERRQ(ierr)
-  
-  print*, ''
-  print*, 'Tao Solver Info:'
-  print*, ''
-  call TaoView(tao, PETSC_VIEWER_STDOUT_WORLD, ierr)
-  print*, ''
+
+  if(rank .eq. 0) then
+
+     print*, ''
+     print*, 'Tao Solver Info:'
+     print*, ''
+     call TaoView(tao, PETSC_VIEWER_STDOUT_WORLD, ierr)
+     print*, ''
+
+  endif
 
   ! Take computed solution and copy into ctl%x_c array
   call TaoGetSolutionVector(tao, MyState, ierr)
@@ -133,13 +141,16 @@ subroutine tao_minimizer
   CHKERRQ(ierr)
 
   call PetscFinalize(ierr)
-  write(drv%dia,*) 'Minimization done with ', drv%MyCounter
-  write(drv%dia,*) 'iterations'
-  write(drv%dia,*) ''
-  
-  print*, "Minimization done with ", drv%MyCounter
-  print*, "iterations"
-  print*, ""
+  if(rank .eq. 0) then
+     write(drv%dia,*) 'Minimization done with ', drv%MyCounter
+     write(drv%dia,*) 'iterations'
+     write(drv%dia,*) ''
+     
+     
+     print*, "Minimization done with ", drv%MyCounter
+     print*, "iterations"
+     print*, ""
+  endif
 
 end subroutine tao_minimizer
 

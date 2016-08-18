@@ -37,6 +37,11 @@ subroutine wrt_dia
   use ctl_str
   use netcdf
   use filenames
+
+#ifdef _USE_MPI
+  use myalloc_mpi
+#endif
+  
   implicit none
   
   INTEGER(i4)  :: l,i,j,k
@@ -51,8 +56,15 @@ subroutine wrt_dia
   
   ! ---
   ! Innovations
-  
-  write(drv%dia,*) 'writes to corrections.dat !!!!!!!!!!!!!!!!!!!!!!!!!'
+#ifdef _USE_MPI
+  if(MyRank .eq. 0) then
+#endif
+
+     write(drv%dia,*) 'writes to corrections.dat !!!!!!!!!!!!!!!!!!!!!!!!!'
+     
+#ifdef _USE_MPI
+  endif
+#endif
   
   write(fgrd,'(i1)')drv%ktr
   
@@ -119,11 +131,20 @@ subroutine wrt_dia
   ! Observations
   
   !  open(215,file=drv%flag//drv%date//'obs_'//fgrd//'.dat',form='unformatted')
-  open(215,file=trim(OBS_FILE),form='unformatted')
+
+#ifdef _USE_MPI
+  if(MyRank .eq. 0) then
+#endif
+
+     open(215,file=trim(OBS_FILE),form='unformatted')
   
-  write(215) chl%no
-  
-  close (215)
-  write(*,*)'nchl ',chl%no
-  
+     write(215) chl%no
+     
+     close (215)
+     write(*,*)'nchl ',chl%no
+
+#ifdef _USE_MPI
+  endif
+#endif
+
 end subroutine wrt_dia

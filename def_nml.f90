@@ -36,6 +36,10 @@ subroutine def_nml
   use cns_str
   use ctl_str
 
+#ifdef _USE_MPI
+  use myalloc_mpi
+#endif
+  
   implicit none
 
   INTEGER(i4), PARAMETER    :: ngrids = 3
@@ -68,7 +72,15 @@ subroutine def_nml
 
   drv%dia = 12
 
+#ifdef _USE_MPI
+  if(MyRank .eq. 0) then
+#endif
+
   open ( drv%dia, file='OceanVar.diagnostics', form='formatted' )
+
+#ifdef _USE_MPI
+endif
+#endif
 
 !---------------------------------------------------------------------
 ! Open the namelist
@@ -76,14 +88,17 @@ subroutine def_nml
 
   open(11,file='var_3d_nml',form='formatted')
 
+  ! ---
+  read(11,grdlst)
+
+#ifdef _USE_MPI
+  if(MyRank .eq. 0) then
+#endif
+     
   write(drv%dia,*) '------------------------------------------------------------'
   write(drv%dia,*) '  '
   write(drv%dia,*) '                      NAMELISTS: '
   write(drv%dia,*) '  '
-
-! ---
-  read(11,grdlst)
-
   write(drv%dia,*) '------------------------------------------------------------'
   write(drv%dia,*) ' GRID NAMELIST INPUT: '
   write(drv%dia,*) ' Multigrid iterrations:                  ntr    = ', ntr
@@ -94,6 +109,10 @@ subroutine def_nml
   write(drv%dia,*) ' Run barotropic model:                 barmd    = ', barmd(1:ntr)
   write(drv%dia,*) ' Divergence damping in analysis:       divda    = ', divda(1:ntr)
   write(drv%dia,*) ' Divergence damping in initialisation: divdi    = ', divdi(1:ntr)
+
+#ifdef _USE_MPI
+endif
+#endif
 
   drv%ntr = ntr
   ALLOCATE( drv%grid (drv%ntr))      ; drv%grid (1:drv%ntr)    = grid (1:drv%ntr)
@@ -109,11 +128,19 @@ subroutine def_nml
 ! ---
   read(11,ctllst)
   
+#ifdef _USE_MPI
+  if(MyRank .eq. 0) then
+#endif
+     
   write(drv%dia,*) '------------------------------------------------------------'
   write(drv%dia,*) ' MINIMIZER NAMELIST INPUT: '
   write(drv%dia,*) ' Number of saved vectors:         ctl_m    = ', ctl_m
   write(drv%dia,*) ' Minimum gradient of J:           ctl_tol  = ', ctl_tol
   write(drv%dia,*) ' Percentage of initial gradient:  ctl_per  = ', ctl_per
+
+#ifdef _USE_MPI
+endif
+#endif
 
        ctl%m     = ctl_m  
        ctl%pgtol = ctl_tol
@@ -122,6 +149,10 @@ subroutine def_nml
 ! ---
   read(11,covlst)
   
+#ifdef _USE_MPI
+  if(MyRank .eq. 0) then
+#endif
+     
   write(drv%dia,*) '------------------------------------------------------------'
   write(drv%dia,*) ' COVARIANCE NAMELIST INPUT: '
   write(drv%dia,*) ' Number of EOFs:                  neof     = ', neof    
@@ -131,6 +162,10 @@ subroutine def_nml
   write(drv%dia,*) ' Horizontal correlation radius:   rcf_L    = ', rcf_L
   write(drv%dia,*) ' Extension factor for coastlines: rcf_efc  = ', rcf_efc
 
+#ifdef _USE_MPI
+endif
+#endif
+
        ros%neof     = neof
        ros%nreg     = nreg
        ros%read_eof = read_eof
@@ -138,29 +173,34 @@ subroutine def_nml
        rcf%L        = rcf_L
        rcf%efc      = rcf_efc
 
-  write(drv%dia,*) '------------------------------------------------------------'
-
 ! ---
   read(11,biolst)
   
+#ifdef _USE_MPI
+  if(MyRank .eq. 0) then
+#endif
+     
+  write(drv%dia,*) '------------------------------------------------------------'
   write(drv%dia,*) '------------------------------------------------------------'
   write(drv%dia,*) ' BIOLOGY NAMELIST INPUT: '
   write(drv%dia,*) ' Biological assimilation          biol     = ', biol    
   write(drv%dia,*) ' Biological+physical assimilation bphy     = ', bphy    
   write(drv%dia,*) ' Number of phytoplankton species  nchl     = ', nchl    
   write(drv%dia,*) ' Minimum depth for chlorophyll    chl_dep  = ', chl_dep
-
-  grd%nchl = nchl
-  chl%dep  = chl_dep
-  drv%argo = 0 !1
   
   write(drv%dia,*) '------------------------------------------------------------'
-
-
   write(drv%dia,*) '------------------------------------------------------------'
   write(drv%dia,*) ''
 
 
 
-close(11)
+  close(11)
+#ifdef _USE_MPI
+endif
+#endif
+
+  grd%nchl = nchl
+  chl%dep  = chl_dep
+  drv%argo = 0 !1
+
 end subroutine def_nml

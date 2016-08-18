@@ -176,6 +176,10 @@ subroutine int_par_chl
   use drv_str
   use grd_str
   use obs_str
+
+#ifdef _USE_MPI
+  use myalloc_mpi
+#endif
   
   implicit none
   
@@ -183,8 +187,16 @@ subroutine int_par_chl
   integer(i4)   ::  i1, kk, j1
   real(r8)      ::  p1, q1
   real(r8)      ::  div_x, div_y
-  
-  write(drv%dia,*) 'Number of CHL observations:  >>>>>>>>>>>>>',chl%nc
+
+#ifdef _USE_MPI
+  if(MyRank .eq. 0) then
+#endif
+     
+     write(drv%dia,*) 'Number of CHL observations:  >>>>>>>>>>>>>',chl%nc
+
+#ifdef _USE_MPI
+  endif
+#endif
   
   if(chl%nc.gt.0) then
      
