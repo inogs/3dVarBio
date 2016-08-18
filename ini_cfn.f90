@@ -66,9 +66,8 @@ subroutine ini_cfn
 #ifdef _USE_MPI
      call MPI_Allreduce(ctl%n, ctl%n_global, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD, ierr)
 
-     if (MyRank .eq. 0) then
-        write(drv%dia,*) 'Size of the control vector: ',ctl%n
-     endif
+     if (MyRank .eq. 0) write(drv%dia,*) 'Size of the control vector: ',ctl%n_global
+
 #else
      write(drv%dia,*) 'Size of the control vector: ',ctl%n
 #endif

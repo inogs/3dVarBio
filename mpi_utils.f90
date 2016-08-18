@@ -52,7 +52,7 @@ subroutine mynode()
   call COUNTLINE ('Dom_Dec_jpi.ascii', jpni)
   call COUNTWORDS('Dom_Dec_jpi.ascii', jpnj)
   
-  jpni = 1
+  jpni = 2 !1
   jpnj = 1
 
   if(jpni * jpnj .ne. size) then

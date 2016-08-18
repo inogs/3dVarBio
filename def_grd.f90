@@ -74,14 +74,20 @@ subroutine def_grd
 #ifdef _USE_MPI
      if(MyRank .eq. 0) then
 #endif
+        
      write(drv%dia,*)'Wrong mask for horizontal covariances ',  &
           drv%mask(drv%ktr)
+
      !stop
 #ifdef _USE_MPI
   endif
+  
   call MPI_Abort(MPI_COMM_WORLD, -1, i)
+
 #else
-     call f_exit(21)
+
+  call f_exit(21)
+
 #endif
   endif
   
@@ -95,7 +101,10 @@ subroutine def_grd
   
   
   ALLOCATE (SurfaceWaterPoints(2,nSurfaceWaterPoints))
-  
+
+#ifdef _USE_MPI
+  if(MyRank .eq. 0) &
+#endif
   write(*,*) 'nSurfaceWaterPoints = ', nSurfaceWaterPoints
   
   indSupWP=0

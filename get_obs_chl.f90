@@ -189,14 +189,9 @@ subroutine int_par_chl
   real(r8)      ::  div_x, div_y
 
 #ifdef _USE_MPI
-  if(MyRank .eq. 0) then
-#endif
-     
-     write(drv%dia,*) 'Number of CHL observations:  >>>>>>>>>>>>>',chl%nc
-
-#ifdef _USE_MPI
-  endif
-#endif
+  if(MyRank .eq. 0) &
+#endif     
+       write(drv%dia,*) 'Number of CHL observations:  >>>>>>>>>>>>>',chl%nc
   
   if(chl%nc.gt.0) then
      

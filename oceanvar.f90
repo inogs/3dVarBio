@@ -69,14 +69,10 @@ subroutine oceanvar
         call def_grd
 
 #ifdef _USE_MPI
-        if(MyRank .eq. 0) then
+        if(MyRank .eq. 0) &
 #endif
-              
-           write(drv%dia,*) 'out of def_grd '
-           
-#ifdef _USE_MPI
-        endif
-#endif
+             
+             write(drv%dia,*) 'out of def_grd '           
      endif
      
      ! ---
@@ -84,51 +80,38 @@ subroutine oceanvar
      if(ktr.eq.1) call get_obs
      
 #ifdef _USE_MPI
-     if(MyRank .eq. 0) then
+     if(MyRank .eq. 0) &
 #endif
         write(drv%dia,*) 'out of get_obs'
-#ifdef _USE_MPI
-     endif
-#endif
      
      ! ---
      ! Define interpolation parameters
      call int_par
      
 #ifdef _USE_MPI
-     if(MyRank .eq. 0) then
+     if(MyRank .eq. 0) &
 #endif
-        write(drv%dia,*) 'out of int_par'
-        
-#ifdef _USE_MPI
-     endif
-#endif
-     
+          write(drv%dia,*) 'out of int_par'
+             
      ! ---
      ! Define observational vector
      call obs_vec
      
 #ifdef _USE_MPI
-     if(MyRank .eq. 0) then
+     if(MyRank .eq. 0) &
 #endif
-        write(drv%dia,*) 'out of obs_vec'
-        
-#ifdef _USE_MPI
-     endif
-#endif
-     
+          write(drv%dia,*) 'out of obs_vec'
+             
      ! ---
      ! Define constants for background covariances
      if( ktr.eq.1 .or. drv%ratio(ktr).ne.1.0 ) then
         call def_cov
         
 #ifdef _USE_MPI
-        if(MyRank .eq. 0) then
+        if(MyRank .eq. 0) &
 #endif
-           write(drv%dia,*) 'out of def_cov '
-#ifdef _USE_MPI
-        endif
-#endif
+             write(drv%dia,*) 'out of def_cov '
+
      endif
      
      ! ---
@@ -136,25 +119,19 @@ subroutine oceanvar
      call ini_cfn
 
 #ifdef _USE_MPI
-     if(MyRank .eq. 0) then
+     if(MyRank .eq. 0) &
 #endif
-        write(drv%dia,*) 'out of ini_cfn'
+          write(drv%dia,*) 'out of ini_cfn'
 
-#ifdef _USE_MPI
-     endif
-#endif
      ! ---
      ! Calculate the initial norm the gradient
      if( ktr.gt.1 ) then
         call ini_nrm
         
 #ifdef _USE_MPI
-        if(MyRank .eq. 0) then
+        if(MyRank .eq. 0) &
 #endif
-           write(drv%dia,*) 'out of ini_nrm '
-#ifdef _USE_MPI
-        endif
-#endif
+             write(drv%dia,*) 'out of ini_nrm '
      endif
            
      ! ---
@@ -163,13 +140,10 @@ subroutine oceanvar
         call ini_itr
         
 #ifdef _USE_MPI
-        if(MyRank .eq. 0) then
+        if(MyRank .eq. 0) &
 #endif
-           write(drv%dia,*) 'out of ini_itr '
+             write(drv%dia,*) 'out of ini_itr '
            
-#ifdef _USE_MPI
-        endif
-#endif
      endif
      
      ! ---
@@ -200,13 +174,10 @@ subroutine oceanvar
      call sav_itr
      
 #ifdef _USE_MPI
-     if(MyRank .eq. 0) then
+     if(MyRank .eq. 0) &
 #endif
-        write(drv%dia,*) 'out of sav_itr '
+          write(drv%dia,*) 'out of sav_itr '
         
-#ifdef _USE_MPI
-     endif
-#endif
      !    endif
      !   endif
      
@@ -221,9 +192,7 @@ subroutine oceanvar
   
   !-----------------------------------------------------------------
 #ifdef _USE_MPI
-  if(MyRank .eq. 0) then
-     close(drv%dia)
-  endif
+  if(MyRank .eq. 0) close(drv%dia)
   
   call mpi_stop
 

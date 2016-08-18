@@ -34,6 +34,10 @@ subroutine def_cov
   use eof_str
   use cns_str
   use rcfl
+
+#ifdef _USE_MPI
+  use myalloc_mpi
+#endif
   
   implicit none
   
@@ -50,6 +54,9 @@ subroutine def_cov
   !$ nthreads = OMP_GET_NUM_THREADS()
   !$ threadid = OMP_GET_THREAD_NUM()
   if(threadid.eq.0) then
+#ifdef _USE_MPI
+     if(MyRank .eq. 0) &
+#endif
      write(*,*) "OMP version with threads = ", nthreads
   endif
   !$OMP END PARALLEL
@@ -286,6 +293,9 @@ subroutine def_cov
   ALLOCATE ( grd%ro_ad( grd%im, grd%jm, ros%neof))   ; grd%ro_ad = 0.0
   ALLOCATE ( Dump_vip ( grd%im, grd%jm, ros%neof))   ; Dump_vip  = 0.0
   
+#ifdef _USE_MPI
+  if(MyRank .eq. 0) &
+#endif
   write(*,*) 'rcfl allocation :', grd%jm, grd%imax, nthreads
   ALLOCATE ( a_rcx(grd%jm,grd%imax,nthreads)) ; a_rcx = huge(a_rcx(1,1,1))
   ALLOCATE ( b_rcx(grd%jm,grd%imax,nthreads)) ; b_rcx = huge(b_rcx(1,1,1))
