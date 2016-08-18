@@ -33,7 +33,7 @@ subroutine get_obs_chl
   use obs_str
   use netcdf
   use filenames
-  
+
   implicit none
   
   INTEGER(i4)   ::  j,k, kk
@@ -190,9 +190,13 @@ subroutine int_par_chl
 
 #ifdef _USE_MPI
   if(MyRank .eq. 0) &
+       write(drv%dia,*) 'Number of CHL observations:  >>>>>>>>>>>>>',chl%nc_global
+#else  
+
+  write(drv%dia,*) 'Number of CHL observations:  >>>>>>>>>>>>>',chl%nc
+
 #endif     
-       write(drv%dia,*) 'Number of CHL observations:  >>>>>>>>>>>>>',chl%nc
-  
+
   if(chl%nc.gt.0) then
      
      

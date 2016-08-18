@@ -97,6 +97,7 @@ subroutine parallel_rdgrd
   OffsetCol = 0
   if (mod(MyRank, jpni) .lt. MyRestCol) then
      MyCount(1) = MyCount(1) + 1
+     OffsetCol = mod(MyRank, jpni)
   else
      OffsetCol = MyRestCol
   end if
@@ -129,7 +130,9 @@ subroutine parallel_rdgrd
      write(*,*) "MyRank = ", MyRank, " MyStart = ", MyStart, " MyCount = ", &
           MyCount, " Sum = ", MyCount +MyStart
   end if
-  
+
+  grd%im = MyCount(1)
+  grd%jm = MyCount(2)
   
   ! *****************************************************************************************
   ! *****************************************************************************************

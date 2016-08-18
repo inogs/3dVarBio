@@ -102,9 +102,9 @@ subroutine def_grd
   
   ALLOCATE (SurfaceWaterPoints(2,nSurfaceWaterPoints))
 
-#ifdef _USE_MPI
-  if(MyRank .eq. 0) &
-#endif
+! #ifdef _USE_MPI
+!   if(MyRank .eq. 0) &
+! #endif
   write(*,*) 'nSurfaceWaterPoints = ', nSurfaceWaterPoints
   
   indSupWP=0
