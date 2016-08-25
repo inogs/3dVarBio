@@ -5,7 +5,7 @@ program myalltoall
   implicit none
 
   integer :: MyRank, Size, ierr, i, j, NData, iProc, blockSize
-  integer :: GlobalRow, localRow, localCol !, offset
+  integer :: GlobalRow, localRow, localCol
   real, allocatable :: Buffer(:,:), TmpBuf(:,:), RecBuf(:,:), DefBuf(:,:)
   
   call MPI_Init(ierr)
@@ -14,11 +14,15 @@ program myalltoall
 
   write(*,*) "Hello world from process ", MyRank, " of ", Size
 
-  localRow = 4
-  localCol = 5 !4
-  GlobalRow = 10 !8
+  ! localRow = 6
+  ! localCol = 3 !4
+  ! GlobalRow = 9 !8
 
-  if(mod(localRow, 2) .ne. 0) then
+  localRow = 4
+  localCol = 5
+  GlobalRow = 10
+
+  if(mod(localRow, size) .ne. 0) then
      if(MyRank .eq. 0) then
         print*, ''
         print*, 'Warning! localRow % 2 == ', mod(localRow, 2)
@@ -33,33 +37,27 @@ program myalltoall
   ALLOCATE(RecBuf(localCol, localRow))
   ALLOCATE(DefBuf(blockSize, localCol*Size))
 
-  ! offset = localCol !4
-
   ! Store initial data
   do i=1,localRow
      do j=1,localCol
-        Buffer(i, j) = j + (i - 1) * GlobalRow + MyRank*localCol ! offset
+        Buffer(i, j) = j + (i - 1) * GlobalRow + MyRank*localCol
      end do
   end do
 
-  ! Set up array for AllToAll 
-  ! do i=1,localCol
-  !    do j=1,localRow
-  !       TmpBuf(i,j) = Buffer(j,i)
-  !    end do
-  ! end do
   TmpBuf = TRANSPOSE(Buffer)
-  
-  NData = localCol * localRow / 2
-  call MPI_Alltoall(TmpBuf, NData, MPI_FLOAT, RecBuf, NData, MPI_FLOAT, MPI_COMM_WORLD, ierr)
-  
-  write(*,*) "MyRank = ", MyRank, " is starting with:"
-  print*, ""
-  print*, Buffer
-  print*, ""
-  print*, RecBuf
-  print*, ""
+  NData = localCol * localRow / Size
 
+  ! Perform AllToAll communication
+  call MPI_Alltoall(TmpBuf, NData, MPI_FLOAT, RecBuf, NData, MPI_FLOAT, MPI_COMM_WORLD, ierr)
+
+  ! write(*,*) "MyRank = ", MyRank, " is starting with:"
+  ! print*, ""
+  ! print*, Buffer
+  ! print*, ""
+  ! print*, RecBuf
+  ! print*, ""
+
+  ! Reorder data
   do j = 1,blockSize
      do iProc = 0, Size-1
         
@@ -70,17 +68,9 @@ program myalltoall
      end do
   end do
 
+  print*, ""
   print*, DefBuf
   print*, ""
-  print*, "Have a nice day from proc ", MyRank
-  print*, ""
-
-  ! write(*,*) "MyRank = ", MyRank
-  ! print*, ""
-  ! print*, Buffer
-  ! print*, ""
-  ! print*, TmpBuf
-  ! print*, ""
   
   DEALLOCATE(Buffer, TmpBuf, RecBuf, DefBuf)
 
