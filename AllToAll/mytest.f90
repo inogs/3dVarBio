@@ -6,7 +6,7 @@ program myalltoall
 
   integer :: MyRank, Size, ierr, i, j, NData, iProc, blockSize
   integer :: GlobalRow, localRow, localCol
-  real, allocatable :: Buffer(:,:), TmpBuf(:,:), RecBuf(:,:), DefBuf(:,:)
+  real, allocatable :: Buffer(:,:), TmpBuf(:,:), RecBuf(:,:), DefBuf(:,:), LastBuf(:,:)
   
   call MPI_Init(ierr)
   call MPI_Comm_size(MPI_COMM_WORLD, Size, ierr)
@@ -14,13 +14,13 @@ program myalltoall
 
   write(*,*) "Hello world from process ", MyRank, " of ", Size
 
-  ! localRow = 6
-  ! localCol = 3 !4
-  ! GlobalRow = 9 !8
+  localRow = 6
+  localCol = 3
+  GlobalRow = 9
 
-  localRow = 4
-  localCol = 5
-  GlobalRow = 10
+  ! localRow = 4
+  ! localCol = 5
+  ! GlobalRow = 10
 
   if(mod(localRow, size) .ne. 0) then
      if(MyRank .eq. 0) then
@@ -36,6 +36,7 @@ program myalltoall
   ALLOCATE(TmpBuf(localCol, localRow))
   ALLOCATE(RecBuf(localCol, localRow))
   ALLOCATE(DefBuf(blockSize, localCol*Size))
+  ALLOCATE(LastBuf(localRow, localCol))
 
   ! Store initial data
   do i=1,localRow
@@ -50,7 +51,7 @@ program myalltoall
   ! Perform AllToAll communication
   call MPI_Alltoall(TmpBuf, NData, MPI_FLOAT, RecBuf, NData, MPI_FLOAT, MPI_COMM_WORLD, ierr)
 
-  ! write(*,*) "MyRank = ", MyRank, " is starting with:"
+  write(*,*) "MyRank = ", MyRank, " is starting with:"
   ! print*, ""
   ! print*, Buffer
   ! print*, ""
@@ -71,8 +72,31 @@ program myalltoall
   print*, ""
   print*, DefBuf
   print*, ""
+
+  NData = blockSize * localCol
+  RecBuf = RESHAPE(RecBuf, (/blockSize, localCol*Size/))
+  call MPI_Alltoall(DefBuf, NData, MPI_FLOAT, RecBuf, NData, MPI_FLOAT, MPI_COMM_WORLD, ierr)
+
+  ! print*, ""
+  ! print*, RecBuf
+  ! print*, SHAPE(RecBuf)
+  ! print*, ""
+
+  do j=1,localCol
+     do iProc=0, Size-1
+        do i=1,blockSize
+           LastBuf(i + iProc*blockSize, j) = RecBuf(i, iProc*localCol + j)
+        end do
+     end do
+  end do
+
+  print*, ""
+  print*, LastBuf
+  print*, ""
+
   
-  DEALLOCATE(Buffer, TmpBuf, RecBuf, DefBuf)
+  
+  DEALLOCATE(Buffer, TmpBuf, RecBuf, DefBuf, LastBuf)
 
   call MPI_Finalize(ierr)
 
