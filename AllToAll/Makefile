@@ -1,7 +1,16 @@
-all: run
+all: def  # run
 
-run: a.out
-	mpirun -np 3 ./a.out
+def: allv
+	mpirun -np 3 ./allv
 
-a.out: mytest.f90
-	mpifort mytest.f90
+run: mytest
+	mpirun -np 3 ./mytest
+
+mytest: mytest.f90
+	mpifort mytest.f90 -o mytest
+
+allv: allv.f90
+	mpifort allv.f90 -o allv
+
+clean:
+	rm -rf allv mytest
