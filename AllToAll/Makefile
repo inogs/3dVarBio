@@ -1,7 +1,7 @@
 all: def  # run
 
 def: allv
-	mpirun -np 3 ./allv
+	mpirun -np 4 ./allv
 
 run: mytest
 	mpirun -np 3 ./mytest
