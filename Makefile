@@ -60,7 +60,7 @@ OBJSTR  =  \
 	ctl_str.o\
 	rcfl_mod.o\
 	tao_str.o\
-	mpi_alloc.o
+	mpi_str.o
 
 PHYSOBS  =  \
 	get_obs_sla.o\
