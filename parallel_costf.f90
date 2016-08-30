@@ -34,6 +34,7 @@ subroutine parallel_costf
  use grd_str
  use eof_str
  use ctl_str
+ use mpi_str
 
  implicit none
 
@@ -72,7 +73,8 @@ subroutine parallel_costf
 ! -------------------------------------------------------
 
     ctl%f_c = ctl%f_b + ctl%f_o
-
+    
+    if(MyRank .eq. 0) &
     print*,' Cost function ',ctl%f_c
 
 ! -------------------------------------------------------

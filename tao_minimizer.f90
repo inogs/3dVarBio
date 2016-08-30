@@ -16,7 +16,7 @@ subroutine tao_minimizer
   Tao             ::   tao
   Vec             ::   MyState    ! array that stores the (temporary) state
   PetscInt        ::   n, M, GlobalStart, MyEnd
-  PetscReal       ::   MyTolerance
+  PetscScalar     ::   MyTolerance
   integer(i4)     ::   j
   
   ! Working arrays
@@ -89,21 +89,22 @@ subroutine tao_minimizer
   ! Set initial solution array, MyBounds and MyFuncAndGradient routines
   call TaoSetInitialVector(tao, MyState, ierr)
   CHKERRQ(ierr)
-  call TaoSetVariableBoundsRoutine(tao, MyBounds, PETSC_NULL_OBJECT, ierr)
-  CHKERRQ(ierr)
+  ! call TaoSetVariableBoundsRoutine(tao, MyBounds, PETSC_NULL_OBJECT, ierr)
+  ! CHKERRQ(ierr)
   call TaoSetObjectiveAndGradientRoutine(tao, MyFuncAndGradient, PETSC_NULL_OBJECT, ierr)
   CHKERRQ(ierr)
 
   ! Set MyTolerance and ConvergenceTest
   MyTolerance = 1.0d1
   ! MyTolerance = 2.0d-2
-  call TaoSetTolerances(tao, MyTolerance, PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr)
-  CHKERRQ(ierr)
-  call TaoSetConvergenceTest(tao, MyConvTest, PETSC_NULL_OBJECT, ierr)
-  CHKERRQ(ierr)
+  ! call TaoSetTolerances(tao, MyTolerance, PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr)
+  ! CHKERRQ(ierr)
+  ! call TaoSetConvergenceTest(tao, MyConvTest, PETSC_NULL_OBJECT, ierr)
+  ! CHKERRQ(ierr)
 
   ! Perform minimization
   call TaoSolve(tao, ierr)
+  print*, "Done!"
   CHKERRQ(ierr)
 
   if(MyRank .eq. 0) then
@@ -175,14 +176,14 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
 
   Tao             ::   tao
   Vec             ::   MyState, Grad
-  PetscReal       ::   CostFunc
+  PetscScalar     ::   CostFunc
   integer(i4)     ::   dummy, ierr, j
 
   ! Working arrays
   PetscInt, allocatable, dimension(:)     :: loc
   PetscScalar, allocatable, dimension(:)  :: my_grad
   PetscScalar, pointer                    :: xtmp(:)
-  PetscInt                                :: GlobalStart, MyEnd
+  PetscInt                                :: GlobalStart(1), MyEnd(1)
   ALLOCATE(loc(ctl%n), my_grad(ctl%n))
 
   ! read temporary state provided by Tao Solver
@@ -210,11 +211,13 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   ! print*,"MyRank ", MyRank, " GlobStart ", GlobalStart, "MyEnd ", MyEnd
   ! print*,""
   do j = 1, ctl%n
-     loc(j) = GlobalStart + j - 1 !j-1
+     loc(j) = GlobalStart(1) + j - 1
      my_grad(j) = ctl%g_c(j)
   end do
 
-  !!!! TO CHECK !!!!!
+  ! do j=1, ctl%n
+  !    call VecSetValues(Grad, 1, loc(j), my_grad(j), INSERT_VALUES, ierr)
+  ! end do
   call VecSetValues(Grad, ctl%n, loc, my_grad, INSERT_VALUES, ierr)
   CHKERRQ(ierr)
   call VecAssemblyBegin(Grad, ierr)
@@ -309,7 +312,7 @@ subroutine MyConvTest(tao, dummy, ierr)
   integer              :: dummy, ierr, j, n, M, CheckVal
   Vec                  :: TmpGrad
   PetscScalar, pointer :: ReadGrad(:)
-  PetscReal            :: MyTol, grtol, gttol
+  PetscScalar          :: MyTol, grtol, gttol
 
   ! set useful variables
   n = ctl%n
