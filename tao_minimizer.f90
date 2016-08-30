@@ -97,8 +97,8 @@ subroutine tao_minimizer
   ! Set MyTolerance and ConvergenceTest
   MyTolerance = 1.0d1
   ! MyTolerance = 2.0d-2
-  ! call TaoSetTolerances(tao, MyTolerance, PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr)
-  ! CHKERRQ(ierr)
+  call TaoSetTolerances(tao, MyTolerance, PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr)
+  CHKERRQ(ierr)
   ! call TaoSetConvergenceTest(tao, MyConvTest, PETSC_NULL_OBJECT, ierr)
   ! CHKERRQ(ierr)
 
@@ -147,7 +147,7 @@ subroutine tao_minimizer
      print*, "iterations"
      print*, ""
   endif
-
+  print*,"MyRank ", MyRank, " exiting from tao_minimizer"
 end subroutine tao_minimizer
 
 !-------------------------------------------------!
@@ -211,15 +211,18 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   call VecGetOwnershipRange(Grad, GlobalStart, MyEnd, ierr)
 
   ! print*,""
-  ! print*,"MyRank ", MyRank, " GlobStart ", GlobalStart, "MyEnd ", MyEnd
+  print*,"MyRank ", MyRank, "GlobStart ", GlobalStart, "MyEnd ", MyEnd
   ! print*,""
   call VecGetArrayF90(Grad, my_grad, ierr)
   do j = 1, ctl%n
-     ! loc(j) = GlobalStart(1) + j - 1
      my_grad(j) = ctl%g_c(j)
   end do
   call VecRestoreArrayF90(Grad, my_grad, ierr)
 
+  ! do j = 1, ctl%n
+  !    loc(j) = GlobalStart(1) + j - 1
+  !    my_grad(j) = ctl%g_c(j)
+  ! end do
   ! do j=1, ctl%n
   !    call VecSetValues(Grad, 1, loc(j), my_grad(j), INSERT_VALUES, ierr)
   ! end do
@@ -350,6 +353,7 @@ subroutine MyConvTest(tao, dummy, ierr)
      call TaoSetConvergedReason(tao, TAO_CONTINUE_ITERATING, ierr)
      CHKERRQ(ierr)
   else
+     print*,"AAAAAAAAAAAAAAAAAAAAA"
      call TaoSetConvergedReason(tao, TAO_CONVERGED_USER, ierr)
      CHKERRQ(ierr)
   end if
