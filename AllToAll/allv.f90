@@ -4,10 +4,10 @@ program myalltoall
   
   implicit none
 
-  integer :: MyRank, Size, ierr, i, j, iProc, blockSize, NData
+  integer :: MyRank, Size, ierr, i, j, iProc, blockSize
   integer :: GlobalCol, localRow, localCol, RestRow, RestCol, OffsetRow, OffsetCol
   integer, allocatable :: SendCount(:), SendDispl(:), RecCount(:), RecDispl(:)
-  real, allocatable :: Buffer(:,:), TmpBuf(:,:), RecBuf(:), DefBuf(:,:), LastBuf(:,:) ! RecBuf(:,:)
+  real, allocatable :: Buffer(:,:), TmpBuf(:,:), RecBuf(:), DefBuf(:,:), LastBuf(:,:)
   
   call MPI_Init(ierr)
   call MPI_Comm_size(MPI_COMM_WORLD, Size, ierr)
@@ -24,12 +24,12 @@ program myalltoall
   ! localCol = 3
   ! GlobalCol = 9
 
-  localRow = 3 !4
-  localCol = 5
-  GlobalCol = 10
+  ! localRow = 3 !4
+  ! localCol = 5
+  ! GlobalCol = 10
 
-  localRow = 6 !4
-  GlobalCol = 9
+  localRow = 6
+  GlobalCol = 10
 
   localCol = GlobalCol / Size
   RestCol  = mod(GlobalCol, Size)
@@ -91,10 +91,6 @@ program myalltoall
   ALLOCATE(Buffer(localRow, localCol))
   ALLOCATE(TmpBuf(localCol, localRow))
   ALLOCATE(RecBuf(blockSize*GlobalCol))
-  ! ALLOCATE(RecBuf(blockSize, GlobalCol))
-
-  ! ALLOCATE(RecBuf(localCol, localRow))
-  ! ALLOCATE(DefBuf(blockSize, localCol*Size))
   ALLOCATE(DefBuf(blockSize, GlobalCol))
   ALLOCATE(LastBuf(localRow, localCol))
 
@@ -112,35 +108,21 @@ program myalltoall
 
   TmpBuf = TRANSPOSE(Buffer)
   call MPI_Alltoallv(TmpBuf, SendCount, SendDispl, MPI_FLOAT, RecBuf, RecCount, RecDispl, MPI_FLOAT, MPI_COMM_WORLD, ierr)
-  ! NData = localCol * blockSize ! localRow / Size
-
-  ! ! Perform AllToAll communication
-  ! call MPI_Alltoall(TmpBuf, NData, MPI_FLOAT, RecBuf, NData, MPI_FLOAT, MPI_COMM_WORLD, ierr)
   
   ! write(*,*) "MyRank = ", MyRank, " is starting with:"
 
   ! print*, ""
   ! print*, Buffer
-  print*, ""
-  print*, RecBuf, SHAPE(RecBuf)
-  print*, ""
+  ! print*, ""
+  ! print*, RecBuf, SHAPE(RecBuf)
+  ! print*, ""
 
   ! ! Reorder data
   do j = 1,blockSize
-     do iProc = 0, Size-1
-        
+     do iProc = 0, Size-1        
         do i=1, recCount(iProc+1)/blockSize
-
-           ! if(MyRank .eq. 0) then
-           !    print*, i + recDispl(iProc+1)/blockSize, RecDispl(iProc+1) + i + (j-1) * recCount(iProc+1)/blockSize
-           ! end if
-
            DefBuf(j,i + recDispl(iProc+1)/blockSize) = RecBuf( RecDispl(iProc+1) + i + (j-1) * recCount(iProc+1)/blockSize)
-
-           ! i + j + iProc*blockSize)
-           ! DefBuf(j,i + iProc*localCol) = RecBuf(i, j + iProc*blockSize)
         end do
-
      end do
   end do
 
@@ -148,37 +130,27 @@ program myalltoall
   print*, DefBuf
   print*, ""
   
-  ! ! Reorder data
-  ! do j = 1,blockSize
-  !    do iProc = 0, Size-1
-        
-  !       do i=1,localCol
-  !          DefBuf(j,i + iProc*localCol) = RecBuf(i, j + iProc*blockSize)
-  !       end do
 
-  !    end do
-  ! end do
-
-  ! NData = blockSize * localCol
-  ! RecBuf = RESHAPE(RecBuf, (/blockSize, localCol*Size/))
-  ! call MPI_Alltoall(DefBuf, NData, MPI_FLOAT, RecBuf, NData, MPI_FLOAT, MPI_COMM_WORLD, ierr)
-
-  ! ! print*, ""
-  ! ! print*, RecBuf
-  ! ! print*, SHAPE(RecBuf)
-  ! ! print*, ""
-
-  ! do j=1,localCol
-  !    do iProc=0, Size-1
-  !       do i=1,blockSize
-  !          LastBuf(i + iProc*blockSize, j) = RecBuf(i, iProc*localCol + j)
-  !       end do
-  !    end do
-  ! end do
+  DEALLOCATE(RecBuf)
+  ALLOCATE(RecBuf(localRow*localCol))
+  call MPI_Alltoallv(DefBuf, RecCount, RecDispl, MPI_FLOAT, RecBuf, SendCount, SendDispl, MPI_FLOAT, MPI_COMM_WORLD, ierr)
 
   ! print*, ""
-  ! print*, LastBuf
+  ! print*, RecBuf
+  ! print*, SHAPE(RecBuf)
   ! print*, ""
+  
+  do j=1,localCol
+     do iProc=0, Size-1
+        do i=1, SendCount(iProc+1)/localCol
+           LastBuf(i + SendDispl(iProc+1)/localCol, j) = RecBuf(i + SendDispl(iProc+1) + (j-1) * SendCount(iProc+1)/localCol)
+        end do
+     end do
+  end do
+  
+  print*, ""
+  print*, LastBuf, SHAPE(LastBuf)
+  print*, ""
 
   
   
