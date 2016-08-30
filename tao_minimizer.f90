@@ -89,8 +89,8 @@ subroutine tao_minimizer
   ! Set initial solution array, MyBounds and MyFuncAndGradient routines
   call TaoSetInitialVector(tao, MyState, ierr)
   CHKERRQ(ierr)
-  ! call TaoSetVariableBoundsRoutine(tao, MyBounds, PETSC_NULL_OBJECT, ierr)
-  ! CHKERRQ(ierr)
+  call TaoSetVariableBoundsRoutine(tao, MyBounds, PETSC_NULL_OBJECT, ierr)
+  CHKERRQ(ierr)
   call TaoSetObjectiveAndGradientRoutine(tao, MyFuncAndGradient, PETSC_NULL_OBJECT, ierr)
   CHKERRQ(ierr)
 
@@ -104,7 +104,6 @@ subroutine tao_minimizer
 
   ! Perform minimization
   call TaoSolve(tao, ierr)
-  print*, "Done!"
   CHKERRQ(ierr)
 
   if(MyRank .eq. 0) then
@@ -177,14 +176,17 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   Tao             ::   tao
   Vec             ::   MyState, Grad
   PetscScalar     ::   CostFunc
-  integer(i4)     ::   dummy, ierr, j
+  PetscErrorCode  ::   ierr
+  integer(i4)     ::   dummy, j
 
   ! Working arrays
   PetscInt, allocatable, dimension(:)     :: loc
-  PetscScalar, allocatable, dimension(:)  :: my_grad
+  ! PetscScalar, allocatable, dimension(:)  :: my_grad
+  PetscScalar, pointer, dimension(:)  :: my_grad
   PetscScalar, pointer                    :: xtmp(:)
   PetscInt                                :: GlobalStart(1), MyEnd(1)
-  ALLOCATE(loc(ctl%n), my_grad(ctl%n))
+  ALLOCATE(loc(ctl%n)) !, my_grad(ctl%n))
+  ! ALLOCATE(my_grad(ctl%n))
 
   ! read temporary state provided by Tao Solver
   ! and set it in ctl%x_c array in order to compute 
@@ -207,25 +209,29 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
 
   ! assign the gradient value computed by costf to Grad
   call VecGetOwnershipRange(Grad, GlobalStart, MyEnd, ierr)
+
   ! print*,""
   ! print*,"MyRank ", MyRank, " GlobStart ", GlobalStart, "MyEnd ", MyEnd
   ! print*,""
+  call VecGetArrayF90(Grad, my_grad, ierr)
   do j = 1, ctl%n
      loc(j) = GlobalStart(1) + j - 1
      my_grad(j) = ctl%g_c(j)
   end do
+  call VecRestoreArrayF90(Grad, my_grad, ierr)
 
   ! do j=1, ctl%n
   !    call VecSetValues(Grad, 1, loc(j), my_grad(j), INSERT_VALUES, ierr)
   ! end do
-  call VecSetValues(Grad, ctl%n, loc, my_grad, INSERT_VALUES, ierr)
+  ! call VecSetValues(Grad, ctl%n, loc, my_grad, INSERT_VALUES, ierr)
   CHKERRQ(ierr)
   call VecAssemblyBegin(Grad, ierr)
   CHKERRQ(ierr)
   call VecAssemblyEnd(Grad, ierr)
   CHKERRQ(ierr)
 
-  DEALLOCATE(loc, my_grad)
+  DEALLOCATE(loc) !, my_grad)
+  ! DEALLOCATE(my_grad)
 
   ! Update counter
   drv%MyCounter = drv%MyCounter + 1
