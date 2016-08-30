@@ -107,14 +107,12 @@ subroutine tao_minimizer
   CHKERRQ(ierr)
 
   if(MyRank .eq. 0) then
-
      print*, ''
      print*, 'Tao Solver Info:'
      print*, ''
-     call TaoView(tao, PETSC_VIEWER_STDOUT_WORLD, ierr)
-     print*, ''
-
   endif
+
+  call TaoView(tao, PETSC_VIEWER_STDOUT_WORLD, ierr)
 
   ! Take computed solution and copy into ctl%x_c array
   call TaoGetSolutionVector(tao, MyState, ierr)
@@ -144,7 +142,7 @@ subroutine tao_minimizer
      write(drv%dia,*) 'iterations'
      write(drv%dia,*) ''
      
-     
+     print*, ""
      print*, "Minimization done with ", drv%MyCounter
      print*, "iterations"
      print*, ""
@@ -212,12 +210,13 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
      my_grad(j) = ctl%g_c(j)
   end do
 
-  call VecSetValues(Grad, ctl%n, loc, my_grad, INSERT_VALUES, ierr)
-  CHKERRQ(ierr)
-  call VecAssemblyBegin(Grad, ierr)
-  CHKERRQ(ierr)
-  call VecAssemblyEnd(Grad, ierr)
-  CHKERRQ(ierr)
+  !!!! TO CHECK !!!!!
+  ! call VecSetValues(Grad, ctl%n, loc, my_grad, INSERT_VALUES, ierr)
+  ! CHKERRQ(ierr)
+  ! call VecAssemblyBegin(Grad, ierr)
+  ! CHKERRQ(ierr)
+  ! call VecAssemblyEnd(Grad, ierr)
+  ! CHKERRQ(ierr)
 
   DEALLOCATE(loc, my_grad)
 

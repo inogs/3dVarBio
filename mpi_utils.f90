@@ -106,10 +106,7 @@ subroutine mpi_stop
 
   INTEGER info
 
-  ! CALL mpi_sync
-
   CALL mpi_finalize(info)
-
 
 end subroutine mpi_stop
 

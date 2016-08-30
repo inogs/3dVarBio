@@ -193,7 +193,6 @@ subroutine oceanvar
   !-----------------------------------------------------------------
 #ifdef _USE_MPI
   if(MyRank .eq. 0) close(drv%dia)
-  
   call mpi_stop
 
 #else
