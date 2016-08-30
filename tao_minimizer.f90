@@ -166,7 +166,7 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   use ctl_str
   use tao_str
   use petscvec
-  
+  use mpi_str
   use tao_str
 
   implicit none
@@ -182,7 +182,7 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   PetscInt, allocatable, dimension(:)     :: loc
   PetscScalar, allocatable, dimension(:)  :: my_grad
   PetscScalar, pointer                    :: xtmp(:)
-
+  PetscInt                                :: GlobalStart, MyEnd
   ALLOCATE(loc(ctl%n), my_grad(ctl%n))
 
   ! read temporary state provided by Tao Solver
@@ -205,18 +205,22 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   CostFunc = ctl%f_c
 
   ! assign the gradient value computed by costf to Grad
+  call VecGetOwnershipRange(Grad, GlobalStart, MyEnd, ierr)
+  ! print*,""
+  ! print*,"MyRank ", MyRank, " GlobStart ", GlobalStart, "MyEnd ", MyEnd
+  ! print*,""
   do j = 1, ctl%n
-     loc(j) = j-1
+     loc(j) = GlobalStart + j - 1 !j-1
      my_grad(j) = ctl%g_c(j)
   end do
 
   !!!! TO CHECK !!!!!
-  ! call VecSetValues(Grad, ctl%n, loc, my_grad, INSERT_VALUES, ierr)
-  ! CHKERRQ(ierr)
-  ! call VecAssemblyBegin(Grad, ierr)
-  ! CHKERRQ(ierr)
-  ! call VecAssemblyEnd(Grad, ierr)
-  ! CHKERRQ(ierr)
+  call VecSetValues(Grad, ctl%n, loc, my_grad, INSERT_VALUES, ierr)
+  CHKERRQ(ierr)
+  call VecAssemblyBegin(Grad, ierr)
+  CHKERRQ(ierr)
+  call VecAssemblyEnd(Grad, ierr)
+  CHKERRQ(ierr)
 
   DEALLOCATE(loc, my_grad)
 
@@ -253,11 +257,12 @@ subroutine MyBounds(tao, lb, ub, dummy, ierr)
 
   PetscInt, allocatable, dimension(:)       :: loc
   PetscScalar, allocatable, dimension(:)    :: lbound, ubound
+  PetscInt                                  :: GlobalStart, MyEnd
 
   ALLOCATE(loc(ctl%n), lbound(ctl%n), ubound(ctl%n))
-  
+  call VecGetOwnershipRange(lb, GlobalStart, MyEnd, ierr)
   do j = 1, ctl%n
-     loc(j) = j-1
+     loc(j) = GlobalStart + j - 1
      lbound(j) = ctl%l_c(j)
      ubound(j) = ctl%u_c(j)
   end do
@@ -295,7 +300,6 @@ subroutine MyConvTest(tao, dummy, ierr)
   use ctl_str
   use tao_str
   use petscvec
-  use tao_str
 
   implicit none
   
@@ -309,7 +313,7 @@ subroutine MyConvTest(tao, dummy, ierr)
 
   ! set useful variables
   n = ctl%n
-  M = ctl%n
+  M = ctl%n_global
   CheckVal = 0
 
   ! taking tolerance value (skipping useless values)
