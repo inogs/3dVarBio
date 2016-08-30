@@ -99,8 +99,8 @@ subroutine tao_minimizer
   ! MyTolerance = 2.0d-2
   call TaoSetTolerances(tao, MyTolerance, PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr)
   CHKERRQ(ierr)
-  ! call TaoSetConvergenceTest(tao, MyConvTest, PETSC_NULL_OBJECT, ierr)
-  ! CHKERRQ(ierr)
+  call TaoSetConvergenceTest(tao, MyConvTest, PETSC_NULL_OBJECT, ierr)
+  CHKERRQ(ierr)
 
   ! Perform minimization
   call TaoSolve(tao, ierr)
@@ -213,11 +213,16 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   ! print*,""
   print*,"MyRank ", MyRank, "GlobStart ", GlobalStart, "MyEnd ", MyEnd
   ! print*,""
+
   call VecGetArrayF90(Grad, my_grad, ierr)
+
   do j = 1, ctl%n
      my_grad(j) = ctl%g_c(j)
   end do
+
   call VecRestoreArrayF90(Grad, my_grad, ierr)
+
+  ! call VecView(Grad, PETSC_VIEWER_STDOUT_SELF, ierr)
 
   ! do j = 1, ctl%n
   !    loc(j) = GlobalStart(1) + j - 1
