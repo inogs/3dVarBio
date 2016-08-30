@@ -215,7 +215,7 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   ! print*,""
   call VecGetArrayF90(Grad, my_grad, ierr)
   do j = 1, ctl%n
-     loc(j) = GlobalStart(1) + j - 1
+     ! loc(j) = GlobalStart(1) + j - 1
      my_grad(j) = ctl%g_c(j)
   end do
   call VecRestoreArrayF90(Grad, my_grad, ierr)
@@ -224,11 +224,11 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   !    call VecSetValues(Grad, 1, loc(j), my_grad(j), INSERT_VALUES, ierr)
   ! end do
   ! call VecSetValues(Grad, ctl%n, loc, my_grad, INSERT_VALUES, ierr)
-  CHKERRQ(ierr)
-  call VecAssemblyBegin(Grad, ierr)
-  CHKERRQ(ierr)
-  call VecAssemblyEnd(Grad, ierr)
-  CHKERRQ(ierr)
+  ! CHKERRQ(ierr)
+  ! call VecAssemblyBegin(Grad, ierr)
+  ! CHKERRQ(ierr)
+  ! call VecAssemblyEnd(Grad, ierr)
+  ! CHKERRQ(ierr)
 
   DEALLOCATE(loc) !, my_grad)
   ! DEALLOCATE(my_grad)
