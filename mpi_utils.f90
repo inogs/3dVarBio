@@ -22,7 +22,7 @@ subroutine mynode()
   ! -----------------------------------------------------------------------
   
   
-  use myalloc_mpi
+  use mpi_str
   
   ! -----------------------------------------------------------------------
   
@@ -87,7 +87,7 @@ end subroutine mynode
 
 subroutine mpi_sync
 
-  use myalloc_mpi
+  use mpi_str
   
   implicit none
 
@@ -100,7 +100,7 @@ end subroutine mpi_sync
 
 subroutine mpi_stop
 
-  use myalloc_mpi
+  use mpi_str
 
   implicit none
 

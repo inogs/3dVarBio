@@ -33,7 +33,7 @@ subroutine parallel_get_obs_chl
   use obs_str
 
   use mpi
-  use myalloc_mpi
+  use mpi_str
   use pnetcdf
   use filenames
   

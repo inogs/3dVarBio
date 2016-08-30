@@ -1,4 +1,4 @@
-MODULE myalloc_mpi
+MODULE mpi_str
   use mpi
   
   IMPLICIT NONE
@@ -16,4 +16,4 @@ MODULE myalloc_mpi
   INTEGER  :: jpni, jpnj, jpnij
   integer(KIND=MPI_OFFSET_KIND) :: MyStart(3), MyCount(3)
   
-END MODULE myalloc_mpi
+END MODULE mpi_str

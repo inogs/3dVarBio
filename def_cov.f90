@@ -36,7 +36,7 @@ subroutine def_cov
   use rcfl
 
 #ifdef _USE_MPI
-  use myalloc_mpi
+  use mpi_str
 #endif
   
   implicit none

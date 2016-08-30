@@ -6,7 +6,7 @@ subroutine parallel_rdgrd
   use filenames
 
   use mpi
-  use myalloc_mpi
+  use mpi_str
   use pnetcdf
   
   implicit none

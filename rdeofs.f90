@@ -38,7 +38,7 @@ subroutine rdeofs
 
 #ifdef _USE_MPI
   use mpi
-  use myalloc_mpi
+  use mpi_str
 #endif
   
   implicit none

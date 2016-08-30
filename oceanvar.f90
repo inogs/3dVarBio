@@ -39,7 +39,7 @@ subroutine oceanvar
   use drv_str
   
 #ifdef _USE_MPI
-  use myalloc_mpi
+  use mpi_str
 #endif
   
   implicit none

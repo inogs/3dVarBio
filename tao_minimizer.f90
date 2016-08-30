@@ -4,7 +4,7 @@ subroutine tao_minimizer
 
   use drv_str
   use ctl_str
-  use myalloc_mpi
+  use mpi_str
   use petscvec
   use tao_str
 

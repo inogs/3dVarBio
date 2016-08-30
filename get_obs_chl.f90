@@ -178,7 +178,7 @@ subroutine int_par_chl
   use obs_str
 
 #ifdef _USE_MPI
-  use myalloc_mpi
+  use mpi_str
 #endif
   
   implicit none
