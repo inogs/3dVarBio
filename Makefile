@@ -105,6 +105,7 @@ OBJS    =  \
 	def_nml.o\
 	def_grd.o\
 	parallel_def_grd.o\
+	parallel_def_cov.o\
 	sav_itr.o\
 	ini_itr.o\
 	rdgrds.o\

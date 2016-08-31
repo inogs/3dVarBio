@@ -110,10 +110,12 @@ subroutine oceanvar
      ! ---
      ! Define constants for background covariances
      if( ktr.eq.1 .or. drv%ratio(ktr).ne.1.0 ) then
-        call def_cov
         
 #ifdef _USE_MPI
+        call parallel_def_cov
         if(MyRank .eq. 0) &
+#else
+        call def_cov
 #endif
              write(drv%dia,*) 'out of def_cov '
 

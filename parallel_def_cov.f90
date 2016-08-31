@@ -1,4 +1,4 @@
-subroutine def_cov
+subroutine parallel_def_cov
 
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -34,7 +34,8 @@ subroutine def_cov
   use eof_str
   use cns_str
   use rcfl
-
+  use mpi_str
+  
   implicit none
   
   INTEGER(i4)                 :: k, nspl, i, j, kk
@@ -50,7 +51,8 @@ subroutine def_cov
   !$ nthreads = OMP_GET_NUM_THREADS()
   !$ threadid = OMP_GET_THREAD_NUM()
   if(threadid.eq.0) then
-     write(*,*) "OMP version with threads = ", nthreads
+     if(MyRank .eq. 0) &
+          write(*,*) "OMP version with threads = ", nthreads
   endif
   !$OMP END PARALLEL
   ! ---
@@ -58,7 +60,8 @@ subroutine def_cov
   !---------
   ! Create table
   
-  nspl = max(grd%jm,grd%im)
+  !nspl = max(grd%jm,grd%im)
+  nspl = max(jpiglo,jpjglo)
   ALLOCATE ( sfct(nspl)) ; sfct = huge(sfct(1))
   ALLOCATE ( jnxx(nspl)) ; jnxx = huge(jnxx(1))
   ALLOCATE ( al(nspl))   ; al   = huge(al(1))
@@ -286,7 +289,8 @@ subroutine def_cov
   ALLOCATE ( grd%ro_ad( grd%im, grd%jm, ros%neof))   ; grd%ro_ad = 0.0
   ALLOCATE ( Dump_vip ( grd%im, grd%jm, ros%neof))   ; Dump_vip  = 0.0
   
-  write(*,*) 'rcfl allocation :', grd%jm, grd%imax, nthreads
+  if(MyRank .eq. 0) &
+       write(*,*) 'rcfl allocation :', grd%jm, grd%imax, nthreads
   ALLOCATE ( a_rcx(grd%jm,grd%imax,nthreads)) ; a_rcx = huge(a_rcx(1,1,1))
   ALLOCATE ( b_rcx(grd%jm,grd%imax,nthreads)) ; b_rcx = huge(b_rcx(1,1,1))
   ALLOCATE ( c_rcx(grd%jm,grd%imax,nthreads)) ; c_rcx = huge(c_rcx(1,1,1))
@@ -302,4 +306,4 @@ subroutine def_cov
   ALLOCATE ( alp_rcy(grd%im,grd%jmax,nthreads)) ; alp_rcy = huge(alp_rcy(1,1,1))
   ALLOCATE ( bta_rcy(grd%im,grd%jmax,nthreads)) ; bta_rcy = huge(bta_rcy(1,1,1))
   
-end subroutine def_cov
+end subroutine parallel_def_cov
