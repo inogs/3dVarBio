@@ -14,6 +14,7 @@ MODULE mpi_str
   
   INTEGER  :: size, MyRank
   INTEGER  :: jpni, jpnj, jpnij
+  integer  :: jpiglo, jpjglo
   integer(KIND=MPI_OFFSET_KIND) :: MyStart(3), MyCount(3)
   
 END MODULE mpi_str

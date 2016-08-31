@@ -13,11 +13,10 @@ subroutine parallel_rdgrd
 
   integer(i8) :: ierr, ncid
   integer(i8) :: jpreci, jprecj
-  integer(i8) :: jpiglo, jpjglo
   integer(i8) :: TmpInt, VarId
   real(r4), ALLOCATABLE          :: x3(:,:,:), x2(:,:), x1(:)
 
-  integer, allocatable :: ilcit(:,:), ilcjt(:,:)
+  ! integer, allocatable :: ilcit(:,:), ilcjt(:,:)
   integer(i8) :: ji, jj, jpi, jpj, nn
   integer(i8) :: MyRestRow, MyRestCol, OffsetRow, OffsetCol
   
@@ -32,18 +31,16 @@ subroutine parallel_rdgrd
   ! get grid dimensions
   !
   call MyGetDimension(ncid, 'im', MyOffset)
-  grd%im = MyOffset
   jpiglo = MyOffset
 
   call MyGetDimension(ncid, 'jm', MyOffset)
-  grd%jm = MyOffset
   jpjglo = MyOffset
 
   call MyGetDimension(ncid, 'km', MyOffset)
   grd%km = MyOffset
 
   if(MyRank .eq. 0) then
-     write(drv%dia,*)'Grid dimensions are: ',grd%im,grd%jm,grd%km
+     write(drv%dia,*)'Grid dimensions are: ',jpiglo,jpjglo,grd%km
 
      WRITE(*,*) 'Dimension_Med_Grid'
      WRITE(*,*) ' '
@@ -52,26 +49,26 @@ subroutine parallel_rdgrd
      WRITE(*,*) ' '
   endif
 
-  allocate(ilcit(jpni, jpnj)) ; ilcit = huge(ilcit(1,1))
-  allocate(ilcjt(jpni, jpnj)) ; ilcjt = huge(ilcjt(1,1))
+  ! allocate(ilcit(jpni, jpnj)) ; ilcit = huge(ilcit(1,1))
+  ! allocate(ilcjt(jpni, jpnj)) ; ilcjt = huge(ilcjt(1,1))
   
-  open(3333,file='Dom_Dec_jpi.ascii', form='formatted')
-  open(3334,file='Dom_Dec_jpj.ascii', form='formatted')
+  ! open(3333,file='Dom_Dec_jpi.ascii', form='formatted')
+  ! open(3334,file='Dom_Dec_jpj.ascii', form='formatted')
   
-  read(3333,*) ((ilcit(ji,jj), jj=1,jpnj),ji=1,jpni)
-  read(3334,*) ((ilcjt(ji,jj), jj=1,jpnj),ji=1,jpni)
+  ! read(3333,*) ((ilcit(ji,jj), jj=1,jpnj),ji=1,jpni)
+  ! read(3334,*) ((ilcjt(ji,jj), jj=1,jpnj),ji=1,jpni)
   
-  close(3333)
-  close(3334)
+  ! close(3333)
+  ! close(3334)
 
-  do nn =1, jpni*jpnj
-     if(MyRank+1 .EQ. nn) then
-        ji = 1 + mod(nn -1, jpni)
-        jj = 1 + (nn -1)/jpni
-        jpi =  ilcit(ji,jj) 
-        jpj =  ilcjt(ji,jj)
-     endif
-  enddo  
+  ! do nn =1, jpni*jpnj
+  !    if(MyRank+1 .EQ. nn) then
+  !       ji = 1 + mod(nn -1, jpni)
+  !       jj = 1 + (nn -1)/jpni
+  !       jpi =  ilcit(ji,jj) 
+  !       jpj =  ilcjt(ji,jj)
+  !    endif
+  ! enddo  
   
   !*******************************************
   !
