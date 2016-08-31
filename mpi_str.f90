@@ -5,16 +5,25 @@ MODULE mpi_str
   public
   
   
-  !-----------------------------------------------!
+  !-------------------------------------------------------!
   !     MPI vaiables
   !
-  !     size : number of process
+  !     size : number of processes
   !     MyRank : process number  [ 0 - size-1 ]
-  !-----------------------------------------------!
+  !     jpni : number of processes along i direction
+  !     jpnj : number of processes along j direction
+  !     jpiglo : global i value
+  !     jpjglo : global j value
+  !     localRow : number of row slicing in i direction
+  !     localCol : number of col slicing in j direction
+  !
+  !-------------------------------------------------------!
   
   INTEGER  :: size, MyRank
   INTEGER  :: jpni, jpnj, jpnij
   integer  :: jpiglo, jpjglo
-  integer(KIND=MPI_OFFSET_KIND) :: MyStart(3), MyCount(3)
+  integer  :: localRow, localCol
   
+  integer(KIND=MPI_OFFSET_KIND) :: MyStart(3), MyCount(3)
+
 END MODULE mpi_str

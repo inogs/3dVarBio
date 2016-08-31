@@ -39,12 +39,12 @@ subroutine parallel_def_cov
   implicit none
   
   INTEGER(i4)                 :: k, nspl, i, j, kk
-  REAL(r8)                    :: E, dst
+  REAL(r8)                    :: E, dst, TmpMax, TmpMin
   REAL(r8)    , ALLOCATABLE   :: sfct(:), al(:), bt(:)
   INTEGER(i4) , ALLOCATABLE   :: jnxx(:)
   INTEGER nthreads, threadid
   integer :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
-
+  integer(i8) :: ierr
   nthreads = 1
   threadid = 0
   !$OMP PARALLEL
@@ -85,6 +85,12 @@ subroutine parallel_def_cov
         rcf%dsmx = max(rcf%dsmx,max(grd%dx(i,j),grd%dy(i,j)))
      enddo
   enddo
+
+  ! Computes the global maximum and minimum
+  TmpMax = rcf%dsmx
+  TmpMin = rcf%dsmn
+  call MPI_Allreduce(TmpMax, rcf%dsmx, 1, MPI_REAL, MPI_MAX, MPI_COMM_WORLD, ierr)
+  call MPI_Allreduce(TmpMin, rcf%dsmn, 1, MPI_REAL, MPI_MIN, MPI_COMM_WORLD, ierr)
   
   rcf%dsmx = rcf%dsmx + max(1.d0,(rcf%dsmx-rcf%dsmn)/(rcf%ntb-2.))
   

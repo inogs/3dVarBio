@@ -317,13 +317,14 @@ subroutine MyConvTest(tao, dummy, ierr)
   use ctl_str
   use tao_str
   use petscvec
-
+  use mpi
+  
   implicit none
   
 #include "petsc/finclude/petsctao.h"
 
   Tao                  :: tao
-  integer              :: dummy, ierr, j, n, M, CheckVal
+  integer              :: dummy, ierr, j, n, M, CheckVal, TmpVal
   Vec                  :: TmpGrad
   PetscScalar, pointer :: ReadGrad(:)
   PetscScalar          :: MyTol, grtol, gttol
@@ -354,7 +355,10 @@ subroutine MyConvTest(tao, dummy, ierr)
   call VecRestoreArrayReadF90(TmpGrad, ReadGrad, ierr)
   CHKERRQ(ierr)
 
-  if( CheckVal .eq. 1) then
+  TmpVal = CheckVal
+  call MPI_Allreduce(TmpVal, CheckVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD, ierr)
+  
+  if( CheckVal .gt. 0) then
      call TaoSetConvergedReason(tao, TAO_CONTINUE_ITERATING, ierr)
      CHKERRQ(ierr)
   else

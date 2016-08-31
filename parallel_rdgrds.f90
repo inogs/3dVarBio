@@ -130,6 +130,12 @@ subroutine parallel_rdgrd
 
   grd%im = MyCount(1)
   grd%jm = MyCount(2)
+
+  !
+  ! initializing quantities needed to slicing along i and j directions
+  !
+
+  
   
   ! *****************************************************************************************
   ! *****************************************************************************************
