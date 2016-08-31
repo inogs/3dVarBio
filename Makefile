@@ -104,6 +104,7 @@ OBJS    =  \
 	routines.o\
 	def_nml.o\
 	def_grd.o\
+	parallel_def_grd.o\
 	sav_itr.o\
 	ini_itr.o\
 	rdgrds.o\

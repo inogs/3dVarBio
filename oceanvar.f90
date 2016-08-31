@@ -66,13 +66,18 @@ subroutine oceanvar
      ! ---
      ! Define grid parameters
      if( ktr.eq.1 .or. drv%ratio(ktr).ne.1.0 )then
-        call def_grd
 
 #ifdef _USE_MPI
+        call parallel_def_grd
+        
         if(MyRank .eq. 0) &
-#endif
+#else
              
-             write(drv%dia,*) 'out of def_grd '           
+             call def_grd
+#endif
+        
+        write(drv%dia,*) 'out of def_grd '           
+
      endif
      
      ! ---

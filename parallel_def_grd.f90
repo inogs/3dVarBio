@@ -1,4 +1,4 @@
-subroutine def_grd
+subroutine parallel_def_grd
   
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -32,6 +32,7 @@ subroutine def_grd
   use set_knd
   use drv_str
   use grd_str
+  use mpi_str
   
   implicit none
   
@@ -42,7 +43,7 @@ subroutine def_grd
   grd%grd_mod  = drv%grid (drv%ktr)
   
   !Read grid definition
-  call rdgrd
+  call parallel_rdgrd
   
   ! Define grid for horizontal covariances
   if( drv%mask(drv%ktr).eq.1)then
@@ -62,13 +63,16 @@ subroutine def_grd
      enddo
      !         grd%msr(:,:,:) = grd%msk(:,:,:)
   else
-     
-     write(drv%dia,*)'Wrong mask for horizontal covariances ',  &
-          drv%mask(drv%ktr)
-     
+     if(MyRank .eq. 0) then
+        
+        write(drv%dia,*)'Wrong mask for horizontal covariances ',  &
+             drv%mask(drv%ktr)
+        
      !stop
-     call f_exit(21)
-
+     endif
+  
+     call MPI_Abort(MPI_COMM_WORLD, -1, i)
+     
   endif
   
   
@@ -81,7 +85,10 @@ subroutine def_grd
   
   
   ALLOCATE (SurfaceWaterPoints(2,nSurfaceWaterPoints))
-
+  
+  ! #ifdef _USE_MPI
+  !   if(MyRank .eq. 0) &
+  ! #endif
   write(*,*) 'nSurfaceWaterPoints = ', nSurfaceWaterPoints
   
   indSupWP=0
@@ -95,4 +102,4 @@ subroutine def_grd
      enddo
   enddo
   
-end subroutine def_grd
+end subroutine parallel_def_grd
