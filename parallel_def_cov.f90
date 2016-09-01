@@ -35,6 +35,7 @@ subroutine parallel_def_cov
   use cns_str
   use rcfl
   use mpi_str
+  use mpi
   
   implicit none
   
@@ -43,8 +44,11 @@ subroutine parallel_def_cov
   REAL(r8)    , ALLOCATABLE   :: sfct(:), al(:), bt(:)
   INTEGER(i4) , ALLOCATABLE   :: jnxx(:)
   INTEGER nthreads, threadid
-  integer :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
-  integer(i8) :: ierr
+  INTEGER :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
+  INTEGER(i8) :: ierr
+  REAL(r8), allocatable :: SendBuf2D(:,:), RecBuf2D(:,:), DefBuf2D(:,:)
+  REAL(r8), allocatable :: SendBuf3D(:,:,:), RecBuf3D(:,:,:), DefBuf3D(:,:,:)
+
   nthreads = 1
   threadid = 0
   !$OMP PARALLEL
@@ -61,7 +65,7 @@ subroutine parallel_def_cov
   ! Create table
   
   !nspl = max(grd%jm,grd%im)
-  nspl = max(GlobalRows,GlobalCols)
+  nspl = max(GlobalRow,GlobalCol)
   ALLOCATE ( sfct(nspl)) ; sfct = huge(sfct(1))
   ALLOCATE ( jnxx(nspl)) ; jnxx = huge(jnxx(1))
   ALLOCATE ( al(nspl))   ; al   = huge(al(1))
@@ -127,57 +131,94 @@ subroutine parallel_def_cov
         grd%scy(i,j) = sqrt( 1./ (rcf%sc(k)*(1.-dst) + rcf%sc(k+1)*dst) ) 
      enddo
   enddo
+
+  ! CALL MPI_ALLTOALL
   
-  do j=1,grd%jm
-     do i=2,grd%im
+  ! do j=1,grd%jm
+  !    do i=2,grd%im
+  do j=1,localCol
+     do i=2,GlobalRow
         dst = (grd%dx(i-1,j) + grd%dx(i,j)) * 0.5 
+        ! dst = (RecBuf2D(i-1,j) + RecBuf2D(i,j)) * 0.5 
         E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)
         grd%alx(i,j) = 1. + E - sqrt(E*(E+2.))
      enddo
-     do i=1,grd%im-1
+     ! do i=1,grd%im-1
+     do i=1,GlobalRow-1
         dst = (grd%dx(i,j) + grd%dx(i+1,j)) * 0.5 
+        ! dst = (RecBuf2D(i,j) + RecBuf2D(i+1,j)) * 0.5 
         E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)
         grd%btx(i,j) = 1. + E - sqrt(E*(E+2.))
      enddo
   enddo
+
+  grd%istp = int( rcf%L * rcf%efc / grd%dx(:,:) )+1
   
-  do j=2,grd%jm
-     do i=1,grd%im
-        dst = (grd%dy(i,j-1) + grd%dy(i,j)) * 0.5 
+  ! CALL MPI_ALLTOALL
+  ALLOCATE(RecBuf2D(localRow, GlobalCol))
+  call MPI_Alltoall(grd%dy, GlobalCol*localRow/size, MPI_REAL8, RecBuf2D, GlobalCol*localRow/size, MPI_REAL8, MPI_COMM_WORLD, ierr)
+  
+  ! do j=2,grd%jm
+  !    do i=1,grd%im 
+  do j=2,GlobalCol
+     do i=1,localRow
+        ! dst = (grd%dy(i,j-1) + grd%dy(i,j)) * 0.5 
+        dst = (RecBuf2D(i,j-1) + RecBuf2D(i,j)) * 0.5 
         E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)
         grd%aly(i,j) = 1. + E - sqrt(E*(E+2.))
      enddo
   enddo
-  do j=1,grd%jm-1
-     do i=1,grd%im
-        dst = (grd%dy(i,j) + grd%dy(i,j+1)) * 0.5 
+  ! do j=1,grd%jm-1
+  !    do i=1,grd%im
+  do j=1,GlobalCol
+     do i=1,localRow
+        ! dst = (grd%dy(i,j) + grd%dy(i,j+1)) * 0.5 
+        dst = (RecBuf2D(i,j) + RecBuf2D(i,j+1)) * 0.5 
         E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)
         grd%bty(i,j) = 1. + E - sqrt(E*(E+2.))
      enddo
   enddo
   
   grd%alx(     1,:) = grd%alx(       2,:)
-  grd%btx(grd%im,:) = grd%btx(grd%im-1,:)
+  grd%btx(GlobalRow,:) = grd%btx(GlobalRow-1,:)
   grd%aly(:,     1) = grd%aly(:,       2)
-  grd%bty(:,grd%jm) = grd%bty(:,grd%jm-1)
+  grd%bty(:,GlobalCol) = grd%bty(:,GlobalCol-1)
+  ! grd%alx(     1,:) = grd%alx(       2,:)
+  ! grd%btx(grd%im,:) = grd%btx(grd%im-1,:)
+  ! grd%aly(:,     1) = grd%aly(:,       2)
+  ! grd%bty(:,grd%jm) = grd%bty(:,grd%jm-1)
   
   !---
   ! Define extended grids
-  
-  grd%istp = int( rcf%L * rcf%efc / grd%dx(:,:) )+1
-  grd%jstp = int( rcf%L * rcf%efc / grd%dy(:,:) )+1
+  ! grd%istp = int( rcf%L * rcf%efc / grd%dx(:,:) )+1
+  ! grd%jstp = int( rcf%L * rcf%efc / grd%dy(:,:) )+1
+  grd%jstp = int( rcf%L * rcf%efc / RecBuf2D(:,:) )+1
   grd%imax   = 0
   grd%jmax   = 0
   
-  
+  ALLOCATE(SendBuf3D(grd%km,grd%jm,grd%im))
+  do k=1,grd%km
+     do j=1,grd%jm
+        do i=1,grd%im
+           SendBuf3D(k,j,i) = grd%msr(i,j,k)
+        end do
+     end do
+  end do
+
+  ALLOCATE(RecBuf3D(grd%km, GlobalCol, localRow))
+  call MPI_Alltoall(SendBuf3D, grd%im*grd%jm*grd%km/Size, MPI_REAL8, &
+       & RecBuf3D, grd%im*grd%jm*grd%km/Size, MPI_REAL8, MPI_COMM_WORLD,ierr)
+
   do k = 1, grd%km
      
      grd%imx(k) = 0
-     do j = 1, grd%jm
+     ! do j = 1, grd%jm
+     do j = 1, localCol
         kk = grd%istp(1,j)
         if( grd%msr(1,j,k).eq.1. ) kk = kk + 1
         grd%inx(1,j,k) = kk
-        do i = 2, grd%im
+        ! do i = 2, grd%im
+        do i = 2, GlobalRow
            if( grd%msr(i,j,k).eq.0. .and. grd%msr(i-1,j,k).eq.1. ) then
               kk = kk + grd%istp(i,j)
            else if( grd%msr(i,j,k).eq.1. .and. grd%msr(i-1,j,k).eq.0. ) then
@@ -192,16 +233,21 @@ subroutine parallel_def_cov
      grd%imax   = max( grd%imax, grd%imx(k))
      
      grd%jmx(k) = 0
-     do i = 1, grd%im
+     ! do i = 1, grd%im
+     do i = 1, localRow
         kk = grd%jstp(i,1)
-        if( grd%msr(i,1,k).eq.1. ) kk = kk + 1
+        ! if( grd%msr(i,1,k).eq.1. ) kk = kk + 1
+        if( RecBuf3D(k,1,i).eq.1. ) kk = kk + 1
         grd%jnx(i,1,k) = kk
-        do j = 2, grd%jm
-           if( grd%msr(i,j,k).eq.0. .and. grd%msr(i,j-1,k).eq.1. ) then
+        ! do j = 2, grd%jm
+        do j = 2, GlobalCol
+           ! if( grd%msr(i,j,k).eq.0. .and. grd%msr(i,j-1,k).eq.1. ) then
+           if( RecBuf3D(k,j,i).eq.0. .and. RecBuf3D(k,j-1,i).eq.1. ) then
               kk = kk + grd%jstp(i,j)
-           else if( grd%msr(i,j,k).eq.1. .and. grd%msr(i,j-1,k).eq.0. ) then
+           ! else if( grd%msr(i,j,k).eq.1. .and. grd%msr(i,j-1,k).eq.0. ) then
+           else if( RecBuf3d(k,j,i).eq.1. .and. RecBuf3d(k,j-1,i).eq.0. ) then
               kk = kk + grd%jstp(i,j) + 1
-           else if( grd%msr(i,j,k).eq.1. ) then
+           else if( RecBuf3D(k,j,i).eq.1. ) then
               kk = kk + 1
            endif
            grd%jnx(i,j,k) = kk
@@ -211,24 +257,30 @@ subroutine parallel_def_cov
      grd%jmax   = max( grd%jmax, grd%jmx(k))
      
   enddo
+
   
-  
-  ALLOCATE( grd%aex(grd%jm,grd%imax,grd%km)) ; grd%aex(:,:,:) = 0.0
-  ALLOCATE( grd%bex(grd%jm,grd%imax,grd%km)) ; grd%bex(:,:,:) = 0.0
-  ALLOCATE( grd%aey(grd%im,grd%jmax,grd%km)) ; grd%aey(:,:,:) = 0.0
-  ALLOCATE( grd%bey(grd%im,grd%jmax,grd%km)) ; grd%bey(:,:,:) = 0.0
+  ALLOCATE( grd%aex(localCol,grd%imax,grd%km)) ; grd%aex(:,:,:) = 0.0
+  ALLOCATE( grd%bex(localCol,grd%imax,grd%km)) ; grd%bex(:,:,:) = 0.0
+  ALLOCATE( grd%aey(localRow,grd%jmax,grd%km)) ; grd%aey(:,:,:) = 0.0
+  ALLOCATE( grd%bey(localRow,grd%jmax,grd%km)) ; grd%bey(:,:,:) = 0.0
+  ! ALLOCATE( grd%aex(grd%jm,grd%imax,grd%km)) ; grd%aex(:,:,:) = 0.0
+  ! ALLOCATE( grd%bex(grd%jm,grd%imax,grd%km)) ; grd%bex(:,:,:) = 0.0
+  ! ALLOCATE( grd%aey(grd%im,grd%jmax,grd%km)) ; grd%aey(:,:,:) = 0.0
+  ! ALLOCATE( grd%bey(grd%im,grd%jmax,grd%km)) ; grd%bey(:,:,:) = 0.0
   
   
   do k = 1, grd%km
         
-     do j = 1, grd%jm
+     ! do j = 1, grd%jm
+     do j = 1, localCol
         kk = grd%istp(1,j)
         if( grd%msr(1,j,k).eq.1. ) then
            kk = kk + 1
            grd%aex(j,1:kk,k) = grd%alx(1,j)
            grd%bex(j,1:kk,k) = grd%btx(1,j)
         endif
-        do i = 2, grd%im
+        ! do i = 2, grd%im
+        do i = 2, GlobalRow
            if( grd%msr(i,j,k).eq.0. .and. grd%msr(i-1,j,k).eq.1. ) then
               grd%aex(j,kk+1:kk+grd%istp(i,j),k) = grd%alx(i,j)
               grd%bex(j,kk+1:kk+grd%istp(i,j),k) = grd%btx(i,j)
@@ -245,23 +297,29 @@ subroutine parallel_def_cov
         enddo
      enddo
      
-     do i = 1, grd%im
+     ! do i = 1, grd%im
+     do i = 1, localRow
         kk = grd%jstp(i,1)
-        if( grd%msr(i,1,k).eq.1. ) then
+        ! if( grd%msr(i,1,k).eq.1. ) then
+        if( RecBuf3D(k,1,i).eq.1. ) then
            kk = kk + 1
            grd%aey(i,1:kk,k) = grd%aly(i,1)
            grd%bey(i,1:kk,k) = grd%bty(i,1)
         endif
-        do j = 2, grd%jm
-           if( grd%msr(i,j,k).eq.0. .and. grd%msr(i,j-1,k).eq.1. ) then
+        ! do j = 2, grd%jm
+        do j = 2, GlobalCol
+           ! if( grd%msr(i,j,k).eq.0. .and. grd%msr(i,j-1,k).eq.1. ) then
+           if( RecBuf3D(k,j,i).eq.0. .and. RecBuf3D(k,j-1,i).eq.1. ) then
               grd%aey(i,kk+1:kk+grd%jstp(i,j),k) = grd%aly(i,j)
               grd%bey(i,kk+1:kk+grd%jstp(i,j),k) = grd%bty(i,j)
               kk = kk + grd%jstp(i,j)
-           else if( grd%msr(i,j,k).eq.1. .and. grd%msr(i,j-1,k).eq.0. ) then
+           ! else if( grd%msr(i,j,k).eq.1. .and. grd%msr(i,j-1,k).eq.0. ) then
+           else if( RecBuf3D(k,j,i).eq.1. .and. RecBuf3D(k,j-1,i).eq.0. ) then
               grd%aey(i,kk+1:kk+grd%jstp(i,j)+1,k) = grd%aly(i,j)
               grd%bey(i,kk+1:kk+grd%jstp(i,j)+1,k) = grd%bty(i,j)
               kk = kk + grd%jstp(i,j) + 1
-           else if( grd%msr(i,j,k).eq.1. ) then
+           ! else if( grd%msr(i,j,k).eq.1. ) then
+           else if( RecBuf3D(k,j,i).eq.1. ) then
               grd%aey(i,kk+1,k) = grd%aly(i,j)
               grd%bey(i,kk+1,k) = grd%bty(i,j)
               kk = kk + 1
@@ -270,11 +328,12 @@ subroutine parallel_def_cov
      enddo
      
   enddo
-           
+  
   do k=1,grd%km
      do j=1,grd%jm
         do i=1,grd%im
-           if(grd%msr(i,j,k).eq.1.0)then
+           ! if(grd%msr(i,j,k).eq.1.0)then
+           if(grd%msk(i,j,k).eq.1.0)then
               grd%fct(i,j,k) = 1.0  
            else
               grd%fct(i,j,k) = 0.0
@@ -311,5 +370,7 @@ subroutine parallel_def_cov
   
   ALLOCATE ( alp_rcy(grd%im,grd%jmax,nthreads)) ; alp_rcy = huge(alp_rcy(1,1,1))
   ALLOCATE ( bta_rcy(grd%im,grd%jmax,nthreads)) ; bta_rcy = huge(bta_rcy(1,1,1))
+
+  DEALLOCATE(RecBuf2D, SendBuf3D, RecBuf3D)
   
 end subroutine parallel_def_cov

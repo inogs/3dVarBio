@@ -12,8 +12,8 @@ MODULE mpi_str
   !     MyRank : process number  [ 0 - size-1 ]
   !     NumProcI : number of processes along i direction
   !     NumProcJ : number of processes along j direction
-  !     GlobalRows : global i value
-  !     GlobalCols : global j value
+  !     GlobalRow : global number of rows
+  !     GlobalCol : global number of columns
   !     localRow : number of row slicing in i direction
   !     localCol : number of col slicing in j direction
   !
@@ -21,7 +21,7 @@ MODULE mpi_str
   
   INTEGER  :: size, MyRank
   INTEGER  :: NumProcI, NumProcJ, NumProcIJ
-  integer  :: GlobalRows, GlobalCols
+  integer  :: GlobalRow, GlobalCol
   integer  :: localRow, localCol
   
   integer(KIND=MPI_OFFSET_KIND) :: MyStart(3), MyCount(3)

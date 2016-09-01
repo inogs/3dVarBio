@@ -31,21 +31,21 @@ subroutine parallel_rdgrd
   ! get grid dimensions
   !
   call MyGetDimension(ncid, 'im', MyOffset)
-  GlobalRows = MyOffset
+  GlobalRow = MyOffset
 
   call MyGetDimension(ncid, 'jm', MyOffset)
-  GlobalCols = MyOffset
+  GlobalCol = MyOffset
 
   call MyGetDimension(ncid, 'km', MyOffset)
   grd%km = MyOffset
 
   if(MyRank .eq. 0) then
-     write(drv%dia,*)'Grid dimensions are: ',GlobalRows,GlobalCols,grd%km
+     write(drv%dia,*)'Grid dimensions are: ',GlobalRow,GlobalCol,grd%km
 
      WRITE(*,*) 'Dimension_Med_Grid'
      WRITE(*,*) ' '
-     WRITE(*,*) ' GlobalRows  : first  dimension of global domain --> i ',GlobalRows
-     WRITE(*,*) ' GlobalCols  : second dimension of global domain --> j ',GlobalCols
+     WRITE(*,*) ' GlobalRow  : first  dimension of global domain --> i ',GlobalRow
+     WRITE(*,*) ' GlobalCol  : second dimension of global domain --> j ',GlobalCol
      WRITE(*,*) ' '
   endif
 
@@ -74,7 +74,7 @@ subroutine parallel_rdgrd
   !
   ! PDICERBO version of the domain decomposition:
   ! the domain is divided among the processes into slices
-  ! of size (GlobalRows / NumProcI, GlobalCols / NumProcJ).
+  ! of size (GlobalRow / NumProcI, GlobalCol / NumProcJ).
   ! Clearly, the division is done tacking into account 
   ! rests. The only condition we need is that NumProcI*NumProcJ = NPROC
   !
@@ -85,12 +85,12 @@ subroutine parallel_rdgrd
   !
   !*******************************************
   
-  MyRestCol = mod(GlobalRows, NumProcI)
-  MyRestRow = mod(GlobalCols, NumProcJ)
+  MyRestCol = mod(GlobalRow, NumProcI)
+  MyRestRow = mod(GlobalCol, NumProcJ)
   
   ! computing rests for X direction
-  MyCount(1) = GlobalRows / NumProcI
-  MyCount(2) = GlobalCols / NumProcJ
+  MyCount(1) = GlobalRow / NumProcI
+  MyCount(2) = GlobalCol / NumProcJ
   OffsetCol = 0
   if (mod(MyRank, NumProcI) .lt. MyRestCol) then
      MyCount(1) = MyCount(1) + 1
@@ -108,12 +108,12 @@ subroutine parallel_rdgrd
      OffsetRow = MyRestRow
   end if
   
-  TmpInt = GlobalRows / NumProcI
+  TmpInt = GlobalRow / NumProcI
   MyStart(1) = TmpInt * mod(MyRank, NumProcI) + OffsetCol + 1
   MyCount(1) = MyCount(1)
   
   TmpInt = MyRank / NumProcI
-  MyStart(2) = mod(MyCount(2) * TmpInt + OffsetRow, GlobalCols) + 1
+  MyStart(2) = mod(MyCount(2) * TmpInt + OffsetRow, GlobalCol) + 1
   MyCount(2) = MyCount(2)
 
   ! taking all values along k direction
@@ -134,9 +134,10 @@ subroutine parallel_rdgrd
   !
   ! initializing quantities needed to slicing along i and j directions
   !
-  localRow = GlobalCols / NumProcJ
-  localCol = GlobalRows / NumProcI
-  
+  localRow = grd%im / NumProcJ
+  localCol = grd%jm / NumProcI
+  if(mod(grd%im, NumProcJ) .ne. 0) print*,"WARNING!!!!!! mod(grd%im, NumProcJ) .ne. 0!!! Case not implemented yet!!"
+  if(mod(grd%jm, NumProcI) .ne. 0) print*,"WARNING!!!!!! mod(grd%jm, NumProcI) .ne. 0!!! Case not implemented yet!!"
   
   ! *****************************************************************************************
   ! *****************************************************************************************
@@ -149,19 +150,27 @@ subroutine parallel_rdgrd
   ALLOCATE ( grd%dx(grd%im,grd%jm))  ; grd%dx  = huge(grd%dx(1,1))
   ALLOCATE ( grd%dy(grd%im,grd%jm))  ; grd%dy  = huge(grd%dy(1,1))
   
-  ALLOCATE ( grd%alx(grd%im,grd%jm) )         ; grd%alx  = huge(grd%alx(1,1))
-  ALLOCATE ( grd%aly(grd%im,grd%jm) )         ; grd%aly  = huge(grd%aly(1,1))
-  ALLOCATE ( grd%btx(grd%im,grd%jm) )         ; grd%btx  = huge(grd%btx(1,1))
-  ALLOCATE ( grd%bty(grd%im,grd%jm) )         ; grd%bty  = huge(grd%bty(1,1))
+  ALLOCATE ( grd%alx(GlobalRow,localCol) )         ; grd%alx  = huge(grd%alx(1,1))
+  ALLOCATE ( grd%aly(localRow,GlobalCol) )         ; grd%aly  = huge(grd%aly(1,1))
+  ALLOCATE ( grd%btx(GlobalRow,localCol) )         ; grd%btx  = huge(grd%btx(1,1))
+  ALLOCATE ( grd%bty(localRow,GlobalCol) )         ; grd%bty  = huge(grd%bty(1,1))
+  ! ALLOCATE ( grd%alx(grd%im,grd%jm) )         ; grd%alx  = huge(grd%alx(1,1))
+  ! ALLOCATE ( grd%aly(grd%im,grd%jm) )         ; grd%aly  = huge(grd%aly(1,1))
+  ! ALLOCATE ( grd%btx(grd%im,grd%jm) )         ; grd%btx  = huge(grd%btx(1,1))
+  ! ALLOCATE ( grd%bty(grd%im,grd%jm) )         ; grd%bty  = huge(grd%bty(1,1))
   ALLOCATE ( grd%scx(grd%im,grd%jm) )         ; grd%scx  = huge(grd%scx(1,1))
   ALLOCATE ( grd%scy(grd%im,grd%jm) )         ; grd%scy  = huge(grd%scy(1,1))
   ALLOCATE ( grd%msr(grd%im,grd%jm,grd%km) )  ; grd%msr  = huge(grd%msr(1,1,1))
   ALLOCATE ( grd%imx(grd%km))                 ; grd%imx  = huge(grd%imx(1))
   ALLOCATE (  grd%jmx(grd%km))                ; grd%jmx  = huge(grd%jmx(1))
-  ALLOCATE ( grd%istp(grd%im,grd%jm))         ; grd%istp = huge(grd%istp(1,1))
-  ALLOCATE ( grd%jstp(grd%im,grd%jm))         ; grd%jstp = huge(grd%jstp(1,1))
-  ALLOCATE ( grd%inx(grd%im,grd%jm,grd%km))   ; grd%inx  = huge(grd%inx(1,1,1))
-  ALLOCATE ( grd%jnx(grd%im,grd%jm,grd%km))   ; grd%jnx  = huge(grd%jnx(1,1,1))
+  ALLOCATE ( grd%istp(GlobalRow,localCol))         ; grd%istp = huge(grd%istp(1,1))
+  ALLOCATE ( grd%jstp(localRow,GlobalCol))         ; grd%jstp = huge(grd%jstp(1,1))
+  ALLOCATE ( grd%inx(GlobalRow,localCol,grd%km))   ; grd%inx  = huge(grd%inx(1,1,1))
+  ALLOCATE ( grd%jnx(localRow,GlobalCol,grd%km))   ; grd%jnx  = huge(grd%jnx(1,1,1))
+  ! ALLOCATE ( grd%istp(grd%im,grd%jm))         ; grd%istp = huge(grd%istp(1,1))
+  ! ALLOCATE ( grd%jstp(grd%im,grd%jm))         ; grd%jstp = huge(grd%jstp(1,1))
+  ! ALLOCATE ( grd%inx(grd%im,grd%jm,grd%km))   ; grd%inx  = huge(grd%inx(1,1,1))
+  ! ALLOCATE ( grd%jnx(grd%im,grd%jm,grd%km))   ; grd%jnx  = huge(grd%jnx(1,1,1))
   ALLOCATE ( grd%fct(grd%im,grd%jm,grd%km) )  ; grd%fct  = huge(grd%fct(1,1,1))
   
   ALLOCATE ( Dump_chl(grd%im,grd%jm,grd%km) ) ; Dump_chl  = 0.0

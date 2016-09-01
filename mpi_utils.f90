@@ -52,8 +52,8 @@ subroutine mynode()
   call COUNTLINE ('Dom_Dec_jpi.ascii', NumProcI)
   call COUNTWORDS('Dom_Dec_jpi.ascii', NumProcJ)
   
-  NumProcI = 2
-  NumProcJ = 1
+  NumProcI = 1
+  NumProcJ = 2
 
   if(NumProcI * NumProcJ .ne. size) then
      if(MyRank .eq. 0) then
