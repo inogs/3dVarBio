@@ -355,6 +355,7 @@ subroutine MyConvTest(tao, dummy, ierr)
   call VecRestoreArrayReadF90(TmpGrad, ReadGrad, ierr)
   CHKERRQ(ierr)
 
+  ! Do I really need this?
   TmpVal = CheckVal
   call MPI_Allreduce(TmpVal, CheckVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD, ierr)
   

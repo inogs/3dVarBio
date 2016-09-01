@@ -31,40 +31,40 @@ subroutine parallel_rdgrd
   ! get grid dimensions
   !
   call MyGetDimension(ncid, 'im', MyOffset)
-  jpiglo = MyOffset
+  GlobalRows = MyOffset
 
   call MyGetDimension(ncid, 'jm', MyOffset)
-  jpjglo = MyOffset
+  GlobalCols = MyOffset
 
   call MyGetDimension(ncid, 'km', MyOffset)
   grd%km = MyOffset
 
   if(MyRank .eq. 0) then
-     write(drv%dia,*)'Grid dimensions are: ',jpiglo,jpjglo,grd%km
+     write(drv%dia,*)'Grid dimensions are: ',GlobalRows,GlobalCols,grd%km
 
      WRITE(*,*) 'Dimension_Med_Grid'
      WRITE(*,*) ' '
-     WRITE(*,*) ' jpiglo  : first  dimension of global domain --> i ',jpiglo
-     WRITE(*,*) ' jpjglo  : second dimension of global domain --> j ',jpjglo
+     WRITE(*,*) ' GlobalRows  : first  dimension of global domain --> i ',GlobalRows
+     WRITE(*,*) ' GlobalCols  : second dimension of global domain --> j ',GlobalCols
      WRITE(*,*) ' '
   endif
 
-  ! allocate(ilcit(jpni, jpnj)) ; ilcit = huge(ilcit(1,1))
-  ! allocate(ilcjt(jpni, jpnj)) ; ilcjt = huge(ilcjt(1,1))
+  ! allocate(ilcit(NumProcI, NumProcJ)) ; ilcit = huge(ilcit(1,1))
+  ! allocate(ilcjt(NumProcI, NumProcJ)) ; ilcjt = huge(ilcjt(1,1))
   
   ! open(3333,file='Dom_Dec_jpi.ascii', form='formatted')
   ! open(3334,file='Dom_Dec_jpj.ascii', form='formatted')
   
-  ! read(3333,*) ((ilcit(ji,jj), jj=1,jpnj),ji=1,jpni)
-  ! read(3334,*) ((ilcjt(ji,jj), jj=1,jpnj),ji=1,jpni)
+  ! read(3333,*) ((ilcit(ji,jj), jj=1,NumProcJ),ji=1,NumProcI)
+  ! read(3334,*) ((ilcjt(ji,jj), jj=1,NumProcJ),ji=1,NumProcI)
   
   ! close(3333)
   ! close(3334)
 
-  ! do nn =1, jpni*jpnj
+  ! do nn =1, NumProcI*NumProcJ
   !    if(MyRank+1 .EQ. nn) then
-  !       ji = 1 + mod(nn -1, jpni)
-  !       jj = 1 + (nn -1)/jpni
+  !       ji = 1 + mod(nn -1, NumProcI)
+  !       jj = 1 + (nn -1)/NumProcI
   !       jpi =  ilcit(ji,jj) 
   !       jpj =  ilcjt(ji,jj)
   !    endif
@@ -74,9 +74,9 @@ subroutine parallel_rdgrd
   !
   ! PDICERBO version of the domain decomposition:
   ! the domain is divided among the processes into slices
-  ! of size (jpiglo / jpni, jpjglo / jpnj).
+  ! of size (GlobalRows / NumProcI, GlobalCols / NumProcJ).
   ! Clearly, the division is done tacking into account 
-  ! rests. The only condition we need is that jpni*jpnj = NPROC
+  ! rests. The only condition we need is that NumProcI*NumProcJ = NPROC
   !
   ! WARNING!!! netcdf stores data in ROW MAJOR order
   ! while here we are reading in column major order.
@@ -85,35 +85,35 @@ subroutine parallel_rdgrd
   !
   !*******************************************
   
-  MyRestCol = mod(jpiglo, jpni)
-  MyRestRow = mod(jpjglo, jpnj)
+  MyRestCol = mod(GlobalRows, NumProcI)
+  MyRestRow = mod(GlobalCols, NumProcJ)
   
   ! computing rests for X direction
-  MyCount(1) = jpiglo / jpni
-  MyCount(2) = jpjglo / jpnj
+  MyCount(1) = GlobalRows / NumProcI
+  MyCount(2) = GlobalCols / NumProcJ
   OffsetCol = 0
-  if (mod(MyRank, jpni) .lt. MyRestCol) then
+  if (mod(MyRank, NumProcI) .lt. MyRestCol) then
      MyCount(1) = MyCount(1) + 1
-     OffsetCol = mod(MyRank, jpni)
+     OffsetCol = mod(MyRank, NumProcI)
   else
      OffsetCol = MyRestCol
   end if
   
   ! computing rests for Y direction
   OffsetRow = 0
-  TmpInt = MyRank / jpni
+  TmpInt = MyRank / NumProcI
   if (TmpInt .lt. MyRestRow) then
      MyCount(2) = MyCount(2) + 1
   else
      OffsetRow = MyRestRow
   end if
   
-  TmpInt = jpiglo / jpni
-  MyStart(1) = TmpInt * mod(MyRank, jpni) + OffsetCol + 1
+  TmpInt = GlobalRows / NumProcI
+  MyStart(1) = TmpInt * mod(MyRank, NumProcI) + OffsetCol + 1
   MyCount(1) = MyCount(1)
   
-  TmpInt = MyRank / jpni
-  MyStart(2) = mod(MyCount(2) * TmpInt + OffsetRow, jpjglo) + 1
+  TmpInt = MyRank / NumProcI
+  MyStart(2) = mod(MyCount(2) * TmpInt + OffsetRow, GlobalCols) + 1
   MyCount(2) = MyCount(2)
 
   ! taking all values along k direction
@@ -134,7 +134,8 @@ subroutine parallel_rdgrd
   !
   ! initializing quantities needed to slicing along i and j directions
   !
-
+  localRow = GlobalCols / NumProcJ
+  localCol = GlobalRows / NumProcI
   
   
   ! *****************************************************************************************

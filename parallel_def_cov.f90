@@ -61,7 +61,7 @@ subroutine parallel_def_cov
   ! Create table
   
   !nspl = max(grd%jm,grd%im)
-  nspl = max(jpiglo,jpjglo)
+  nspl = max(GlobalRows,GlobalCols)
   ALLOCATE ( sfct(nspl)) ; sfct = huge(sfct(1))
   ALLOCATE ( jnxx(nspl)) ; jnxx = huge(jnxx(1))
   ALLOCATE ( al(nspl))   ; al   = huge(al(1))

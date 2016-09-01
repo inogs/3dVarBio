@@ -49,13 +49,13 @@ subroutine mynode()
   !
   !*******************************************
   
-  call COUNTLINE ('Dom_Dec_jpi.ascii', jpni)
-  call COUNTWORDS('Dom_Dec_jpi.ascii', jpnj)
+  call COUNTLINE ('Dom_Dec_jpi.ascii', NumProcI)
+  call COUNTWORDS('Dom_Dec_jpi.ascii', NumProcJ)
   
-  jpni = 2
-  jpnj = 1
+  NumProcI = 2
+  NumProcJ = 1
 
-  if(jpni * jpnj .ne. size) then
+  if(NumProcI * NumProcJ .ne. size) then
      if(MyRank .eq. 0) then
         WRITE(*,*) ""
         WRITE(*,*) " Error: gridX * gridY != nproc "
@@ -65,7 +65,7 @@ subroutine mynode()
      call MPI_Abort(MPI_COMM_WORLD, -1, ierr)
   end if
 
-  jpnij = jpni*jpnj
+  NumProcIJ = NumProcI*NumProcJ
   ! jpreci = 1
   ! jprecj = 1
 
@@ -74,10 +74,10 @@ subroutine mynode()
      WRITE(*,*) ' '
      WRITE(*,*) 'Dom_Size'
      WRITE(*,*) ' '
-     WRITE(*,*) ' number of processors following i : jpni   = ', jpni
-     WRITE(*,*) ' number of processors following j : jpnj   = ', jpnj
+     WRITE(*,*) ' number of processors following i : NumProcI   = ', NumProcI
+     WRITE(*,*) ' number of processors following j : NumProcJ   = ', NumProcJ
      WRITE(*,*) ' '
-     WRITE(*,*) ' local domains : < or = jpni x jpnj number of processors   = ', jpnij
+     WRITE(*,*) ' local domains : < or = NumProcI x NumProcJ number of processors   = ', NumProcIJ
      ! WRITE(*,*) ' number of lines for overlap  jpreci   = ',jpreci
      ! WRITE(*,*) ' number of lines for overlap  jprecj   = ',jprecj
      WRITE(*,*) ' '
