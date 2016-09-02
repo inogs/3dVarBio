@@ -274,6 +274,16 @@ subroutine def_cov
      enddo
   enddo
   
+  open(0511, file = 'checkserial', form = 'formatted')
+  do k=1,grd%km
+     ! write(0511,*) grd%jnx(:,:,k)
+     write(0511,*) grd%msr(:,:,k)
+  end do
+  
+  ! do j=1,grd%jm
+  !    write(0511,*) grd%jstp(:,j)
+  ! end do
+  close(0511)
   
   ! ---
   ! Vertical EOFs

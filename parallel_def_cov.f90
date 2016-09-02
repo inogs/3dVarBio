@@ -45,9 +45,9 @@ subroutine parallel_def_cov
   INTEGER(i4) , ALLOCATABLE   :: jnxx(:)
   INTEGER nthreads, threadid
   INTEGER :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
-  INTEGER(i8) :: ierr
+  INTEGER(i8) :: ierr, iProc
   REAL(r8), allocatable :: SendBuf2D(:,:), RecBuf2D(:,:), DefBuf2D(:,:)
-  REAL(r8), allocatable :: SendBuf3D(:,:,:), RecBuf3D(:,:,:), DefBuf3D(:,:,:)
+  REAL(r8), allocatable :: SendBuf3D(:,:,:), RecBuf3D(:,:,:), TmpBuf3D(:,:,:), DefBuf3D(:,:,:)
 
   nthreads = 1
   threadid = 0
@@ -156,7 +156,7 @@ subroutine parallel_def_cov
   
   ! CALL MPI_ALLTOALL
   ALLOCATE(RecBuf2D(localRow, GlobalCol))
-  call MPI_Alltoall(grd%dy, GlobalCol*localRow/size, MPI_REAL8, RecBuf2D, GlobalCol*localRow/size, MPI_REAL8, MPI_COMM_WORLD, ierr)
+  call MPI_Alltoall(grd%dy, GlobalRow*localCol/size, MPI_REAL8, RecBuf2D, GlobalRow*localCol/size, MPI_REAL8, MPI_COMM_WORLD, ierr)
   
   ! do j=2,grd%jm
   !    do i=1,grd%im 
@@ -197,6 +197,10 @@ subroutine parallel_def_cov
   grd%jmax   = 0
   
   ALLOCATE(SendBuf3D(grd%km,grd%jm,grd%im))
+  ALLOCATE(RecBuf3D(grd%km, localCol, GlobalRow))
+  ALLOCATE(DefBuf3D(grd%km, GlobalCol, localRow))
+  ALLOCATE(TmpBuf3D(localRow, GlobalCol, grd%km))
+
   do k=1,grd%km
      do j=1,grd%jm
         do i=1,grd%im
@@ -205,10 +209,28 @@ subroutine parallel_def_cov
      end do
   end do
 
-  ALLOCATE(RecBuf3D(grd%km, GlobalCol, localRow))
-  call MPI_Alltoall(SendBuf3D, grd%im*grd%jm*grd%km/Size, MPI_REAL8, &
-       & RecBuf3D, grd%im*grd%jm*grd%km/Size, MPI_REAL8, MPI_COMM_WORLD,ierr)
+  call MPI_Alltoall(SendBuf3D, grd%im*grd%jm*grd%km/size, MPI_REAL8, &
+       & RecBuf3D, grd%im*grd%jm*grd%km/size, MPI_REAL8, MPI_COMM_WORLD,ierr)
 
+  ! Reorder data
+  do i=1, localRow
+     do iProc=0, Size-1
+        do j=1, localCol
+           do k=1, grd%km
+              DefBuf3D(k,j+iProc*localCol,i) = RecBuf3D(k, j, i + iProc*localRow)
+           end do
+        end do
+     end do
+  end do
+  ! tmp buffer to print
+  do i=1,localRow
+     do j=1,GlobalCol
+        do k=1,grd%km
+           TmpBuf3D(i,j,k) = DefBuf3D(k,j,i)
+        end do
+     end do
+  end do
+     
   do k = 1, grd%km
      
      grd%imx(k) = 0
@@ -237,27 +259,30 @@ subroutine parallel_def_cov
      do i = 1, localRow
         kk = grd%jstp(i,1)
         ! if( grd%msr(i,1,k).eq.1. ) kk = kk + 1
-        if( RecBuf3D(k,1,i).eq.1. ) kk = kk + 1
+        if( DefBuf3D(k,1,i).eq.1. ) kk = kk + 1
         grd%jnx(i,1,k) = kk
         ! do j = 2, grd%jm
         do j = 2, GlobalCol
            ! if( grd%msr(i,j,k).eq.0. .and. grd%msr(i,j-1,k).eq.1. ) then
-           if( RecBuf3D(k,j,i).eq.0. .and. RecBuf3D(k,j-1,i).eq.1. ) then
+           if( DefBuf3D(k,j,i).eq.0. .and. DefBuf3D(k,j-1,i).eq.1. ) then
               kk = kk + grd%jstp(i,j)
            ! else if( grd%msr(i,j,k).eq.1. .and. grd%msr(i,j-1,k).eq.0. ) then
-           else if( RecBuf3d(k,j,i).eq.1. .and. RecBuf3d(k,j-1,i).eq.0. ) then
+           else if( DefBuf3D(k,j,i).eq.1. .and. DefBuf3D(k,j-1,i).eq.0. ) then
               kk = kk + grd%jstp(i,j) + 1
-           else if( RecBuf3D(k,j,i).eq.1. ) then
+           else if( DefBuf3D(k,j,i).eq.1. ) then
               kk = kk + 1
            endif
            grd%jnx(i,j,k) = kk
         enddo
-        grd%jmx(k) = max( grd%jmx(k), kk+grd%jstp(i,grd%jm))
+        grd%jmx(k) = max( grd%jmx(k), kk+grd%jstp(i,GlobalCol)) !grd%jm)) !!!!!!!! *** WARNING HERE *** !!!!!!!!
      enddo
      grd%jmax   = max( grd%jmax, grd%jmx(k))
      
   enddo
-
+  i = grd%imax
+  call MPI_Allreduce(i, grd%imax, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD, ierr)
+  i = grd%jmax
+  call MPI_Allreduce(i, grd%jmax, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD, ierr)
   
   ALLOCATE( grd%aex(localCol,grd%imax,grd%km)) ; grd%aex(:,:,:) = 0.0
   ALLOCATE( grd%bex(localCol,grd%imax,grd%km)) ; grd%bex(:,:,:) = 0.0
@@ -301,7 +326,7 @@ subroutine parallel_def_cov
      do i = 1, localRow
         kk = grd%jstp(i,1)
         ! if( grd%msr(i,1,k).eq.1. ) then
-        if( RecBuf3D(k,1,i).eq.1. ) then
+        if( DefBuf3D(k,1,i).eq.1. ) then
            kk = kk + 1
            grd%aey(i,1:kk,k) = grd%aly(i,1)
            grd%bey(i,1:kk,k) = grd%bty(i,1)
@@ -309,17 +334,17 @@ subroutine parallel_def_cov
         ! do j = 2, grd%jm
         do j = 2, GlobalCol
            ! if( grd%msr(i,j,k).eq.0. .and. grd%msr(i,j-1,k).eq.1. ) then
-           if( RecBuf3D(k,j,i).eq.0. .and. RecBuf3D(k,j-1,i).eq.1. ) then
+           if( DefBuf3D(k,j,i).eq.0. .and. DefBuf3D(k,j-1,i).eq.1. ) then
               grd%aey(i,kk+1:kk+grd%jstp(i,j),k) = grd%aly(i,j)
               grd%bey(i,kk+1:kk+grd%jstp(i,j),k) = grd%bty(i,j)
               kk = kk + grd%jstp(i,j)
            ! else if( grd%msr(i,j,k).eq.1. .and. grd%msr(i,j-1,k).eq.0. ) then
-           else if( RecBuf3D(k,j,i).eq.1. .and. RecBuf3D(k,j-1,i).eq.0. ) then
+           else if( DefBuf3D(k,j,i).eq.1. .and. DefBuf3D(k,j-1,i).eq.0. ) then
               grd%aey(i,kk+1:kk+grd%jstp(i,j)+1,k) = grd%aly(i,j)
               grd%bey(i,kk+1:kk+grd%jstp(i,j)+1,k) = grd%bty(i,j)
               kk = kk + grd%jstp(i,j) + 1
            ! else if( grd%msr(i,j,k).eq.1. ) then
-           else if( RecBuf3D(k,j,i).eq.1. ) then
+           else if( DefBuf3D(k,j,i).eq.1. ) then
               grd%aey(i,kk+1,k) = grd%aly(i,j)
               grd%bey(i,kk+1,k) = grd%bty(i,j)
               kk = kk + 1
@@ -341,8 +366,20 @@ subroutine parallel_def_cov
         enddo
      enddo
   enddo
-  
-  
+
+  if(MyRank .eq. 0) then
+     open(0511, file = 'checkmpi0', form = 'formatted')
+  else
+     open(0511, file = 'checkmpi1', form = 'formatted')
+  end if
+  ! do k=1, grd%km
+  !    write(0511,*) grd%aex(:,:,k)
+  ! end do
+  do k=1,grd%km
+     ! write(0511,*) grd%jnx(:,:,k)
+     write(0511,*) TmpBuf3D(:,:,k)
+  end do
+  close(0511)
   ! ---
   ! Vertical EOFs
            
@@ -372,5 +409,6 @@ subroutine parallel_def_cov
   ALLOCATE ( bta_rcy(grd%im,grd%jmax,nthreads)) ; bta_rcy = huge(bta_rcy(1,1,1))
 
   DEALLOCATE(RecBuf2D, SendBuf3D, RecBuf3D)
+  DEALLOCATE(DefBuf3D)
   
 end subroutine parallel_def_cov
