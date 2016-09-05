@@ -47,6 +47,7 @@ subroutine parallel_def_cov
   INTEGER :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
   INTEGER(i8) :: ierr, iProc
   REAL(r8), allocatable :: SendBuf2D(:,:), RecBuf2D(:,:), DefBuf2D(:,:)
+  REAL(r8), allocatable :: SendBuf1D(:), RecBuf1D(:), TmpBuf1D(:), DefBuf1D(:)
   REAL(r8), allocatable :: SendBuf3D(:,:,:), RecBuf3D(:,:,:), TmpBuf3D(:,:,:), DefBuf3D(:,:,:)
 
   nthreads = 1
@@ -196,7 +197,10 @@ subroutine parallel_def_cov
   grd%imax   = 0
   grd%jmax   = 0
   
-  ALLOCATE(SendBuf3D(grd%km,grd%jm,grd%im))
+  ! ALLOCATE(SendBuf3D(grd%km,grd%jm,grd%im))
+  ALLOCATE(SendBuf1D(grd%km * grd%jm * grd%im))
+  ALLOCATE(RecBuf1D(grd%km * localCol * GlobalRow))
+  
   ALLOCATE(RecBuf3D(grd%km, localCol, GlobalRow))
   ALLOCATE(DefBuf3D(grd%km, GlobalCol, localRow))
   ALLOCATE(TmpBuf3D(localRow, GlobalCol, grd%km))
@@ -204,20 +208,24 @@ subroutine parallel_def_cov
   do k=1,grd%km
      do j=1,grd%jm
         do i=1,grd%im
-           SendBuf3D(k,j,i) = grd%msr(i,j,k)
+           ! SendBuf3D(k,j,i) = grd%msr(i,j,k)
+           SendBuf1D(k + (j-1)*grd%km + (i-1)*grd%km*grd%jm) = grd%msr(i,j,k)
         end do
      end do
   end do
 
-  call MPI_Alltoall(SendBuf3D, grd%im*grd%jm*grd%km/size, MPI_REAL8, &
-       & RecBuf3D, grd%im*grd%jm*grd%km/size, MPI_REAL8, MPI_COMM_WORLD,ierr)
+  ! call MPI_Alltoall(SendBuf3D, grd%im*grd%jm*grd%km/size, MPI_REAL8, &
+  !      & RecBuf3D, grd%im*grd%jm*grd%km/size, MPI_REAL8, MPI_COMM_WORLD,ierr)
+  call MPI_Alltoall(SendBuf1D, grd%im*grd%jm*grd%km/size, MPI_REAL8, &
+       & RecBuf1D, grd%im*grd%jm*grd%km/size, MPI_REAL8, MPI_COMM_WORLD,ierr)
 
   ! Reorder data
   do i=1, localRow
      do iProc=0, Size-1
         do j=1, localCol
            do k=1, grd%km
-              DefBuf3D(k,j+iProc*localCol,i) = RecBuf3D(k, j, i + iProc*localRow)
+              ! DefBuf3D(k,j+iProc*localCol,i) = RecBuf3D(k, j, i + iProc*localRow)
+              DefBuf3D(k,j+iProc*localCol,i) = RecBuf1D(k + (j-1)*grd%km + (i + iProc*localRow -1)*grd%km*grd%jm)
            end do
         end do
      end do
@@ -372,12 +380,9 @@ subroutine parallel_def_cov
   else
      open(0511, file = 'checkmpi1', form = 'formatted')
   end if
-  ! do k=1, grd%km
-  !    write(0511,*) grd%aex(:,:,k)
-  ! end do
   do k=1,grd%km
-     ! write(0511,*) grd%jnx(:,:,k)
-     write(0511,*) TmpBuf3D(:,:,k)
+     write(0511,*) grd%jnx(:,:,k)
+     ! write(0511,*) TmpBuf3D(:,:,k)
   end do
   close(0511)
   ! ---
@@ -408,7 +413,7 @@ subroutine parallel_def_cov
   ALLOCATE ( alp_rcy(grd%im,grd%jmax,nthreads)) ; alp_rcy = huge(alp_rcy(1,1,1))
   ALLOCATE ( bta_rcy(grd%im,grd%jmax,nthreads)) ; bta_rcy = huge(bta_rcy(1,1,1))
 
-  DEALLOCATE(RecBuf2D, SendBuf3D, RecBuf3D)
-  DEALLOCATE(DefBuf3D)
+  DEALLOCATE(RecBuf2D, SendBuf1D, RecBuf3D)
+  DEALLOCATE(RecBuf1D, DefBuf3D)
   
 end subroutine parallel_def_cov
