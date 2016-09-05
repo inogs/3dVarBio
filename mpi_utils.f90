@@ -53,7 +53,7 @@ subroutine mynode()
   call COUNTWORDS('Dom_Dec_jpi.ascii', NumProcJ)
   
   NumProcI = 1
-  NumProcJ = 2
+  NumProcJ = size !2
 
   if(NumProcI * NumProcJ .ne. size) then
      if(MyRank .eq. 0) then

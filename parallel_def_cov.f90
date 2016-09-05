@@ -197,7 +197,7 @@ subroutine parallel_def_cov
   grd%imax   = 0
   grd%jmax   = 0
   
-  ! ALLOCATE(SendBuf3D(grd%km,grd%jm,grd%im))
+  ALLOCATE(SendBuf3D(grd%km,grd%jm,grd%im))
   ALLOCATE(SendBuf1D(grd%km * grd%jm * grd%im))
   ALLOCATE(RecBuf1D(grd%km * localCol * GlobalRow))
   
@@ -208,33 +208,50 @@ subroutine parallel_def_cov
   do k=1,grd%km
      do j=1,grd%jm
         do i=1,grd%im
-           ! SendBuf3D(k,j,i) = grd%msr(i,j,k)
-           SendBuf1D(k + (j-1)*grd%km + (i-1)*grd%km*grd%jm) = grd%msr(i,j,k)
+           SendBuf3D(k,j,i) = grd%msr(i,j,k)
+           ! SendBuf3D(k,j,i) = (i + j + MyRank*localCol + k)*grd%msr(i,j,k)
+           ! SendBuf1D(k + (j-1)*grd%km + (i-1)*grd%km*grd%jm) = grd%msr(i,j,k)
         end do
      end do
   end do
 
-  ! call MPI_Alltoall(SendBuf3D, grd%im*grd%jm*grd%km/size, MPI_REAL8, &
-  !      & RecBuf3D, grd%im*grd%jm*grd%km/size, MPI_REAL8, MPI_COMM_WORLD,ierr)
-  call MPI_Alltoall(SendBuf1D, grd%im*grd%jm*grd%km/size, MPI_REAL8, &
-       & RecBuf1D, grd%im*grd%jm*grd%km/size, MPI_REAL8, MPI_COMM_WORLD,ierr)
-
+  call MPI_Alltoall(SendBuf3D, grd%im*grd%jm*grd%km/size, MPI_REAL8, &
+       & RecBuf3D, grd%im*grd%jm*grd%km/size, MPI_REAL8, MPI_COMM_WORLD,ierr)
+  ! call MPI_Alltoall(SendBuf1D, grd%im*grd%jm*grd%km/size, MPI_REAL8, &
+  !      & RecBuf1D, grd%im*grd%jm*grd%km/size, MPI_REAL8, MPI_COMM_WORLD,ierr)
+  
   ! Reorder data
   do i=1, localRow
      do iProc=0, Size-1
         do j=1, localCol
            do k=1, grd%km
-              ! DefBuf3D(k,j+iProc*localCol,i) = RecBuf3D(k, j, i + iProc*localRow)
-              DefBuf3D(k,j+iProc*localCol,i) = RecBuf1D(k + (j-1)*grd%km + (i + iProc*localRow -1)*grd%km*grd%jm)
+              DefBuf3D(k,j+(iProc*localCol),i) = RecBuf3D(k, j, i + iProc*localRow)
+              ! DefBuf3D(k,j+iProc*localCol,i) = RecBuf1D(k + (j-1)*grd%km + (i + iProc*localRow -1)*grd%km*grd%jm)
            end do
         end do
      end do
   end do
+
+  ! if(MyRank .eq. 1) then
+  !    write(*,*) "CHECK0 ", DefBuf3D(1, GlobalCol/2, 190-localRow)
+  !    write(*,*) "CHECK1 ", DefBuf3D(1, GlobalCol/2 + 1, 190-localRow)
+  !    call MPI_Abort(MPI_COMM_WORLD, -1, ierr)
+  ! end if
   ! tmp buffer to print
   do i=1,localRow
      do j=1,GlobalCol
         do k=1,grd%km
            TmpBuf3D(i,j,k) = DefBuf3D(k,j,i)
+           if(MyRank .eq. 0 .and. j .lt. localCol) then
+              if(TmpBuf3D(i,j,k) .ne. grd%msr(i,j,k)) then
+                 print*, "Rank0: ",i,j,k
+              end if
+           end if
+           if(MyRank .eq. 1 .and. j .gt. localCol) then
+              if(TmpBuf3D(i,j,k) .ne. grd%msr(i+localRow,j-localCol,k)) then
+                 print*, "Rank1: ",i,j,k
+              end if
+           end if
         end do
      end do
   end do
@@ -381,8 +398,8 @@ subroutine parallel_def_cov
      open(0511, file = 'checkmpi1', form = 'formatted')
   end if
   do k=1,grd%km
-     write(0511,*) grd%jnx(:,:,k)
-     ! write(0511,*) TmpBuf3D(:,:,k)
+     ! write(0511,*) grd%jnx(:,:,k)
+     write(0511,*) TmpBuf3D(:,:,k)
   end do
   close(0511)
   ! ---
