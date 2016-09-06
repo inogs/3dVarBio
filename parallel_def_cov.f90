@@ -154,7 +154,8 @@ subroutine parallel_def_cov
   enddo
 
   grd%istp = int( rcf%L * rcf%efc / grd%dx(:,:) )+1
-  
+
+  ! ********************* WARNING!!!!!! THE NEXT ALLTOALL IS WRONG!!! WE MUST REORDER DATA!!!!! *********************
   ! CALL MPI_ALLTOALL
   ALLOCATE(RecBuf2D(localRow, GlobalCol))
   call MPI_Alltoall(grd%dy, GlobalRow*localCol/size, MPI_REAL8, RecBuf2D, GlobalRow*localCol/size, MPI_REAL8, MPI_COMM_WORLD, ierr)
@@ -196,14 +197,12 @@ subroutine parallel_def_cov
   grd%jstp = int( rcf%L * rcf%efc / RecBuf2D(:,:) )+1
   grd%imax   = 0
   grd%jmax   = 0
-  
+    
   ALLOCATE(SendBuf3D(grd%km,grd%jm,grd%im))
-  ALLOCATE(SendBuf1D(grd%km * grd%jm * grd%im))
-  ALLOCATE(RecBuf1D(grd%km * localCol * GlobalRow))
-  
   ALLOCATE(RecBuf3D(grd%km, localCol, GlobalRow))
   ALLOCATE(DefBuf3D(grd%km, GlobalCol, localRow))
-  ALLOCATE(TmpBuf3D(localRow, GlobalCol, grd%km))
+  ! ALLOCATE(SendBuf1D(grd%km * grd%jm * grd%im))
+  ! ALLOCATE(RecBuf1D(grd%km * localCol * GlobalRow))
 
   do k=1,grd%km
      do j=1,grd%jm
@@ -227,30 +226,6 @@ subroutine parallel_def_cov
               DefBuf3D(k,j+(iProc*localCol),i) = RecBuf3D(k, j, i + iProc*localRow)
               ! DefBuf3D(k,j+iProc*localCol,i) = RecBuf1D(k + (j-1)*grd%km + (i + iProc*localRow -1)*grd%km*grd%jm)
            end do
-        end do
-     end do
-  end do
-
-  ! tmp buffer to print
-  do i=1,localRow
-     do j=1,GlobalCol
-        do k=1,grd%km
-           TmpBuf3D(i,j,k) = DefBuf3D(k,j,i)
-
-           ! check values...
-           if(MyRank .eq. 0 ) then
-              ! if(TmpBuf3D(i,j,k) .ne. grd%global_msr(i,j,k)) then
-              if(DefBuf3D(k,j,i) .ne. grd%global_msr(i,j,k)) then
-                 print*, "Rank0: ",i,j,k
-              end if
-           end if
-           if(MyRank .eq. 1 ) then
-              ! if(TmpBuf3D(i,j,k) .ne. grd%global_msr(i+localRow,j,k)) then
-              if(DefBuf3D(k,j,i) .ne. grd%global_msr(i+localRow,j,k)) then
-                 print*, "Rank1: ",i,j,k
-              end if
-           end if
-           
         end do
      end do
   end do
@@ -391,18 +366,6 @@ subroutine parallel_def_cov
      enddo
   enddo
 
-  if(MyRank .eq. 0) then
-     open(0511, file = 'checkmpi0', form = 'formatted')
-  else
-     open(0511, file = 'checkmpi1', form = 'formatted')
-  end if
-  do k=1,grd%km
-     ! write(0511,*) grd%aey(:,:,k)
-     write(0511,*) TmpBuf3D(:,:,k)
-     ! write(0511,*) grd%global_msr(:,:,k)
-  end do
-  close(0511)
-
   ! ---
   ! Vertical EOFs
            
@@ -431,7 +394,7 @@ subroutine parallel_def_cov
   ALLOCATE ( alp_rcy(grd%im,grd%jmax,nthreads)) ; alp_rcy = huge(alp_rcy(1,1,1))
   ALLOCATE ( bta_rcy(grd%im,grd%jmax,nthreads)) ; bta_rcy = huge(bta_rcy(1,1,1))
 
-  DEALLOCATE(RecBuf2D, SendBuf1D, RecBuf3D)
-  DEALLOCATE(RecBuf1D, DefBuf3D)
+  DEALLOCATE(RecBuf2D)
+  DEALLOCATE(SendBuf3D, RecBuf3D, DefBuf3D)
   
 end subroutine parallel_def_cov

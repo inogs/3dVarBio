@@ -66,7 +66,6 @@ MODULE grd_str
      REAL(r8),    POINTER     ::  scx(:,:)     ! Scaling factor for x direction
      REAL(r8),    POINTER     ::  scy(:,:)     ! Scaling factor for y direction
      REAL(r8),    POINTER     ::  msr(:,:,:)   ! Sea-land mask used in the recursive filter
-     REAL(r8),    POINTER     ::  global_msr(:,:,:)   ! Sea-land mask used in the recursive filter
      INTEGER(i4)              ::  imax         ! Maximum number of extended points
      INTEGER(i4)              ::  jmax         ! Maximum number of extended points
      INTEGER(i4), POINTER     ::  imx(:)       ! Max. no. of extended pnts at each level
