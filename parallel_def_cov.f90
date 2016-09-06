@@ -209,7 +209,6 @@ subroutine parallel_def_cov
      do j=1,grd%jm
         do i=1,grd%im
            SendBuf3D(k,j,i) = grd%msr(i,j,k)
-           ! SendBuf3D(k,j,i) = (i + j + MyRank*localCol + k)*grd%msr(i,j,k)
            ! SendBuf1D(k + (j-1)*grd%km + (i-1)*grd%km*grd%jm) = grd%msr(i,j,k)
         end do
      end do
@@ -232,11 +231,6 @@ subroutine parallel_def_cov
      end do
   end do
 
-  ! if(MyRank .eq. 1) then
-  !    write(*,*) "CHECK0 ", DefBuf3D(1, GlobalCol/2, 190-localRow)
-  !    write(*,*) "CHECK1 ", DefBuf3D(1, GlobalCol/2 + 1, 190-localRow)
-  !    call MPI_Abort(MPI_COMM_WORLD, -1, ierr)
-  ! end if
   ! tmp buffer to print
   do i=1,localRow
      do j=1,GlobalCol
@@ -244,13 +238,15 @@ subroutine parallel_def_cov
            TmpBuf3D(i,j,k) = DefBuf3D(k,j,i)
 
            ! check values...
-           if(MyRank .eq. 0 .and. j .lt. localCol) then
-              if(TmpBuf3D(i,j,k) .ne. grd%msr(i,j,k)) then
+           if(MyRank .eq. 0 ) then
+              ! if(TmpBuf3D(i,j,k) .ne. grd%global_msr(i,j,k)) then
+              if(DefBuf3D(k,j,i) .ne. grd%global_msr(i,j,k)) then
                  print*, "Rank0: ",i,j,k
               end if
            end if
-           if(MyRank .eq. 1 .and. j .gt. localCol) then
-              if(TmpBuf3D(i,j,k) .ne. grd%msr(i+localRow,j-localCol,k)) then
+           if(MyRank .eq. 1 ) then
+              ! if(TmpBuf3D(i,j,k) .ne. grd%global_msr(i+localRow,j,k)) then
+              if(DefBuf3D(k,j,i) .ne. grd%global_msr(i+localRow,j,k)) then
                  print*, "Rank1: ",i,j,k
               end if
            end if
@@ -401,10 +397,12 @@ subroutine parallel_def_cov
      open(0511, file = 'checkmpi1', form = 'formatted')
   end if
   do k=1,grd%km
-     ! write(0511,*) grd%jnx(:,:,k)
+     ! write(0511,*) grd%aey(:,:,k)
      write(0511,*) TmpBuf3D(:,:,k)
+     ! write(0511,*) grd%global_msr(:,:,k)
   end do
   close(0511)
+
   ! ---
   ! Vertical EOFs
            

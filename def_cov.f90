@@ -276,7 +276,7 @@ subroutine def_cov
   
   open(0511, file = 'checkserial', form = 'formatted')
   do k=1,grd%km
-     ! write(0511,*) grd%jnx(:,:,k)
+     ! write(0511,*) grd%aey(:,:,k)
      write(0511,*) grd%msr(:,:,k)
   end do
   
