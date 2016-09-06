@@ -242,6 +242,8 @@ subroutine parallel_def_cov
      do j=1,GlobalCol
         do k=1,grd%km
            TmpBuf3D(i,j,k) = DefBuf3D(k,j,i)
+
+           ! check values...
            if(MyRank .eq. 0 .and. j .lt. localCol) then
               if(TmpBuf3D(i,j,k) .ne. grd%msr(i,j,k)) then
                  print*, "Rank0: ",i,j,k
@@ -252,6 +254,7 @@ subroutine parallel_def_cov
                  print*, "Rank1: ",i,j,k
               end if
            end if
+           
         end do
      end do
   end do
