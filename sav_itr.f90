@@ -97,15 +97,16 @@ subroutine sav_itr
      DEALLOCATE ( arg%pq5, arg%pq6, arg%pq7, arg%pq8)
   endif
 
-  ! Control structure    
-  DEALLOCATE( ctl%nbd, ctl%iwa)
+  ! Control structure
   DEALLOCATE( ctl%x_c, ctl%g_c)
   DEALLOCATE( ctl%l_c, ctl%u_c)
-  DEALLOCATE( ctl%wa, ctl%sg, ctl%sgo, ctl%yg, ctl%ygo)
-  DEALLOCATE( ctl%ws, ctl%wy)
-  DEALLOCATE( ctl%sy, ctl%ss, ctl%yy)
+#ifndef _USE_MPI
+  DEALLOCATE( ctl%nbd, ctl%iwa)
+  DEALLOCATE( ctl%wa, ctl%ws, ctl%wy)
+  DEALLOCATE( ctl%sy, ctl%ss)
   DEALLOCATE( ctl%wt, ctl%wn, ctl%snd)
   DEALLOCATE( ctl%z_c, ctl%r_c, ctl%d_c, ctl%t_c)
+#endif
   DEALLOCATE (SurfaceWaterPoints)  
   
   DEALLOCATE ( a_rcx)

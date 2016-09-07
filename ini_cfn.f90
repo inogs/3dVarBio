@@ -72,25 +72,20 @@ subroutine ini_cfn
      write(drv%dia,*) 'Size of the control vector: ',ctl%n
 #endif
 
-     ALLOCATE( ctl%nbd(ctl%n)) ; ctl%nbd = huge(ctl%nbd(1))
-     ALLOCATE(ctl%iwa(3*ctl%n)); ctl%iwa = huge(ctl%iwa(1))
      ALLOCATE( ctl%x_c(ctl%n)) ; ctl%x_c = huge(ctl%x_c(1))
      ALLOCATE( ctl%g_c(ctl%n)) ; ctl%g_c = huge(ctl%g_c(1))
      ALLOCATE( ctl%l_c(ctl%n)) ; ctl%l_c = huge(ctl%l_c(1))
      ALLOCATE( ctl%u_c(ctl%n)) ; ctl%u_c = huge(ctl%u_c(1))
+
+#ifndef _USE_MPI
+     ALLOCATE( ctl%nbd(ctl%n)) ; ctl%nbd = huge(ctl%nbd(1))
+     ALLOCATE(ctl%iwa(3*ctl%n)); ctl%iwa = huge(ctl%iwa(1))
      ALLOCATE( ctl%wa(8*ctl%m)); ctl%wa  = huge(ctl%wa(1))
-     ALLOCATE( ctl%sg(ctl%m))  ; ctl%sg  = huge(ctl%sg(1))
-     ALLOCATE( ctl%sgo(ctl%m)) ; ctl%sgo = huge(ctl%sgo(1))
-     ALLOCATE( ctl%yg(ctl%m))  ; ctl%yg  = huge(ctl%yg(1))
-     ALLOCATE( ctl%ygo(ctl%m)) ; ctl%ygo = huge(ctl%ygo(1))
-     
-     
      
      ALLOCATE( ctl%ws(ctl%n,ctl%m)) ; ctl%ws = huge(ctl%ws(1,1)) ;
      ALLOCATE( ctl%wy(ctl%n,ctl%m)) ; ctl%wy = huge(ctl%wy(1,1))
      ALLOCATE( ctl%sy(ctl%m,ctl%m)) ; ctl%sy = huge(ctl%sy(1,1))
      ALLOCATE( ctl%ss(ctl%m,ctl%m)) ; ctl%ss = huge(ctl%ss(1,1))
-     ALLOCATE( ctl%yy(ctl%m,ctl%m)) ; ctl%yy = huge(ctl%yy(1,1))
      
      ALLOCATE( ctl%wt(ctl%m,ctl%m))      ; ctl%wt  = huge(ctl%wt(1,1))
      ALLOCATE( ctl%wn(2*ctl%m,2*ctl%m))  ; ctl%wn  = huge(ctl%wn(1,1))
@@ -100,10 +95,12 @@ subroutine ini_cfn
      ALLOCATE( ctl%r_c(ctl%n)) ; ctl%r_c = huge(ctl%r_c(1))
      ALLOCATE( ctl%d_c(ctl%n)) ; ctl%d_c = huge(ctl%d_c(1))
      ALLOCATE( ctl%t_c(ctl%n)) ; ctl%t_c = huge(ctl%t_c(1))
-     
+#endif
      
      do i=1,ctl%n
+#ifndef _USE_MPI
         ctl%nbd(i)=0
+#endif
         ctl%l_c(i)=-1.0d3
         ctl%u_c(i)= 1.0d3
         ctl%x_c(i)= 0.0d0
