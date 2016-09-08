@@ -41,8 +41,10 @@ subroutine parallel_costf
   ! -------------------------------------------------------
   ! calculate backgorund cost term
   ! -------------------------------------------------------
-  call MPI_Barrier(MPI_COMM_WORLD, ierr)
+  ! call MPI_Barrier(MPI_COMM_WORLD, ierr)
+
   ctl%f_b = 0.5 * dot_product( ctl%x_c, ctl%x_c)
+  call MPI_Allreduce(MPI_IN_PLACE, ctl%f_b, 1, MPI_REAL8, MPI_SUM, MPI_COMM_WORLD, ierr)
   !    write(*,*) 'COSTF f_b = ', ctl%f_b
   
   ! -------------------------------------------------------
@@ -52,9 +54,11 @@ subroutine parallel_costf
   ! Convert the control vector to v
   call cnv_ctv
   
+  ! print*, "MyRank", MyRank, "before ver_hor"
   ! --------
   ! Control to physical space 
   call ver_hor
+  ! print*, "MyRank", MyRank, "within parallel_costf"
   
   ! --------
   ! Apply observational operators
@@ -67,6 +71,7 @@ subroutine parallel_costf
   ! --------
   ! calculate cost
   ctl%f_o = 0.5 * dot_product( obs%amo, obs%amo)
+  call MPI_Allreduce(MPI_IN_PLACE, ctl%f_o, 1, MPI_REAL8, MPI_SUM, MPI_COMM_WORLD, ierr)
   
   ! -------------------------------------------------------
   ! Cost function

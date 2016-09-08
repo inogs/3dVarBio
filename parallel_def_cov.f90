@@ -40,7 +40,7 @@ subroutine parallel_def_cov
   implicit none
   
   INTEGER(i4)                 :: k, nspl, i, j, kk
-  REAL(r8)                    :: E, dst, TmpMax, TmpMin
+  REAL(r8)                    :: E, dst
   REAL(r8)    , ALLOCATABLE   :: sfct(:), al(:), bt(:)
   INTEGER(i4) , ALLOCATABLE   :: jnxx(:)
   INTEGER nthreads, threadid
@@ -92,10 +92,8 @@ subroutine parallel_def_cov
   enddo
 
   ! Computes the global maximum and minimum
-  TmpMax = rcf%dsmx
-  TmpMin = rcf%dsmn
-  call MPI_Allreduce(TmpMax, rcf%dsmx, 1, MPI_REAL, MPI_MAX, MPI_COMM_WORLD, ierr)
-  call MPI_Allreduce(TmpMin, rcf%dsmn, 1, MPI_REAL, MPI_MIN, MPI_COMM_WORLD, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, rcf%dsmx, 1, MPI_REAL, MPI_MAX, MPI_COMM_WORLD, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, rcf%dsmn, 1, MPI_REAL, MPI_MIN, MPI_COMM_WORLD, ierr)
   
   rcf%dsmx = rcf%dsmx + max(1.d0,(rcf%dsmx-rcf%dsmn)/(rcf%ntb-2.))
   
@@ -249,7 +247,8 @@ subroutine parallel_def_cov
            endif
            grd%inx(i,j,k) = kk
         enddo
-        grd%imx(k) = max( grd%imx(k), kk+grd%istp(grd%im,j))
+        ! grd%imx(k) = max( grd%imx(k), kk+grd%istp(grd%im,j))
+        grd%imx(k) = max( grd%imx(k), kk+grd%istp(GlobalRow,j))
      enddo
      grd%imax   = max( grd%imax, grd%imx(k))
      
@@ -278,10 +277,9 @@ subroutine parallel_def_cov
      grd%jmax   = max( grd%jmax, grd%jmx(k))
      
   enddo
-  i = grd%imax
-  call MPI_Allreduce(i, grd%imax, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD, ierr)
-  i = grd%jmax
-  call MPI_Allreduce(i, grd%jmax, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD, ierr)
+
+  call MPI_Allreduce(MPI_IN_PLACE, grd%imax, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, grd%jmax, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD, ierr)
   
   ALLOCATE( grd%aex(localCol,grd%imax,grd%km)) ; grd%aex(:,:,:) = 0.0
   ALLOCATE( grd%bex(localCol,grd%imax,grd%km)) ; grd%bex(:,:,:) = 0.0
@@ -356,7 +354,7 @@ subroutine parallel_def_cov
   do k=1,grd%km
      do j=1,grd%jm
         do i=1,grd%im
-           ! if(grd%msr(i,j,k).eq.1.0)then
+           ! if(grd%msr(i,j,k).eq.1.0)then !!!!!!!! *** WARNING HERE *** !!!!!!!!
            if(grd%msk(i,j,k).eq.1.0)then
               grd%fct(i,j,k) = 1.0  
            else

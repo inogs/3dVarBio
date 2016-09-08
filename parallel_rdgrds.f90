@@ -19,6 +19,8 @@ subroutine parallel_rdgrd
   ! integer, allocatable :: ilcit(:,:), ilcjt(:,:)
   integer(i8) :: ji, jj, jpi, jpj, nn
   integer(i8) :: MyRestRow, MyRestCol, OffsetRow, OffsetCol
+
+  integer(8) :: GlobalStart(3), GlobalCount(3)
   integer(KIND=MPI_OFFSET_KIND) MyOffset
   
   !
@@ -225,6 +227,18 @@ subroutine parallel_rdgrd
   if (ierr .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all msk', ierr)
   grd%msk(:,:,:) = x3(:,:,:)
 
+  GlobalStart(:) = 1
+  GlobalCount(1) = GlobalRow
+  GlobalCount(2) = GlobalCol
+  GlobalCount(3) = grd%km
+  DEALLOCATE(x3)
+  ALLOCATE(grd%global_msk(GlobalRow, GlobalCol, grd%km))
+  ALLOCATE(x3(GlobalRow, GlobalCol, grd%km))
+  ierr = nfmpi_get_vara_real_all (ncid, VarId, GlobalStart, GlobalCount, x3)
+  if (ierr .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all msk', ierr)
+  grd%global_msk(:,:,:) = x3(:,:,:)
+  
+  
   ierr = nf90mpi_inq_varid (ncid, 'regs', VarId)
   if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_inq_varid regs', ierr)
   ierr = nfmpi_get_vara_real_all (ncid, VarId, MyStart, MyCount, x2)

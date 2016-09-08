@@ -95,14 +95,15 @@ subroutine tao_minimizer
   CHKERRQ(ierr)
 
   ! Set MyTolerance and ConvergenceTest
-  MyTolerance = 1.0d1
-  ! MyTolerance = 2.0d-2
+  ! MyTolerance = 1.0d1
+  MyTolerance = 2.0d-2
   call TaoSetTolerances(tao, MyTolerance, PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr)
   CHKERRQ(ierr)
   call TaoSetConvergenceTest(tao, MyConvTest, PETSC_NULL_OBJECT, ierr)
   CHKERRQ(ierr)
 
   ! Perform minimization
+  ! print*, "MyRank", MyRank, "starting TaoSolve"
   call TaoSolve(tao, ierr)
   CHKERRQ(ierr)
 
@@ -204,6 +205,7 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   ! compute function and gradient
   call parallel_costf
 
+  ! print*, "MyRank", MyRank, "within TaoSolve"
   ! assign the Cost Function value computed by costf to CostFunc
   CostFunc = ctl%f_c
 
@@ -211,7 +213,7 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   call VecGetOwnershipRange(Grad, GlobalStart, MyEnd, ierr)
 
   ! print*,""
-  print*,"MyRank ", MyRank, "GlobStart ", GlobalStart, "MyEnd ", MyEnd
+  ! print*,"MyRank ", MyRank, "GlobStart ", GlobalStart, "MyEnd ", MyEnd
   ! print*,""
 
   call VecGetArrayF90(Grad, my_grad, ierr)
