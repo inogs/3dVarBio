@@ -57,14 +57,10 @@ subroutine wrt_dia
   ! ---
   ! Innovations
 #ifdef _USE_MPI
-  if(MyRank .eq. 0) then
+  if(MyRank .eq. 0) &
 #endif
 
-     write(drv%dia,*) 'writes to corrections.dat !!!!!!!!!!!!!!!!!!!!!!!!!'
-     
-#ifdef _USE_MPI
-  endif
-#endif
+     write(drv%dia,*) 'writes to corrections.dat !!!!!!!!!!!!!!!!!!!!!!!!!'     
   
   write(fgrd,'(i1)')drv%ktr
   
@@ -92,8 +88,15 @@ subroutine wrt_dia
      enddo
   enddo
   
-  
+#ifdef _USE_MPI
+  if(MyRank .eq. 0) then
+     status = nf90_create("corr0.nc", NF90_CLOBBER, ncid)
+  else
+     status = nf90_create("corr1.nc", NF90_CLOBBER, ncid)
+  end if
+#else
   status = nf90_create(trim(CORR_FILE), NF90_CLOBBER, ncid)
+#endif
   status = nf90_def_dim(ncid,'depth'    ,grd%km, depid)
   status = nf90_def_dim(ncid,'latitude' ,grd%jm ,yid)
   status = nf90_def_dim(ncid,'longitude',grd%im ,xid)
