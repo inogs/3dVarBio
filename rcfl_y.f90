@@ -109,8 +109,8 @@ subroutine rcfl_y( im, jm, km, jmax, al, bt, fld, jnx, jmx)
      ! This way fills land points with some values.
      ! We prefer not investigate at the mooment and use only the water points
 #ifdef _USE_MPI
-     do i=1,localRow
-        do j=1,GlobalCol
+     do j=1,GlobalCol
+        do i=1,localRow
            if(grd%global_msk(i + MyRank*localRow,j,1).eq.1) then
               fld(i,j,k) = a_rcy(i,jnx(i,j,k),tid)
            end if

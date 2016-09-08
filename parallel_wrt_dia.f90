@@ -55,9 +55,7 @@ subroutine parallel_wrt_dia
   ! Innovations
   if(MyRank .eq. 0) &
      write(drv%dia,*) 'writes to corrections.dat !!!!!!!!!!!!!!!!!!!!!!!!!'     
-  print*,""
-  print*, "MyRank", MyRank, "WITHIN PARALLEL_WRITE_DIA subroutine"
-  print*,""
+
   write(fgrd,'(i1)')drv%ktr
   
   do l=1,grd%nchl
