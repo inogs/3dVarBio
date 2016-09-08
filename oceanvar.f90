@@ -171,7 +171,11 @@ subroutine oceanvar
         call cnv_inn
         ! ---
         ! Write outputs and diagnostics
+#ifdef _USE_MPI
+        call parallel_wrt_dia
+#else
         call wrt_dia
+#endif
      endif
      
      ! ---

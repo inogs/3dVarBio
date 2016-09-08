@@ -148,6 +148,7 @@ OBJS    =  \
 	mpi_utils.o\
 	parallel_costf.o\
 	parallel_rdgrds.o\
+	parallel_wrt_dia.o\
 	tao_minimizer.o\
     oceanvar.o
 

@@ -1,4 +1,4 @@
-subroutine wrt_dia
+subroutine parallel_wrt_dia
   
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -35,8 +35,9 @@ subroutine wrt_dia
   use grd_str
   use eof_str
   use ctl_str
-  use netcdf
+  use pnetcdf
   use filenames
+  use mpi_str
   
   implicit none
   
@@ -47,13 +48,16 @@ subroutine wrt_dia
   integer status
   integer            :: ncid,xid,yid,depid,idchl
   integer            :: idvip,idmsk,eofid
-  
-  
+  integer(kind=MPI_OFFSET_KIND) :: global_im, global_jm, global_km
+  ! integer(kind=MPI_OFFSET_KIND) :: MyStart(3), MyCount(3)
   
   ! ---
   ! Innovations
-  write(drv%dia,*) 'writes to corrections.dat !!!!!!!!!!!!!!!!!!!!!!!!!'     
-  
+  if(MyRank .eq. 0) &
+     write(drv%dia,*) 'writes to corrections.dat !!!!!!!!!!!!!!!!!!!!!!!!!'     
+  print*,""
+  print*, "MyRank", MyRank, "WITHIN PARALLEL_WRITE_DIA subroutine"
+  print*,""
   write(fgrd,'(i1)')drv%ktr
   
   do l=1,grd%nchl
@@ -80,50 +84,82 @@ subroutine wrt_dia
      enddo
   enddo
   
-  status = nf90_create(trim(CORR_FILE), NF90_CLOBBER, ncid)
-  status = nf90_def_dim(ncid,'depth'    ,grd%km, depid)
-  status = nf90_def_dim(ncid,'latitude' ,grd%jm ,yid)
-  status = nf90_def_dim(ncid,'longitude',grd%im ,xid)
+! #ifdef _USE_MPI
+!   if(MyRank .eq. 0) then
+!      status = nf90_create("corr0.nc", NF90_CLOBBER, ncid)
+!   else
+!      status = nf90_create("corr1.nc", NF90_CLOBBER, ncid)
+!   end if
+! #else
+!   status = nf90_create(trim(CORR_FILE), NF90_CLOBBER, ncid)
+! #endif
   
-  status = nf90_def_var(ncid,'chl', nf90_float, (/xid,yid,depid/), idchl )
-  status = nf90_enddef(ncid)
-  
-  status = nf90_put_var(ncid,idchl,Dump_chl)
-  status = nf90_sync(ncid)
-  status = nf90_close(ncid)
-  
-  
-  do k=1, ros%neof
-     do j=1, grd%jm
-        do i=1, grd%im
-           Dump_vip(i,j,k) = real(grd%ro(i,j,k),  4)
-        enddo
-     enddo
-  enddo
-  
-  status = nf90_create(trim(EIV_FILE), NF90_CLOBBER, ncid) ! Eigenvalues
-  status = nf90_def_dim(ncid,'neof'     ,ros%neof ,eofid)
-  status = nf90_def_dim(ncid,'latitude' ,grd%jm  ,yid)
-  status = nf90_def_dim(ncid,'longitude',grd%im  ,xid)
-  status = nf90_def_var(ncid,'msk' , nf90_float, (/xid,yid/)      , idmsk )
-  status = nf90_def_var(ncid,'vip' , nf90_float, (/xid,yid,eofid/), idvip )
-  status = nf90_enddef(ncid)
-  status = nf90_put_var(ncid,idmsk, Dump_msk )
-  status = nf90_put_var(ncid,idvip, Dump_vip )
-  status = nf90_sync(ncid)
-  status = nf90_close(ncid)
-  
-  
-  ! ---
-  ! Observations
-  
-  !  open(215,file=drv%flag//drv%date//'obs_'//fgrd//'.dat',form='unformatted')
+  status = nf90mpi_create(MPI_COMM_WORLD, trim(CORR_FILE), NF90_CLOBBER, &
+       MPI_INFO_NULL, ncid)
+  if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_create ', status)
 
-  open(215,file=trim(OBS_FILE),form='unformatted')
+  global_im = GlobalRow
+  global_jm = GlobalCol
+  global_km = grd%km
   
-  write(215) chl%no
+  status = nf90mpi_def_dim(ncid,'depth'    ,global_km, depid)
+  if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_def_dim depth ', status)
+  status = nf90mpi_def_dim(ncid,'latitude' ,global_jm ,yid)
+  if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_def_dim latitude ', status)
+  status = nf90mpi_def_dim(ncid,'longitude',global_im ,xid)
+  if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_def_dim longitude ', status)
   
-  close (215)
-  write(*,*)'nchl ',chl%no
+  status = nf90mpi_def_var(ncid,'chl', nf90_float, (/xid,yid,depid/), idchl )
+  if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_def_var', status)
+  status = nf90mpi_enddef(ncid)
+  if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_def_var', status)
+  
+  status = nf90mpi_put_var_all(ncid,idchl,Dump_chl,MyStart,MyCount)
+  if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_put_var_all', status)
+  ! status = nf90_sync(ncid)
+  status = nf90mpi_close(ncid)
+  if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_close', status)
+  
+  
+!   do k=1, ros%neof
+!      do j=1, grd%jm
+!         do i=1, grd%im
+!            Dump_vip(i,j,k) = real(grd%ro(i,j,k),  4)
+!         enddo
+!      enddo
+!   enddo
+  
+!   status = nf90_create(trim(EIV_FILE), NF90_CLOBBER, ncid) ! Eigenvalues
+!   status = nf90_def_dim(ncid,'neof'     ,ros%neof ,eofid)
+!   status = nf90_def_dim(ncid,'latitude' ,grd%jm  ,yid)
+!   status = nf90_def_dim(ncid,'longitude',grd%im  ,xid)
+!   status = nf90_def_var(ncid,'msk' , nf90_float, (/xid,yid/)      , idmsk )
+!   status = nf90_def_var(ncid,'vip' , nf90_float, (/xid,yid,eofid/), idvip )
+!   status = nf90_enddef(ncid)
+!   status = nf90_put_var(ncid,idmsk, Dump_msk )
+!   status = nf90_put_var(ncid,idvip, Dump_vip )
+!   status = nf90_sync(ncid)
+!   status = nf90_close(ncid)
+  
+  
+!   ! ---
+!   ! Observations
+  
+!   !  open(215,file=drv%flag//drv%date//'obs_'//fgrd//'.dat',form='unformatted')
 
-end subroutine wrt_dia
+! #ifdef _USE_MPI
+!   if(MyRank .eq. 0) then
+! #endif
+
+!      open(215,file=trim(OBS_FILE),form='unformatted')
+  
+!      write(215) chl%no
+     
+!      close (215)
+!      write(*,*)'nchl ',chl%no
+
+! #ifdef _USE_MPI
+!   endif
+! #endif
+
+end subroutine parallel_wrt_dia
