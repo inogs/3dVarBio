@@ -55,6 +55,20 @@ subroutine mynode()
   NumProcI = 1
   NumProcJ = size !2
 
+  MyPosI = mod(MyRank, NumProcJ)
+  MyPosJ = MyRank / NumProcJ
+  
+  ProcLeft  = MyRank - 1
+  if(mod(MyRank, NumProcJ)-1 .lt. 0) ProcLeft = MPI_PROC_NULL
+  ProcRight = MyRank + 1
+  if(mod(MyRank, NumProcJ)+1 .ge. NumProcJ) ProcRight = MPI_PROC_NULL
+  ProcBottom = MyRank + NumProcJ
+  if(ProcBottom .ge. size) ProcBottom = MPI_PROC_NULL
+  ProcTop = MyRank - NumProcJ
+  if(ProcTop .lt. 0) ProcTop = MPI_PROC_NULL
+  
+  ! write(*,*) "MyRank", MyRank, "PosI", MyPosI, "PosJ", MyPosJ, "Left", ProcLeft, "Right", ProcRight, "Top", ProcTop, "Bottom", ProcBottom
+
   if(NumProcI * NumProcJ .ne. size) then
      if(MyRank .eq. 0) then
         WRITE(*,*) ""
