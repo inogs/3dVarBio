@@ -150,6 +150,7 @@ OBJS    =  \
 	parallel_rdgrds.o\
 	parallel_wrt_dia.o\
 	parallel_obs_chl.o\
+	parallel_ver_hor.o\
 	tao_minimizer.o\
     oceanvar.o
 

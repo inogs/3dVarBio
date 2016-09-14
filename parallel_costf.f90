@@ -30,6 +30,7 @@ subroutine parallel_costf
   
   
   use set_knd
+  use drv_str
   use obs_str
   use grd_str
   use eof_str
@@ -57,7 +58,7 @@ subroutine parallel_costf
   ! print*, "MyRank", MyRank, "before ver_hor"
   ! --------
   ! Control to physical space 
-  call ver_hor
+  call parallel_ver_hor
   ! print*, "MyRank", MyRank, "within parallel_costf"
   
   ! --------
@@ -80,7 +81,7 @@ subroutine parallel_costf
   ctl%f_c = ctl%f_b + ctl%f_o
   
   if(MyRank .eq. 0) &
-       print*,' Cost function ',ctl%f_c
+       print*,' Cost function ',ctl%f_c, '(iter.',drv%MyCounter,')'
   
   ! -------------------------------------------------------
   ! calculate the cost function gradient
@@ -96,7 +97,7 @@ subroutine parallel_costf
   
   ! --------
   ! Control to physical space 
-  call ver_hor_ad
+  call parallel_ver_hor_ad
   
   !   write(*,*) 'COSTF sum(ro_ad) = ' , sum(grd%ro_ad)
   ! --------
