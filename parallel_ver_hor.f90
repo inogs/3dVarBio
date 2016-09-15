@@ -516,8 +516,7 @@ subroutine parallel_ver_hor_ad
      !$OMP END DO
      !$OMP END PARALLEL  
   enddo
-  
-  
+    
   if(drv%mask(drv%ktr) .gt. 1) then
      
      ! ---
@@ -607,7 +606,7 @@ subroutine parallel_ver_hor_ad
            end do
         end do
      end do
-     
+
      ! ---
      ! Scale by the scaling factor
      do l=1,grd%nchl
@@ -707,7 +706,7 @@ subroutine parallel_ver_hor_ad
      !$OMP END DO
      !$OMP END PARALLEL  
   enddo
-    
+
   ! ---
   ! x direction
   call rcfl_x_ad( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, grd%chl_ad, grd%inx, grd%imx)  
@@ -727,6 +726,7 @@ subroutine parallel_ver_hor_ad
      enddo
   endif
   
+    
 
   ! **********************************************************************************
   !
@@ -734,8 +734,8 @@ subroutine parallel_ver_hor_ad
   !
   ! **********************************************************************************
   
-  ALLOCATE(ChlExtended(0:grd%im+1, 0:grd%jm+1, grd%km, grd%nchl))
-  ALLOCATE(ChlExtendedAD(0:grd%im+1, 0:grd%jm+1, grd%km, grd%nchl))
+  ALLOCATE(  ChlExtended(0:(grd%im+1), 0:(grd%jm+1), grd%km, grd%nchl))
+  ALLOCATE(ChlExtendedAD(0:(grd%im+1), 0:(grd%jm+1), grd%km, grd%nchl))
   ALLOCATE(SendLeft(grd%im, grd%km), RecRight(grd%im, grd%km))
   ALLOCATE(SendRight(grd%im, grd%km), RecLeft(grd%im, grd%km))
 
@@ -868,25 +868,25 @@ subroutine parallel_ver_hor_ad
      enddo ! do on j
   enddo ! do on l
 
-  do k=1,grd%km
-     do i=1,grd%im
-        SendLeft(i,k)  = ChlExtendedAD(i,1,k,1)
-        SendRight(i,k) = ChlExtendedAD(i,grd%jm,k,1)
-     end do
-  end do
+  ! do k=1,grd%km
+  !    do i=1,grd%im
+  !       SendLeft(i,k)  = ChlExtendedAD(i,0,k,1)
+  !       SendRight(i,k) = ChlExtendedAD(i,grd%jm+1,k,1)
+  !    end do
+  ! end do
 
-  RecRight(:,:) = 0
-  RecLeft(:,:)  = 0
+  ! RecRight(:,:) = 0
+  ! RecLeft(:,:)  = 0
   
-  call MPI_Isend(SendLeft, grd%im*grd%km, MPI_REAL8, ProcLeft, MyTag, &
-       MPI_COMM_WORLD, ReqSendLeft, ierr)
-  call MPI_Irecv(RecRight, grd%im*grd%km, MPI_REAL8, ProcRight, MyTag, &
-       MPI_COMM_WORLD, ReqRecvRight, ierr)
+  ! call MPI_Isend(SendLeft, grd%im*grd%km, MPI_REAL8, ProcLeft, MyTag, &
+  !      MPI_COMM_WORLD, ReqSendLeft, ierr)
+  ! call MPI_Irecv(RecRight, grd%im*grd%km, MPI_REAL8, ProcRight, MyTag, &
+  !      MPI_COMM_WORLD, ReqRecvRight, ierr)
 
-  call MPI_Isend(SendRight, grd%im*grd%km, MPI_REAL8, ProcRight, MyNewTag, &
-       MPI_COMM_WORLD, ReqSendRight, ierr)
-  call MPI_Irecv(RecLeft, grd%im*grd%km, MPI_REAL8, ProcLeft, MyNewTag, &
-       MPI_COMM_WORLD, ReqRecvLeft, ierr)
+  ! call MPI_Isend(SendRight, grd%im*grd%km, MPI_REAL8, ProcRight, MyNewTag, &
+  !      MPI_COMM_WORLD, ReqSendRight, ierr)
+  ! call MPI_Irecv(RecLeft, grd%im*grd%km, MPI_REAL8, ProcLeft, MyNewTag, &
+  !      MPI_COMM_WORLD, ReqRecvLeft, ierr)
 
   do k=1,grd%km
      do j=1,grd%jm
@@ -896,14 +896,14 @@ subroutine parallel_ver_hor_ad
      end do
   end do
   
-  call MPI_Wait(ReqRecvRight, StatRight, ierr)
-  call MPI_Wait(ReqRecvLeft, StatLeft, ierr)
-  do k=1,grd%km
-     do i=1,grd%im
-        grd%chl_ad(i,grd%jm,k,1) = grd%chl_ad(i,grd%jm,k,1) + RecRight(i,k)
-        grd%chl_ad(i,1,k,1) = grd%chl_ad(i,1,k,1) + RecLeft(i,k)
-     end do
-  end do
+  ! call MPI_Wait(ReqRecvRight, StatRight, ierr)
+  ! call MPI_Wait(ReqRecvLeft, StatLeft, ierr)
+  ! do k=1,grd%km
+  !    do i=1,grd%im
+        ! grd%chl_ad(i,grd%jm,k,1) = grd%chl_ad(i,grd%jm,k,1) + RecRight(i,k)
+        ! grd%chl_ad(i,1,k,1) = grd%chl_ad(i,1,k,1) + RecLeft(i,k)
+  !    end do
+  ! end do
 
   ! **********************************************************************************
   !
