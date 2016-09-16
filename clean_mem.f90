@@ -38,8 +38,17 @@ subroutine clean_mem
   use ctl_str
   use cns_str
   use rcfl
+
+#ifdef _USE_MPI
+  use mpi_str
+  use mpi
+#endif
   
   implicit none
+
+#ifdef _USE_MPI
+  integer :: ierr
+#endif
   
   ! Deallocate everithing related to the old grid
   DEALLOCATE ( drv%grid, drv%ratco, drv%ratio)
@@ -64,7 +73,13 @@ subroutine clean_mem
   ! Constants structure
   DEALLOCATE ( rcf%al)
   DEALLOCATE ( rcf%sc)
-  
-  write(*,*) ' ALL MEMORY CLEAN'
+
+#ifdef _USE_MPI
+  call MPI_Comm_free(RowCommunicator, ierr)
+  call MPI_Comm_free(ColumnCommunicator, ierr)
+  if(MyRank .eq. 0) &
+#endif
+       write(*,*) ' ALL MEMORY CLEAN'
+  write(*,*) ''
   
 end subroutine clean_mem

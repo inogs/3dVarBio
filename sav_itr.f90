@@ -38,7 +38,9 @@ subroutine sav_itr
   use ctl_str
   use cns_str
   use rcfl
-  
+#ifdef _USE_MPI
+  use mpi_str
+#endif
   implicit none
   
   ! ---
@@ -121,6 +123,9 @@ subroutine sav_itr
   DEALLOCATE ( bta_rcy)
   DEALLOCATE (Dump_chl, Dump_vip, Dump_msk)
   
-  write(*,*) ' DEALLOCATION DONE'
+#ifdef _USE_MPI
+  if(MyRank .eq. 0) &
+#endif
+       write(*,*) ' DEALLOCATION DONE'
   
 end subroutine sav_itr

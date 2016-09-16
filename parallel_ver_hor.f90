@@ -256,7 +256,7 @@ subroutine parallel_ver_hor
   ! RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, MPI_COMM_WORLD, ierr)
   
   do i=1,localRow
-     do iProc=0, Size-1
+     do iProc=0, NumProcJ-1
         do j=1,grd%jm
            do k=1,grd%km
               DefBuf4D(i,j + iProc*localCol,k,1) = RecBuf4D(1,k,j,i + iProc*localRow)
@@ -286,7 +286,7 @@ subroutine parallel_ver_hor
   ! RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, ColumnCommunicator, ierr)
   
   do i=1,localRow
-     do iProc=0, Size-1
+     do iProc=0, NumProcJ-1
         do j=1,grd%jm
            do k=1,grd%km
               grd%chl(i + iProc*localRow,j,k,1) = RecBuf4D(1,k,i,j + iProc*localCol)
@@ -347,7 +347,7 @@ subroutine parallel_ver_hor
      ! RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, MPI_COMM_WORLD, ierr)
      
      do i=1,localRow
-        do iProc=0, Size-1
+        do iProc=0, NumProcJ-1
            do j=1,grd%jm
               do k=1,grd%km
                  DefBuf4D(i,j + iProc*localCol,k,1) = RecBuf4D(1,k,j,i + iProc*localRow)
@@ -377,7 +377,7 @@ subroutine parallel_ver_hor
      ! RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, MPI_COMM_WORLD, ierr)
      
      do i=1,localRow
-        do iProc=0, Size-1
+        do iProc=0, NumProcJ-1
            do j=1,grd%jm
               do k=1,grd%km
                  grd%chl_ad(i + iProc*localRow,j,k,1) = RecBuf4D(1,k,i,j + iProc*localCol)
@@ -574,7 +574,7 @@ subroutine parallel_ver_hor_ad
      ! RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, MPI_COMM_WORLD, ierr)
      
      do i=1,localRow
-        do iProc=0, Size-1
+        do iProc=0, NumProcJ-1
            do j=1,grd%jm
               do k=1,grd%km
                  DefBuf4D(i,j + iProc*localCol,k,1) = RecBuf4D(1,k,j,i + iProc*localRow)
@@ -604,7 +604,7 @@ subroutine parallel_ver_hor_ad
      ! RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, MPI_COMM_WORLD, ierr)
      
      do i=1,localRow
-        do iProc=0, Size-1
+        do iProc=0, NumProcJ-1
            do j=1,grd%jm
               do k=1,grd%km
                  grd%chl(i + iProc*localRow,j,k,1) = RecBuf4D(1,k,i,j + iProc*localCol)
@@ -663,7 +663,7 @@ subroutine parallel_ver_hor_ad
   ! RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, MPI_COMM_WORLD, ierr)
   
   do i=1,localRow
-     do iProc=0, Size-1
+     do iProc=0, NumProcJ-1
         do j=1,grd%jm
            do k=1,grd%km
               DefBuf4D(i,j + iProc*localCol,k,1) = RecBuf4D(1,k,j,i + iProc*localRow)
@@ -693,7 +693,7 @@ subroutine parallel_ver_hor_ad
   ! RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, MPI_COMM_WORLD, ierr)
   
   do i=1,localRow
-     do iProc=0, Size-1
+     do iProc=0, NumProcJ-1
         do j=1,grd%jm
            do k=1,grd%km
               grd%chl_ad(i + iProc*localRow,j,k,1) = RecBuf4D(1,k,i,j + iProc*localCol)
