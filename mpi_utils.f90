@@ -87,6 +87,9 @@ subroutine mynode()
         call MPI_Abort(MPI_COMM_WORLD, -1, ierr)
      end if
   end if
+
+  call MPI_Comm_split(MPI_COMM_WORLD, MyPosI, MyRank, ColumnCommunicator, ierr)
+  call MPI_Comm_split(MPI_COMM_WORLD, MyPosJ, MyRank, RowCommunicator, ierr)
   
   ! write(*,*) "MyRank", MyRank, "PosI", MyPosI, "PosJ", MyPosJ, "Left", ProcLeft, "Right", ProcRight, "Top", ProcTop, "Bottom", ProcBottom
 

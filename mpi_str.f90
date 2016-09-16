@@ -10,6 +10,8 @@ MODULE mpi_str
   !
   !     size : number of processes
   !     MyRank : process number  [ 0 - size-1 ]
+  !     MyColRank : process rank in a column communicator
+  !     MyRowRank : process rank in a row communicator
   !     MyPosI : rank on communicator along row direction
   !     MyPosJ : rank on communicator along column direction
   !     ProcLeft : rank of process to my left side
@@ -26,11 +28,14 @@ MODULE mpi_str
   !-------------------------------------------------------!
   
   integer  :: size, MyRank, MyPosI, MyPosJ
+  integer  :: MyColRank, MyRowRank
   integer  :: ProcLeft, ProcRight, ProcBottom, ProcTop
   integer  :: NumProcI, NumProcJ, NumProcIJ
   integer  :: GlobalRow, GlobalCol
   integer  :: localRow, localCol
-  
+
+  integer  :: ColumnCommunicator, RowCommunicator
+
   integer(KIND=MPI_OFFSET_KIND) :: MyStart(3), MyCount(3)
 
 END MODULE mpi_str
