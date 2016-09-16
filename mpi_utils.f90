@@ -54,18 +54,39 @@ subroutine mynode()
   
   NumProcI = 1
   NumProcJ = size !2
-
-  MyPosI = mod(MyRank, NumProcJ)
-  MyPosJ = MyRank / NumProcJ
   
-  ProcLeft  = MyRank - 1
-  if(mod(MyRank, NumProcJ)-1 .lt. 0) ProcLeft = MPI_PROC_NULL
-  ProcRight = MyRank + 1
-  if(mod(MyRank, NumProcJ)+1 .ge. NumProcJ) ProcRight = MPI_PROC_NULL
-  ProcBottom = MyRank + NumProcJ
-  if(ProcBottom .ge. size) ProcBottom = MPI_PROC_NULL
-  ProcTop = MyRank - NumProcJ
-  if(ProcTop .lt. 0) ProcTop = MPI_PROC_NULL
+  MyPosI = mod(MyRank, NumProcI)
+  MyPosJ = MyRank / NumProcI
+  
+  if(NumProcI .gt. 1 .and. NumProcJ .gt. 1) then
+     ProcTop  = MyRank - 1
+     if(mod(MyRank, NumProcI)-1 .lt. 0) ProcTop = MPI_PROC_NULL
+     ProcBottom = MyRank + 1
+     if(mod(MyRank, NumProcI)+1 .ge. NumProcI) ProcBottom = MPI_PROC_NULL
+     ProcRight = MyRank + NumProcI
+     if(ProcRight .ge. size) ProcRight = MPI_PROC_NULL
+     ProcLeft = MyRank - NumProcI
+     if(ProcLeft .lt. 0) ProcLeft = MPI_PROC_NULL
+  else if(NumProcJ .gt. 1) then
+     ProcLeft  = MyRank - 1
+     if(ProcLeft .lt. 0) ProcLeft = MPI_PROC_NULL
+     ProcRight = MyRank + 1
+     if(ProcRight .ge. NumProcJ) ProcRight = MPI_PROC_NULL
+     ProcBottom = MPI_PROC_NULL
+     ProcTop    = MPI_PROC_NULL
+  else if(NumProcI .gt. 1) then
+     ProcTop  = MyRank - 1
+     if(ProcTop .lt. 0) ProcTop = MPI_PROC_NULL
+     ProcBottom = MyRank + 1
+     if(ProcBottom .ge. NumProcI) ProcBottom = MPI_PROC_NULL
+     ProcLeft  = MPI_PROC_NULL
+     ProcRight = MPI_PROC_NULL
+  else
+     if(MyRank .eq. 0) then
+        print*, "There is something wrong. Check processes subdivision!"
+        call MPI_Abort(MPI_COMM_WORLD, -1, ierr)
+     end if
+  end if
   
   ! write(*,*) "MyRank", MyRank, "PosI", MyPosI, "PosJ", MyPosJ, "Left", ProcLeft, "Right", ProcRight, "Top", ProcTop, "Bottom", ProcBottom
 
