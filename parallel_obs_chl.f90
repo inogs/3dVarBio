@@ -102,7 +102,9 @@ subroutine parallel_obs_chl
      endif
      
   enddo
+
   DEALLOCATE(ChlExtended, SendLeft, RecRight)
+  
 end subroutine parallel_obs_chl
 
 subroutine parallel_obs_chl_ad  
@@ -125,15 +127,14 @@ subroutine parallel_obs_chl_ad
   
   INTEGER(i4)   ::  i, j, kk, l
   REAL(r8), POINTER    ::  ChlExtended(:,:,:)
-  REAL(r8), POINTER    ::  SendLeft(:), SendTop(:), RecRight(:), RecBottom(:)
+  REAL(r8), POINTER    ::  SendLeft(:), RecRight(:), SendRight(:), RecLeft(:)
   INTEGER   :: ReqRight, ReqBottom, ReqLeft, ReqTop, ierr
   INTEGER   :: StatRight(MPI_STATUS_SIZE), StatBottom(MPI_STATUS_SIZE)
   INTEGER   :: MyTag
   
   ALLOCATE(ChlExtended(grd%im+1, grd%jm+1, grd%nchl))
-  ! ALLOCATE(SendLeft(grd%jm), RecRight(grd%jm))
-  ! ALLOCATE(SendTop(grd%im), RecBottom(grd%im))
   ALLOCATE(SendLeft(grd%im), RecRight(grd%im))
+  ALLOCATE(SendRight(grd%im), RecLeft(grd%im))
 
   ! Filling array to send
   ! do j=1,grd%jm
@@ -187,12 +188,14 @@ subroutine parallel_obs_chl_ad
   enddo
 
   do i=1,grd%im
-     SendLeft(i) = ChlExtended(i,grd%jm+1,1)
+     SendRight(i) = ChlExtended(i,grd%jm+1,1)
   end do
+  
+  RecLeft(:) = SendLeft(:)
 
-  call MPI_Isend(SendLeft, grd%im, MPI_REAL8, ProcRight, MyTag, &
+  call MPI_Isend(SendRight, grd%im, MPI_REAL8, ProcRight, MyTag, &
        MPI_COMM_WORLD, ReqLeft, ierr)
-  call MPI_Irecv(RecRight, grd%im, MPI_REAL8, ProcLeft, MyTag, &
+  call MPI_Irecv(RecLeft, grd%im, MPI_REAL8, ProcLeft, MyTag, &
        MPI_COMM_WORLD, ReqRight, ierr)
   
   do j=1,grd%jm
@@ -200,11 +203,14 @@ subroutine parallel_obs_chl_ad
         grd%chl_ad(i,j,1,1) = ChlExtended(i,j,1)
      end do
   end do
-    
-  call MPI_Wait(ReqRight, StatRight, ierr)
 
+  call MPI_Wait(ReqRight, StatRight, ierr)
+  
   do i=1,grd%im
-     grd%chl_ad(i,1,1,1) = grd%chl_ad(i,1,1,1) + RecRight(i)
+     grd%chl_ad(i,1,1,1) = grd%chl_ad(i,1,1,1) + RecLeft(i) - SendLeft(i)
   end do
+
+  DEALLOCATE(SendLeft, RecRight)
+  DEALLOCATE(ChlExtended, SendRight, RecLeft)
   
 end subroutine parallel_obs_chl_ad
