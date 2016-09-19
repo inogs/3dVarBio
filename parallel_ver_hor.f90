@@ -251,10 +251,10 @@ subroutine parallel_ver_hor
      end do
   end do
   
-  call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, &
-       RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, ColumnCommunicator, ierr)
+  call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, &
+       RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
   ! RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, MPI_COMM_WORLD, ierr)
-  
+
   do i=1,localRow
      do iProc=0, NumProcJ-1
         do j=1,grd%jm
@@ -281,8 +281,8 @@ subroutine parallel_ver_hor
      end do
   end do
   
-  call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, &
-       RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, ColumnCommunicator, ierr)
+  call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, &
+       RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
   ! RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, ColumnCommunicator, ierr)
   
   do i=1,localRow
@@ -342,8 +342,8 @@ subroutine parallel_ver_hor
         end do
      end do
      
-     call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, &
-          RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, ColumnCommunicator, ierr)
+     call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, &
+          RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
      ! RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, MPI_COMM_WORLD, ierr)
      
      do i=1,localRow
@@ -372,8 +372,8 @@ subroutine parallel_ver_hor
         end do
      end do
      
-     call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, &
-          RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, ColumnCommunicator, ierr)
+     call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, &
+          RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
      ! RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, MPI_COMM_WORLD, ierr)
      
      do i=1,localRow
@@ -569,8 +569,8 @@ subroutine parallel_ver_hor_ad
         end do
      end do
      
-     call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, &
-          RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, ColumnCommunicator, ierr)
+     call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, &
+          RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
      ! RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, MPI_COMM_WORLD, ierr)
      
      do i=1,localRow
@@ -599,8 +599,8 @@ subroutine parallel_ver_hor_ad
         end do
      end do
      
-     call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, &
-          RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, ColumnCommunicator, ierr)
+     call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, &
+          RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
      ! RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, MPI_COMM_WORLD, ierr)
      
      do i=1,localRow
@@ -658,8 +658,8 @@ subroutine parallel_ver_hor_ad
      end do
   end do
   
-  call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, &
-       RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, ColumnCommunicator, ierr)
+  call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, &
+       RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
   ! RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, MPI_COMM_WORLD, ierr)
   
   do i=1,localRow
@@ -688,8 +688,8 @@ subroutine parallel_ver_hor_ad
      end do
   end do
   
-  call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, &
-       RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, ColumnCommunicator, ierr)
+  call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, &
+       RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
   ! RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/size, MPI_REAL8, MPI_COMM_WORLD, ierr)
   
   do i=1,localRow
