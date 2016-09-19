@@ -82,15 +82,17 @@ subroutine mynode()
      ProcLeft  = MPI_PROC_NULL
      ProcRight = MPI_PROC_NULL
   else
-     if(MyRank .eq. 0) then
-        print*, "There is something wrong. Check processes subdivision!"
-        call MPI_Abort(MPI_COMM_WORLD, -1, ierr)
-     end if
+     print*, ""
+     print*, "You are using a single MPI Process!"
+     ProcLeft   = MPI_PROC_NULL
+     ProcRight  = MPI_PROC_NULL
+     ProcTop    = MPI_PROC_NULL
+     ProcBottom = MPI_PROC_NULL
   end if
 
   call MPI_Comm_split(MPI_COMM_WORLD, MyPosI, MyRank, ColumnCommunicator, ierr)
   call MPI_Comm_split(MPI_COMM_WORLD, MyPosJ, MyRank, RowCommunicator, ierr)
-  
+  RowCommunicator = MPI_COMM_WORLD
   ! write(*,*) "MyRank", MyRank, "PosI", MyPosI, "PosJ", MyPosJ, "Left", ProcLeft, "Right", ProcRight, "Top", ProcTop, "Bottom", ProcBottom
 
   if(NumProcI * NumProcJ .ne. size) then
