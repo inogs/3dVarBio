@@ -152,27 +152,29 @@ subroutine parallel_def_cov
   do j=1,localCol
      do i=2,GlobalRow
         ! dst = (grd%dx(i-1,j) + grd%dx(i,j)) * 0.5 
-        dst = (RecBuf2D(i-1,j) + RecBuf2D(i,j)) * 0.5 
+        dst = (DefBuf2D(i-1,j) + DefBuf2D(i,j)) * 0.5 
         E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)
         grd%alx(i,j) = 1. + E - sqrt(E*(E+2.))
      enddo
      ! do i=1,grd%im-1
      do i=1,GlobalRow-1
         ! dst = (grd%dx(i,j) + grd%dx(i+1,j)) * 0.5 
-        dst = (RecBuf2D(i,j) + RecBuf2D(i+1,j)) * 0.5 
+        dst = (DefBuf2D(i,j) + DefBuf2D(i+1,j)) * 0.5 
         E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)
         grd%btx(i,j) = 1. + E - sqrt(E*(E+2.))
      enddo
   enddo
 
-  grd%istp = int( rcf%L * rcf%efc / grd%dx(:,:) )+1
+  ! grd%istp = int( rcf%L * rcf%efc / grd%dx(:,:) )+1
+  grd%istp = int( rcf%L * rcf%efc / DefBuf2D(:,:) )+1
 
   ! MPI_ALLTOALL SECTION
   ALLOCATE(SendBuf2D(grd%jm, grd%im))
-  ! ALLOCATE(RecBuf2D(grd%jm, grd%im))
-  ! ALLOCATE(DefBuf2D(localRow, GlobalCol))
-  DefBuf2D = RESHAPE(DefBuf2D, (/localRow, GlobalCol/))
-  RecBuf2D = RESHAPE(RecBuf2D, (/grd%jm, grd%im/))
+  ! DefBuf2D = RESHAPE(DefBuf2D, (/localRow, GlobalCol/))
+  ! RecBuf2D = RESHAPE(RecBuf2D, (/grd%jm, grd%im/))
+  DEALLOCATE(RecBuf2D, DefBuf2D)
+  ALLOCATE(RecBuf2D(grd%jm, grd%im))
+  ALLOCATE(DefBuf2D(localRow, GlobalCol))
   
   do j=1,grd%jm
      do i=1,grd%im
@@ -263,9 +265,12 @@ subroutine parallel_def_cov
   end do
 
   !************* VERTICAL SLICING *************!
-  SendBuf3D = RESHAPE(SendBuf3D, (/grd%km, grd%im, grd%jm/))
-  RecBuf3D  = RESHAPE(RecBuf3D,  (/grd%km, localRow, GlobalCol/))
-  ALLOCATE(ColBuf3D(GlobalRow, localCol, grd%km))
+  ! SendBuf3D = RESHAPE(SendBuf3D, (/grd%km, grd%im, grd%jm/))
+  ! RecBuf3D  = RESHAPE(RecBuf3D,  (/grd%km, localRow, GlobalCol/))
+  DEALLOCATE(SendBuf3D, RecBuf3D)
+  ALLOCATE(SendBuf3D(grd%km, grd%im, grd%jm))
+  ALLOCATE( RecBuf3D(grd%km, localRow, GlobalCol))
+  ALLOCATE( ColBuf3D(GlobalRow, localCol, grd%km))
 
   do k=1,grd%km
      do j=1,grd%jm
@@ -280,7 +285,7 @@ subroutine parallel_def_cov
   
   ! Reorder data
   do i=1, localRow
-     do iProc=0, NumProcJ-1
+     do iProc=0, NumProcI-1
         do j=1, localCol
            do k=1, grd%km
               ColBuf3D(i+iProc*localRow, j, k) = RecBuf3D(k, i, j + iProc*localCol)
@@ -289,7 +294,7 @@ subroutine parallel_def_cov
         end do
      end do
   end do
-  
+
   do k = 1, grd%km
      
      grd%imx(k) = 0
