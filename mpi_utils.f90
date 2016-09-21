@@ -52,8 +52,10 @@ subroutine mynode()
   call COUNTLINE ('Dom_Dec_jpi.ascii', NumProcI)
   call COUNTWORDS('Dom_Dec_jpi.ascii', NumProcJ)
   
-  NumProcI = 1
-  NumProcJ = size !2
+  ! NumProcI = 1
+  ! NumProcJ = Size !2
+  NumProcI = Size
+  NumProcJ = 1
   
   MyPosI = mod(MyRank, NumProcI)
   MyPosJ = MyRank / NumProcI

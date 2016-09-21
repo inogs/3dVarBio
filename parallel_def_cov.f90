@@ -135,18 +135,18 @@ subroutine parallel_def_cov
   ! CALL MPI_ALLTOALL
   ALLOCATE(RecBuf2D(grd%im, grd%jm))
   ALLOCATE(DefBuf2D(GlobalRow, localCol))
-  
+
   call MPI_Alltoall(grd%dx, GlobalRow*localCol/NumProcI, MPI_REAL8, RecBuf2D, &
        GlobalRow*localCol/NumProcI, MPI_REAL8, RowCommunicator, ierr)
 
   do i=1, grd%im !GlobalRow !localRow
      do iProc=0, NumProcI-1
-        do j=1, grd%jm !localCol
+        do j=1, localCol
            DefBuf2D(i + iProc*localRow, j) = RecBuf2D(i, j + iProc*localCol)
         end do
      end do
   end do
-  
+
   ! do j=1,grd%jm
   !    do i=2,grd%im
   do j=1,localCol
@@ -183,18 +183,18 @@ subroutine parallel_def_cov
         SendBuf2D(j,i) = grd%dy(i,j)
      end do
   end do
-  
+
   call MPI_Alltoall(SendBuf2D, GlobalRow*localCol/NumProcJ, MPI_REAL8, RecBuf2D, &
        GlobalRow*localCol/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
 
   do i=1, localRow
      do iProc=0, NumProcJ-1
-        do j=1, localCol
+        do j=1, grd%jm ! localCol
            DefBuf2D(i, j + iProc*localCol) = RecBuf2D(j, i + iProc*localRow)
         end do
      end do
   end do
-  
+
   ! do j=2,grd%jm
   !    do i=1,grd%im 
   do j=2,GlobalCol
@@ -207,7 +207,7 @@ subroutine parallel_def_cov
   enddo
   ! do j=1,grd%jm-1
   !    do i=1,grd%im
-  do j=1,GlobalCol
+  do j=1,GlobalCol-1
      do i=1,localRow
         ! dst = (grd%dy(i,j) + grd%dy(i,j+1)) * 0.5 
         dst = (DefBuf2D(i,j) + DefBuf2D(i,j+1)) * 0.5 
@@ -234,7 +234,7 @@ subroutine parallel_def_cov
   grd%jmax   = 0
 
   ALLOCATE(SendBuf3D(grd%km,grd%jm,grd%im))
-  ALLOCATE( RecBuf3D(grd%km,grd%jm,grd%im)) ! localCol, GlobalRow))
+  ALLOCATE( RecBuf3D(grd%km,grd%jm,grd%im))
   ALLOCATE( DefBuf3D(grd%km, GlobalCol, localRow))
   ! ALLOCATE(SendBuf1D(grd%km * grd%jm * grd%im))
   ! ALLOCATE(RecBuf1D(grd%km * localCol * GlobalRow))
@@ -257,7 +257,7 @@ subroutine parallel_def_cov
   ! Reorder data
   do i=1, localRow
      do iProc=0, NumProcJ-1
-        do j=1, localCol
+        do j=1, grd%jm ! localCol
            do k=1, grd%km
               DefBuf3D(k,j+iProc*localCol,i) = RecBuf3D(k, j, i + iProc*localRow)
               ! DefBuf3D(k,j+iProc*localCol,i) = RecBuf1D(k + (j-1)*grd%km + (i + iProc*localRow -1)*grd%km*grd%jm)
@@ -271,7 +271,6 @@ subroutine parallel_def_cov
   ! RecBuf3D  = RESHAPE(RecBuf3D,  (/grd%km, localRow, GlobalCol/))
   DEALLOCATE(SendBuf3D, RecBuf3D)
   ALLOCATE(SendBuf3D(grd%km, grd%im, grd%jm))
-  ! ALLOCATE( RecBuf3D(grd%km, localRow, GlobalCol))
   ALLOCATE( RecBuf3D(grd%km, grd%im, grd%jm))
   ALLOCATE( ColBuf3D(GlobalRow, localCol, grd%km))
 
@@ -286,9 +285,9 @@ subroutine parallel_def_cov
   call MPI_Alltoall(SendBuf3D, grd%im*grd%jm*grd%km/NumProcI, MPI_REAL8, &
        & RecBuf3D, grd%im*grd%jm*grd%km/NumProcI, MPI_REAL8, RowCommunicator,ierr)
   ! Reorder data
-  do i=1, grd%im !localRow
+  do i=1, grd%im
      do iProc=0, NumProcI-1
-        do j=1, grd%jm !localCol
+        do j=1, localCol
            do k=1, grd%km
               ColBuf3D(i+iProc*localRow, j, k) = RecBuf3D(k, i, j + iProc*localCol)
            end do
@@ -430,7 +429,7 @@ subroutine parallel_def_cov
   do k=1,grd%km
      do j=1,grd%jm
         do i=1,grd%im
-           ! if(grd%msr(i,j,k).eq.1.0)then !!!!!!!! *** WARNING HERE *** !!!!!!!!
+           ! if(grd%msr(i,j,k).eq.1.0)then !!!!!!!! *** WARNING HERE *** msr and msk MUST to be equal !!!!!!!!
            if(grd%msk(i,j,k).eq.1.0)then
               grd%fct(i,j,k) = 1.0  
            else
