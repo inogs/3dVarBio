@@ -507,7 +507,7 @@ subroutine parallel_ver_hor
         end do
      end do
      
-     call rcfl_x( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, DefBuf4D, grd%inx, grd%imx)
+     call rcfl_x_ad( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, DefBuf4D, grd%inx, grd%imx)
      
      ! Reordering data to send back
      DEALLOCATE(SendBuf4D, RecBuf4D)
@@ -933,7 +933,7 @@ subroutine parallel_ver_hor_ad
      end do
   end do
   
-  call rcfl_x( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, DefBuf4D, grd%inx, grd%imx)
+  call rcfl_x_ad( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, DefBuf4D, grd%inx, grd%imx)
   
   ! Reordering data to send back
   DEALLOCATE(SendBuf4D, RecBuf4D)
