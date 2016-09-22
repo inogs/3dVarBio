@@ -200,7 +200,7 @@ subroutine parallel_ver_hor
      do k=1,grd%km
         do j=1,grd%jm
            do i=1,grd%im
-              ! grd%chl(i,j,k,l) = ChlExtended(i,j,k,l)
+              grd%chl(i,j,k,l) = ChlExtended(i,j,k,l)
            end do
         end do
      end do
@@ -912,7 +912,7 @@ subroutine parallel_ver_hor_ad
   
   do l=1,grd%nchl
      do k=1,grd%km
-        do j=1,localCol
+        do j=1,grd%jm
            do i=1,grd%im
               SendBuf4D(l,k,i,j) = grd%chl_ad(i,j,k,l)
            end do
@@ -1188,7 +1188,7 @@ subroutine parallel_ver_hor_ad
   do k=1,grd%km
      do j=1,grd%jm
         do i=1,grd%im
-           ! grd%chl_ad(i,j,k,1) = ChlExtendedAD(i,j,k,1)
+           grd%chl_ad(i,j,k,1) = ChlExtendedAD(i,j,k,1)
         end do
      end do
   end do
