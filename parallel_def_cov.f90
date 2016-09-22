@@ -119,18 +119,18 @@ subroutine parallel_def_cov
   
   DEALLOCATE ( sfct, jnxx, al, bt ) 
   
-  do j=1,grd%jm
-     do i=1,grd%im
-        dst = ( grd%dx(i,j) - rcf%dsmn )/rcf%dsl
-        k = int(dst) + 1
-        dst = dst - real(k-1)
-        grd%scx(i,j) = sqrt( 1./ (rcf%sc(k)*(1.-dst) + rcf%sc(k+1)*dst) ) 
-        dst = ( grd%dy(i,j) - rcf%dsmn )/rcf%dsl
-        k = int(dst) + 1
-        dst = dst - real(k-1)
-        grd%scy(i,j) = sqrt( 1./ (rcf%sc(k)*(1.-dst) + rcf%sc(k+1)*dst) ) 
-     enddo
-  enddo
+  ! do j=1,grd%jm
+  !    do i=1,grd%im
+  !       dst = ( grd%dx(i,j) - rcf%dsmn )/rcf%dsl
+  !       k = int(dst) + 1
+  !       dst = dst - real(k-1)
+  !       grd%scx(i,j) = sqrt( 1./ (rcf%sc(k)*(1.-dst) + rcf%sc(k+1)*dst) ) 
+  !       dst = ( grd%dy(i,j) - rcf%dsmn )/rcf%dsl
+  !       k = int(dst) + 1
+  !       dst = dst - real(k-1)
+  !       grd%scy(i,j) = sqrt( 1./ (rcf%sc(k)*(1.-dst) + rcf%sc(k+1)*dst) ) 
+  !    enddo
+  ! enddo
 
   ! CALL MPI_ALLTOALL
   ALLOCATE(RecBuf2D(grd%im, grd%jm))
@@ -139,13 +139,22 @@ subroutine parallel_def_cov
   call MPI_Alltoall(grd%dx, GlobalRow*localCol/NumProcI, MPI_REAL8, RecBuf2D, &
        GlobalRow*localCol/NumProcI, MPI_REAL8, RowCommunicator, ierr)
 
-  do i=1, grd%im !GlobalRow !localRow
+  do i=1, grd%im
      do iProc=0, NumProcI-1
         do j=1, localCol
            DefBuf2D(i + iProc*localRow, j) = RecBuf2D(i, j + iProc*localCol)
         end do
      end do
   end do
+
+  do j=1,localCol
+     do i=1,GlobalRow
+        dst = ( DefBuf2D(i,j) - rcf%dsmn )/rcf%dsl
+        k = int(dst) + 1
+        dst = dst - real(k-1)
+        grd%scx(i,j) = sqrt( 1./ (rcf%sc(k)*(1.-dst) + rcf%sc(k+1)*dst) ) 
+     enddo
+  enddo
 
   ! do j=1,grd%jm
   !    do i=2,grd%im
@@ -186,14 +195,23 @@ subroutine parallel_def_cov
 
   call MPI_Alltoall(SendBuf2D, GlobalRow*localCol/NumProcJ, MPI_REAL8, RecBuf2D, &
        GlobalRow*localCol/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
-
+ 
   do i=1, localRow
      do iProc=0, NumProcJ-1
-        do j=1, grd%jm ! localCol
+        do j=1, grd%jm
            DefBuf2D(i, j + iProc*localCol) = RecBuf2D(j, i + iProc*localRow)
         end do
      end do
   end do
+
+  do j=1,GlobalCol
+     do i=1,localRow
+        dst = ( DefBuf2D(i,j) - rcf%dsmn )/rcf%dsl
+        k = int(dst) + 1
+        dst = dst - real(k-1)
+        grd%scy(i,j) = sqrt( 1./ (rcf%sc(k)*(1.-dst) + rcf%sc(k+1)*dst) ) 
+     enddo
+  enddo
 
   ! do j=2,grd%jm
   !    do i=1,grd%im 
@@ -244,31 +262,25 @@ subroutine parallel_def_cov
      do j=1,grd%jm
         do i=1,grd%im
            SendBuf3D(k,j,i) = grd%msr(i,j,k)
-           ! SendBuf1D(k + (j-1)*grd%km + (i-1)*grd%km*grd%jm) = grd%msr(i,j,k)
         end do
      end do
   end do
 
   call MPI_Alltoall(SendBuf3D, grd%im*grd%jm*grd%km/NumProcJ, MPI_REAL8, &
        & RecBuf3D, grd%im*grd%jm*grd%km/NumProcJ, MPI_REAL8, ColumnCommunicator,ierr)
-  ! call MPI_Alltoall(SendBuf1D, grd%im*grd%jm*grd%km/size, MPI_REAL8, &
-  !      & RecBuf1D, grd%im*grd%jm*grd%km/size, MPI_REAL8, MPI_COMM_WORLD,ierr)
   
   ! Reorder data
   do i=1, localRow
      do iProc=0, NumProcJ-1
-        do j=1, grd%jm ! localCol
+        do j=1, grd%jm
            do k=1, grd%km
               DefBuf3D(k,j+iProc*localCol,i) = RecBuf3D(k, j, i + iProc*localRow)
-              ! DefBuf3D(k,j+iProc*localCol,i) = RecBuf1D(k + (j-1)*grd%km + (i + iProc*localRow -1)*grd%km*grd%jm)
            end do
         end do
      end do
   end do
 
   !************* VERTICAL SLICING *************!
-  ! SendBuf3D = RESHAPE(SendBuf3D, (/grd%km, grd%im, grd%jm/))
-  ! RecBuf3D  = RESHAPE(RecBuf3D,  (/grd%km, localRow, GlobalCol/))
   DEALLOCATE(SendBuf3D, RecBuf3D)
   ALLOCATE(SendBuf3D(grd%km, grd%im, grd%jm))
   ALLOCATE( RecBuf3D(grd%km, grd%im, grd%jm))
@@ -343,7 +355,7 @@ subroutine parallel_def_cov
            endif
            grd%jnx(i,j,k) = kk
         enddo
-        grd%jmx(k) = max( grd%jmx(k), kk+grd%jstp(i,GlobalCol)) !grd%jm)) !!!!!!!! *** WARNING HERE *** !!!!!!!!
+        grd%jmx(k) = max( grd%jmx(k), kk+grd%jstp(i,GlobalCol))
      enddo
      grd%jmax   = max( grd%jmax, grd%jmx(k))
      
@@ -429,7 +441,8 @@ subroutine parallel_def_cov
   do k=1,grd%km
      do j=1,grd%jm
         do i=1,grd%im
-           ! if(grd%msr(i,j,k).eq.1.0)then !!!!!!!! *** WARNING HERE *** msr and msk MUST to be equal !!!!!!!!
+           !!!!!!!! *** WARNING HERE *** msr and msk MUST to be equal !!!!!!!!
+           ! if(grd%msr(i,j,k).eq.1.0)then
            if(grd%msk(i,j,k).eq.1.0)then
               grd%fct(i,j,k) = 1.0  
            else

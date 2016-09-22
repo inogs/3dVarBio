@@ -280,6 +280,17 @@ subroutine parallel_ver_hor
 
   call rcfl_x( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, DefBuf4D, grd%inx, grd%imx)
 
+  do l=1,grd%nchl
+     !$OMP PARALLEL  &
+     !$OMP PRIVATE(k)
+     !$OMP DO
+     do k=1,grd%km
+        DefBuf4D(:,:,k,l) = DefBuf4D(:,:,k,l) * grd%scx(:,:) 
+     enddo
+     !$OMP END DO
+     !$OMP END PARALLEL
+  enddo
+
   ! Reordering data to send back
   DEALLOCATE(SendBuf4D, RecBuf4D)
   ALLOCATE(SendBuf4D(grd%nchl, grd%km, localCol, GlobalRow))
@@ -306,16 +317,16 @@ subroutine parallel_ver_hor
      end do
   end do
 
-  do l=1,grd%nchl
-     !$OMP PARALLEL  &
-     !$OMP PRIVATE(k)
-     !$OMP DO
-     do k=1,grd%km
-        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:) 
-     enddo
-     !$OMP END DO
-     !$OMP END PARALLEL
-  enddo
+  ! do l=1,grd%nchl
+  !    !$OMP PARALLEL  &
+  !    !$OMP PRIVATE(k)
+  !    !$OMP DO
+  !    do k=1,grd%km
+  !       grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:) 
+  !    enddo
+  !    !$OMP END DO
+  !    !$OMP END PARALLEL
+  ! enddo
   
   ! ---
   ! y direction
@@ -350,6 +361,19 @@ subroutine parallel_ver_hor
   ! Apply recursive filter in y direction
   call rcfl_y( localRow, GlobalCol, grd%km*grd%nchl, grd%jmax, grd%aey, grd%bey, DefBuf4D, grd%jnx, grd%jmx)
 
+  ! ---
+  ! Scale by the scaling factor
+  do l=1,grd%nchl
+     !$OMP PARALLEL  &
+     !$OMP PRIVATE(k)
+     !$OMP DO
+     do k=1,grd%km
+        DefBuf4D(:,:,k,l) = DefBuf4D(:,:,k,l) * grd%scy(:,:) 
+     enddo
+     !$OMP END DO
+     !$OMP END PARALLEL
+  enddo
+
   ! Reordering data to send back
   DEALLOCATE(SendBuf4D, RecBuf4D)
   ALLOCATE(SendBuf4D(grd%nchl, grd%km, localRow, GlobalCol))
@@ -376,35 +400,35 @@ subroutine parallel_ver_hor
      end do
   end do
 
-  ! ---
-  ! Scale by the scaling factor
-  do l=1,grd%nchl
-     !$OMP PARALLEL  &
-     !$OMP PRIVATE(k)
-     !$OMP DO
-     do k=1,grd%km
-        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:) 
-     enddo
-     !$OMP END DO
-     !$OMP END PARALLEL
-  enddo
+  ! ! ---
+  ! ! Scale by the scaling factor
+  ! do l=1,grd%nchl
+  !    !$OMP PARALLEL  &
+  !    !$OMP PRIVATE(k)
+  !    !$OMP DO
+  !    do k=1,grd%km
+  !       grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:) 
+  !    enddo
+  !    !$OMP END DO
+  !    !$OMP END PARALLEL
+  ! enddo
   
   ! ---
   ! Transpose calculation in the presense of coastal boundaries
   if(drv%mask(drv%ktr) .gt. 1) then
      
-     ! ---
-     ! Scale by the scaling factor
-     do l=1,grd%nchl
-        !$OMP PARALLEL  &
-        !$OMP PRIVATE(k)
-        !$OMP DO
-        do k=1,grd%km
-           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:) 
-        enddo
-        !$OMP END DO
-        !$OMP END PARALLEL
-     enddo
+     ! ! ---
+     ! ! Scale by the scaling factor
+     ! do l=1,grd%nchl
+     !    !$OMP PARALLEL  &
+     !    !$OMP PRIVATE(k)
+     !    !$OMP DO
+     !    do k=1,grd%km
+     !       grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:) 
+     !    enddo
+     !    !$OMP END DO
+     !    !$OMP END PARALLEL
+     ! enddo
      
      ! ---
      ! y direction
@@ -435,6 +459,19 @@ subroutine parallel_ver_hor
         end do
      end do
      
+     ! ---
+     ! Scale by the scaling factor
+     do l=1,grd%nchl
+        !$OMP PARALLEL  &
+        !$OMP PRIVATE(k)
+        !$OMP DO
+        do k=1,grd%km
+           DefBuf4D(:,:,k,l) = DefBuf4D(:,:,k,l) * grd%scy(:,:) 
+        enddo
+        !$OMP END DO
+        !$OMP END PARALLEL
+     enddo
+
      ! Apply recursive filter in y direction
      call rcfl_y_ad( localRow, GlobalCol, grd%km*grd%nchl, grd%jmax, grd%aey, grd%bey, DefBuf4D, grd%jnx, grd%jmx)
      
@@ -464,18 +501,18 @@ subroutine parallel_ver_hor
         end do
      end do
           
-     ! ---
-     ! Scale by the scaling factor
-     do l=1,grd%nchl
-        !$OMP PARALLEL  &
-        !$OMP PRIVATE(k)
-        !$OMP DO
-        do k=1,grd%km
-           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:) 
-        enddo
-        !$OMP END DO
-        !$OMP END PARALLEL
-     enddo
+     ! ! ---
+     ! ! Scale by the scaling factor
+     ! do l=1,grd%nchl
+     !    !$OMP PARALLEL  &
+     !    !$OMP PRIVATE(k)
+     !    !$OMP DO
+     !    do k=1,grd%km
+     !       grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:) 
+     !    enddo
+     !    !$OMP END DO
+     !    !$OMP END PARALLEL
+     ! enddo
      
      ! ---
      ! x direction
@@ -507,6 +544,19 @@ subroutine parallel_ver_hor
         end do
      end do
      
+     ! ---
+     ! Scale by the scaling factor
+     do l=1,grd%nchl
+        !$OMP PARALLEL  &
+        !$OMP PRIVATE(k)
+        !$OMP DO
+        do k=1,grd%km
+           DefBuf4D(:,:,k,l) = DefBuf4D(:,:,k,l) * grd%scx(:,:) 
+        enddo
+        !$OMP END DO
+        !$OMP END PARALLEL
+     enddo
+
      call rcfl_x_ad( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, DefBuf4D, grd%inx, grd%imx)
      
      ! Reordering data to send back
@@ -705,6 +755,19 @@ subroutine parallel_ver_hor_ad
      
      call rcfl_x( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, DefBuf4D, grd%inx, grd%imx)
      
+     ! ---
+     ! Scale by the scaling factor
+     do l=1,grd%nchl
+        !$OMP PARALLEL  &
+        !$OMP PRIVATE(k)
+        !$OMP DO
+        do k=1,grd%km
+           DefBuf4D(:,:,k,l) = DefBuf4D(:,:,k,l) * grd%scx(:,:) 
+        enddo
+        !$OMP END DO
+        !$OMP END PARALLEL  
+     enddo
+
      ! Reordering data to send back
      DEALLOCATE(SendBuf4D, RecBuf4D)
      ALLOCATE(SendBuf4D(grd%nchl, grd%km, localCol, GlobalRow))
@@ -732,18 +795,18 @@ subroutine parallel_ver_hor_ad
      end do
      
      
-     ! ---
-     ! Scale by the scaling factor
-     do l=1,grd%nchl
-        !$OMP PARALLEL  &
-        !$OMP PRIVATE(k)
-        !$OMP DO
-        do k=1,grd%km
-           grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:) 
-        enddo
-        !$OMP END DO
-        !$OMP END PARALLEL  
-     enddo
+     ! ! ---
+     ! ! Scale by the scaling factor
+     ! do l=1,grd%nchl
+     !    !$OMP PARALLEL  &
+     !    !$OMP PRIVATE(k)
+     !    !$OMP DO
+     !    do k=1,grd%km
+     !       grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:) 
+     !    enddo
+     !    !$OMP END DO
+     !    !$OMP END PARALLEL  
+     ! enddo
      
      ! ---
      ! y direction
@@ -778,6 +841,19 @@ subroutine parallel_ver_hor_ad
      ! Apply recursive filter in y direction
      call rcfl_y( localRow, GlobalCol, grd%km*grd%nchl, grd%jmax, grd%aey, grd%bey, DefBuf4D, grd%jnx, grd%jmx)
      
+     ! ---
+     ! Scale by the scaling factor
+     do l=1,grd%nchl
+        !$OMP PARALLEL  &
+        !$OMP PRIVATE(k)
+        !$OMP DO
+        do k=1,grd%km
+           DefBuf4D(:,:,k,l) = DefBuf4D(:,:,k,l) * grd%scy(:,:) 
+        enddo
+        !$OMP END DO
+        !$OMP END PARALLEL  
+     enddo
+
      ! Reordering data to send back
      DEALLOCATE(SendBuf4D, RecBuf4D)
      ALLOCATE(SendBuf4D(grd%nchl, grd%km, localRow, GlobalCol))
@@ -804,33 +880,33 @@ subroutine parallel_ver_hor_ad
         end do
      end do
 
-     ! ---
-     ! Scale by the scaling factor
-     do l=1,grd%nchl
-        !$OMP PARALLEL  &
-        !$OMP PRIVATE(k)
-        !$OMP DO
-        do k=1,grd%km
-           grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:) 
-        enddo
-        !$OMP END DO
-        !$OMP END PARALLEL  
-     enddo
+     ! ! ---
+     ! ! Scale by the scaling factor
+     ! do l=1,grd%nchl
+     !    !$OMP PARALLEL  &
+     !    !$OMP PRIVATE(k)
+     !    !$OMP DO
+     !    do k=1,grd%km
+     !       grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:) 
+     !    enddo
+     !    !$OMP END DO
+     !    !$OMP END PARALLEL  
+     ! enddo
      
   endif
   
-  ! ---
-  ! Scale by the scaling factor
-  do l=1,grd%nchl
-     !$OMP PARALLEL  &
-     !$OMP PRIVATE(k)
-     !$OMP DO
-     do k=1,grd%km
-        grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:) 
-     enddo
-     !$OMP END DO
-     !$OMP END PARALLEL  
-  enddo
+  ! ! ---
+  ! ! Scale by the scaling factor
+  ! do l=1,grd%nchl
+  !    !$OMP PARALLEL  &
+  !    !$OMP PRIVATE(k)
+  !    !$OMP DO
+  !    do k=1,grd%km
+  !       grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:) 
+  !    enddo
+  !    !$OMP END DO
+  !    !$OMP END PARALLEL  
+  ! enddo
   
   ! ---
   ! y direction
@@ -861,6 +937,19 @@ subroutine parallel_ver_hor_ad
      end do
   end do
 
+  ! ---
+  ! Scale by the scaling factor
+  do l=1,grd%nchl
+     !$OMP PARALLEL  &
+     !$OMP PRIVATE(k)
+     !$OMP DO
+     do k=1,grd%km
+        DefBuf4D(:,:,k,l) = DefBuf4D(:,:,k,l) * grd%scy(:,:) 
+     enddo
+     !$OMP END DO
+     !$OMP END PARALLEL  
+  enddo
+
   ! Apply recursive filter in y direction
   call rcfl_y_ad( localRow, GlobalCol, grd%km*grd%nchl, grd%jmax, grd%aey, grd%bey, DefBuf4D, grd%jnx, grd%jmx)
 
@@ -890,18 +979,18 @@ subroutine parallel_ver_hor_ad
      end do
   end do
     
-  ! ---
-  ! Scale by the scaling factor
-  do l=1,grd%nchl
-     !$OMP PARALLEL  &
-     !$OMP PRIVATE(k)
-     !$OMP DO
-     do k=1,grd%km
-        grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:) 
-     enddo
-     !$OMP END DO
-     !$OMP END PARALLEL  
-  enddo
+  ! ! ---
+  ! ! Scale by the scaling factor
+  ! do l=1,grd%nchl
+  !    !$OMP PARALLEL  &
+  !    !$OMP PRIVATE(k)
+  !    !$OMP DO
+  !    do k=1,grd%km
+  !       grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:) 
+  !    enddo
+  !    !$OMP END DO
+  !    !$OMP END PARALLEL  
+  ! enddo
   
   ! ---
   ! x direction
@@ -933,6 +1022,19 @@ subroutine parallel_ver_hor_ad
      end do
   end do
   
+  ! ---
+  ! Scale by the scaling factor
+  do l=1,grd%nchl
+     !$OMP PARALLEL  &
+     !$OMP PRIVATE(k)
+     !$OMP DO
+     do k=1,grd%km
+        DefBuf4D(:,:,k,l) = DefBuf4D(:,:,k,l) * grd%scx(:,:) 
+     enddo
+     !$OMP END DO
+     !$OMP END PARALLEL  
+  enddo
+
   call rcfl_x_ad( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, DefBuf4D, grd%inx, grd%imx)
   
   ! Reordering data to send back
