@@ -94,7 +94,7 @@ subroutine parallel_ver_hor
 
   ! **********************************************************************************
   !
-  !                                 NEW VERSION
+  !                       NEW VERSION with ghost cells exchange
   !
   ! **********************************************************************************
 
@@ -207,46 +207,6 @@ subroutine parallel_ver_hor
   end do
 
 
-  ! **********************************************************************************
-  !
-  !                                 OLD VERSION
-  !
-  ! **********************************************************************************
-
-  
-  ! do l=1,grd%nchl
-  !    do j=2,grd%jm-1
-  !       do i=2,grd%im-1
-  !          if ((grd%msk(i,j,chl%kdp).eq.0).and.  &
-  !               (grd%msk(i,j,1).eq.1)) then
-  !             do k=1,grd%km
-  !                if(grd%msk(i,j,k).eq.1) then
-  !                   chlapp(1)=grd%chl(i+1,j,  k,l)
-  !                   chlapp(2)=grd%chl(i-1,j,  k,l)
-  !                   chlapp(3)=grd%chl(i,  j+1,k,l)
-  !                   chlapp(4)=grd%chl(i,  j-1,k,l)
-  !                   chlapp(5)=grd%chl(i+1,j+1,k,l)
-  !                   chlapp(6)=grd%chl(i+1,j-1,k,l)
-  !                   chlapp(7)=grd%chl(i-1,j+1,k,l)
-  !                   chlapp(8)=grd%chl(i-1,j-1,k,l)
-  !                   nestr=0
-  !                   chlsum=0.
-  !                   do jp=1,8
-  !                      if ((chlapp(jp).ne.0).and.(chlapp(jp)/chlapp(jp).eq.1)) then
-  !                         nestr=nestr+1;
-  !                         chlsum=chlsum+chlapp(jp)
-  !                      endif
-  !                   enddo ! do on jp
-  !                   if (nestr.ne.0) then
-  !                      grd%chl(i,j,k,l)=.1*chlsum/nestr
-  !                   endif
-  !                endif !if on k
-  !             enddo ! do on k
-  !          endif ! if on grd%chl(i,j,1,l)
-  !       enddo ! do on i
-  !    enddo ! do on j
-  ! enddo ! do on l
-
   !********** APPLY RECURSIVE FILTERS ********** !
 
   ! ---
@@ -316,17 +276,6 @@ subroutine parallel_ver_hor
         end do
      end do
   end do
-
-  ! do l=1,grd%nchl
-  !    !$OMP PARALLEL  &
-  !    !$OMP PRIVATE(k)
-  !    !$OMP DO
-  !    do k=1,grd%km
-  !       grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:) 
-  !    enddo
-  !    !$OMP END DO
-  !    !$OMP END PARALLEL
-  ! enddo
   
   ! ---
   ! y direction
@@ -400,36 +349,11 @@ subroutine parallel_ver_hor
      end do
   end do
 
-  ! ! ---
-  ! ! Scale by the scaling factor
-  ! do l=1,grd%nchl
-  !    !$OMP PARALLEL  &
-  !    !$OMP PRIVATE(k)
-  !    !$OMP DO
-  !    do k=1,grd%km
-  !       grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:) 
-  !    enddo
-  !    !$OMP END DO
-  !    !$OMP END PARALLEL
-  ! enddo
   
   ! ---
   ! Transpose calculation in the presense of coastal boundaries
   if(drv%mask(drv%ktr) .gt. 1) then
-     
-     ! ! ---
-     ! ! Scale by the scaling factor
-     ! do l=1,grd%nchl
-     !    !$OMP PARALLEL  &
-     !    !$OMP PRIVATE(k)
-     !    !$OMP DO
-     !    do k=1,grd%km
-     !       grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:) 
-     !    enddo
-     !    !$OMP END DO
-     !    !$OMP END PARALLEL
-     ! enddo
-     
+          
      ! ---
      ! y direction
      DEALLOCATE(SendBuf4D, RecBuf4D)
@@ -500,19 +424,6 @@ subroutine parallel_ver_hor
            end do
         end do
      end do
-          
-     ! ! ---
-     ! ! Scale by the scaling factor
-     ! do l=1,grd%nchl
-     !    !$OMP PARALLEL  &
-     !    !$OMP PRIVATE(k)
-     !    !$OMP DO
-     !    do k=1,grd%km
-     !       grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:) 
-     !    enddo
-     !    !$OMP END DO
-     !    !$OMP END PARALLEL
-     ! enddo
      
      ! ---
      ! x direction
@@ -793,20 +704,7 @@ subroutine parallel_ver_hor_ad
            end do
         end do
      end do
-     
-     
-     ! ! ---
-     ! ! Scale by the scaling factor
-     ! do l=1,grd%nchl
-     !    !$OMP PARALLEL  &
-     !    !$OMP PRIVATE(k)
-     !    !$OMP DO
-     !    do k=1,grd%km
-     !       grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:) 
-     !    enddo
-     !    !$OMP END DO
-     !    !$OMP END PARALLEL  
-     ! enddo
+
      
      ! ---
      ! y direction
@@ -879,35 +777,9 @@ subroutine parallel_ver_hor_ad
            end do
         end do
      end do
-
-     ! ! ---
-     ! ! Scale by the scaling factor
-     ! do l=1,grd%nchl
-     !    !$OMP PARALLEL  &
-     !    !$OMP PRIVATE(k)
-     !    !$OMP DO
-     !    do k=1,grd%km
-     !       grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:) 
-     !    enddo
-     !    !$OMP END DO
-     !    !$OMP END PARALLEL  
-     ! enddo
      
   endif
-  
-  ! ! ---
-  ! ! Scale by the scaling factor
-  ! do l=1,grd%nchl
-  !    !$OMP PARALLEL  &
-  !    !$OMP PRIVATE(k)
-  !    !$OMP DO
-  !    do k=1,grd%km
-  !       grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:) 
-  !    enddo
-  !    !$OMP END DO
-  !    !$OMP END PARALLEL  
-  ! enddo
-  
+    
   ! ---
   ! y direction
   DEALLOCATE(SendBuf4D, RecBuf4D)
@@ -979,18 +851,6 @@ subroutine parallel_ver_hor_ad
      end do
   end do
     
-  ! ! ---
-  ! ! Scale by the scaling factor
-  ! do l=1,grd%nchl
-  !    !$OMP PARALLEL  &
-  !    !$OMP PRIVATE(k)
-  !    !$OMP DO
-  !    do k=1,grd%km
-  !       grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:) 
-  !    enddo
-  !    !$OMP END DO
-  !    !$OMP END PARALLEL  
-  ! enddo
   
   ! ---
   ! x direction
@@ -1082,7 +942,7 @@ subroutine parallel_ver_hor_ad
   
   ! **********************************************************************************
   !
-  !                                 NEW VERSION
+  !                       NEW VERSION with ghost cells exchange
   !
   ! **********************************************************************************
   
@@ -1267,26 +1127,6 @@ subroutine parallel_ver_hor_ad
      enddo ! do on j
   enddo ! do on l
 
-  ! do k=1,grd%km
-  !    do i=1,grd%im
-  !       SendLeft(i,k)  = ChlExtendedAD(i,0,k,1)
-  !       SendRight(i,k) = ChlExtendedAD(i,grd%jm+1,k,1)
-  !    end do
-  ! end do
-
-  ! RecRight(:,:) = 0
-  ! RecLeft(:,:)  = 0
-  
-  ! call MPI_Isend(SendLeft, grd%im*grd%km, MPI_REAL8, ProcLeft, MyTag, &
-  !      MPI_COMM_WORLD, ReqSendLeft, ierr)
-  ! call MPI_Irecv(RecRight, grd%im*grd%km, MPI_REAL8, ProcRight, MyTag, &
-  !      MPI_COMM_WORLD, ReqRecvRight, ierr)
-
-  ! call MPI_Isend(SendRight, grd%im*grd%km, MPI_REAL8, ProcRight, MyNewTag, &
-  !      MPI_COMM_WORLD, ReqSendRight, ierr)
-  ! call MPI_Irecv(RecLeft, grd%im*grd%km, MPI_REAL8, ProcLeft, MyNewTag, &
-  !      MPI_COMM_WORLD, ReqRecvLeft, ierr)
-
   do k=1,grd%km
      do j=1,grd%jm
         do i=1,grd%im
@@ -1294,72 +1134,8 @@ subroutine parallel_ver_hor_ad
         end do
      end do
   end do
-  
-  ! call MPI_Wait(ReqRecvRight, StatRight, ierr)
-  ! call MPI_Wait(ReqRecvLeft, StatLeft, ierr)
-  ! do k=1,grd%km
-  !    do i=1,grd%im
-        ! grd%chl_ad(i,grd%jm,k,1) = grd%chl_ad(i,grd%jm,k,1) + RecRight(i,k)
-        ! grd%chl_ad(i,1,k,1) = grd%chl_ad(i,1,k,1) + RecLeft(i,k)
-  !    end do
-  ! end do
 
-  ! **********************************************************************************
-  !
-  !                               OLD VERSION
-  !
-  ! **********************************************************************************
 
-  
-  ! do l=1,grd%nchl
-  !    do j=2,grd%jm-1  ! OMP
-  !       do i=2,grd%im-1
-  !          if ((grd%msk(i,j,chl%kdp).eq.0).and.  &
-  !               (grd%msk(i,j,1).eq.1)) then
-  !             do k=1,grd%km
-  !                if(grd%msk(i,j,k).eq.1) then
-  !                   chlapp(1)=grd%chl(i+1,j,  k,l)
-  !                   chlapp(2)=grd%chl(i-1,j,  k,l)
-  !                   chlapp(3)=grd%chl(i,  j+1,k,l)
-  !                   chlapp(4)=grd%chl(i,  j-1,k,l)
-  !                   chlapp(5)=grd%chl(i+1,j+1,k,l)
-  !                   chlapp(6)=grd%chl(i+1,j-1,k,l)
-  !                   chlapp(7)=grd%chl(i-1,j+1,k,l)
-  !                   chlapp(8)=grd%chl(i-1,j-1,k,l)
-  !                   nestr=0
-  !                   do jp=1,8
-  !                      if ((chlapp(jp).ne.0).and.(chlapp(jp)/chlapp(jp).eq.1)) then
-  !                         nestr=nestr+1;
-  !                      endif
-  !                   enddo ! do on jp
-  !                   if (nestr.ne.0) then
-  !                      grd%chl_ad(i+1,j,  k,l)=grd%chl_ad(i+1,j,  k,l)+  &
-  !                           .1*grd%chl_ad(i,j,k,l)/nestr
-  !                      grd%chl_ad(i-1,j,  k,l)=grd%chl_ad(i-1,j,  k,l)+  &
-  !                           .1*grd%chl_ad(i,j,k,l)/nestr
-  !                      grd%chl_ad(i,  j+1,k,l)=grd%chl_ad(i  ,j+1,k,l)+  &
-  !                           .1*grd%chl_ad(i,j,k,l)/nestr
-  !                      grd%chl_ad(i,  j-1,k,l)=grd%chl_ad(i  ,j-1,k,l)+  &
-  !                           .1*grd%chl_ad(i,j,k,l)/nestr
-  !                      grd%chl_ad(i+1,j+1,k,l)=grd%chl_ad(i+1,j+1,k,l)+  &
-  !                           .1*grd%chl_ad(i,j,k,l)/nestr
-  !                      grd%chl_ad(i+1,j-1,k,l)=grd%chl_ad(i+1,j-1,k,l)+  &
-  !                           .1*grd%chl_ad(i,j,k,l)/nestr
-  !                      grd%chl_ad(i-1,j+1,k,l)=grd%chl_ad(i-1,j+1,k,l)+  &
-  !                           .1*grd%chl_ad(i,j,k,l)/nestr
-  !                      grd%chl_ad(i-1,j-1,k,l)=grd%chl_ad(i-1,j-1,k,l)+  &
-  !                           .1*grd%chl_ad(i,j,k,l)/nestr
-  !                      grd%chl_ad(i,j,k,l)=0.
-  !                   endif
-  !                endif !if on k
-  !             enddo ! do on k
-  !          endif ! if on grd%chl(i,j,1,l)
-  !       enddo ! do on i
-  !    enddo ! do on j
-  ! enddo ! do on l
-  
-  
-  
   !103 continue
   ! ---
   ! Vertical EOFs           

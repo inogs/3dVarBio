@@ -86,10 +86,7 @@ subroutine parallel_def_grd
   
   ALLOCATE (SurfaceWaterPoints(2,nSurfaceWaterPoints))
   
-  ! #ifdef _USE_MPI
-  !   if(MyRank .eq. 0) &
-  ! #endif
-  write(*,*) 'nSurfaceWaterPoints = ', nSurfaceWaterPoints
+  write(*,*) 'nSurfaceWaterPoints = ', nSurfaceWaterPoints, 'of Rank ', MyRank
   
   indSupWP=0
   do i=1,grd%im

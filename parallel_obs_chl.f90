@@ -100,10 +100,6 @@ subroutine parallel_obs_chl
                 chl%pq2(kk) * ChlExtended(i+1,j  ,1) +       &
                 chl%pq3(kk) * ChlExtended(i  ,j+1,1) +       &
                 chl%pq4(kk) * ChlExtended(i+1,j+1,1) ) * chl%dzr(1,kk)
-                ! chl%pq1(kk) * grd%chl(i  ,j  ,1,l) +       &
-                ! chl%pq2(kk) * grd%chl(i+1,j  ,1,l) +       &
-                ! chl%pq3(kk) * grd%chl(i  ,j+1,1,l) +       &
-                ! chl%pq4(kk) * grd%chl(i+1,j+1,1,l) ) * chl%dzr(1,kk)
         enddo
         
      endif
@@ -200,10 +196,6 @@ subroutine parallel_obs_chl_ad
            ChlExtended(i+1,j  ,1) = ChlExtended(i+1,j  ,1) + chl%pq2(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
            ChlExtended(i  ,j+1,1) = ChlExtended(i  ,j+1,1) + chl%pq3(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
            ChlExtended(i+1,j+1,1) = ChlExtended(i+1,j+1,1) + chl%pq4(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
-           ! grd%chl_ad(i  ,j  ,1,l) = grd%chl_ad(i  ,j  ,1,l) + chl%pq1(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
-           ! grd%chl_ad(i+1,j  ,1,l) = grd%chl_ad(i+1,j  ,1,l) + chl%pq2(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
-           ! grd%chl_ad(i  ,j+1,1,l) = grd%chl_ad(i  ,j+1,1,l) + chl%pq3(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
-           ! grd%chl_ad(i+1,j+1,1,l) = grd%chl_ad(i+1,j+1,1,l) + chl%pq4(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
         enddo
      endif   
   enddo

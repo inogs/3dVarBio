@@ -49,7 +49,6 @@ subroutine parallel_wrt_dia
   integer            :: ncid,xid,yid,depid,idchl
   integer            :: idvip,idmsk,eofid
   integer(kind=MPI_OFFSET_KIND) :: global_im, global_jm, global_km
-  ! integer(kind=MPI_OFFSET_KIND) :: MyStart(3), MyCount(3)
   
   ! ---
   ! Innovations
@@ -82,16 +81,6 @@ subroutine parallel_wrt_dia
      enddo
   enddo
   
-! #ifdef _USE_MPI
-!   if(MyRank .eq. 0) then
-!      status = nf90_create("corr0.nc", NF90_CLOBBER, ncid)
-!   else
-!      status = nf90_create("corr1.nc", NF90_CLOBBER, ncid)
-!   end if
-! #else
-!   status = nf90_create(trim(CORR_FILE), NF90_CLOBBER, ncid)
-! #endif
-  
   status = nf90mpi_create(MPI_COMM_WORLD, trim(CORR_FILE), NF90_CLOBBER, &
        MPI_INFO_NULL, ncid)
   if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_create ', status)
@@ -118,46 +107,5 @@ subroutine parallel_wrt_dia
   status = nf90mpi_close(ncid)
   if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_close', status)
   
-  
-!   do k=1, ros%neof
-!      do j=1, grd%jm
-!         do i=1, grd%im
-!            Dump_vip(i,j,k) = real(grd%ro(i,j,k),  4)
-!         enddo
-!      enddo
-!   enddo
-  
-!   status = nf90_create(trim(EIV_FILE), NF90_CLOBBER, ncid) ! Eigenvalues
-!   status = nf90_def_dim(ncid,'neof'     ,ros%neof ,eofid)
-!   status = nf90_def_dim(ncid,'latitude' ,grd%jm  ,yid)
-!   status = nf90_def_dim(ncid,'longitude',grd%im  ,xid)
-!   status = nf90_def_var(ncid,'msk' , nf90_float, (/xid,yid/)      , idmsk )
-!   status = nf90_def_var(ncid,'vip' , nf90_float, (/xid,yid,eofid/), idvip )
-!   status = nf90_enddef(ncid)
-!   status = nf90_put_var(ncid,idmsk, Dump_msk )
-!   status = nf90_put_var(ncid,idvip, Dump_vip )
-!   status = nf90_sync(ncid)
-!   status = nf90_close(ncid)
-  
-  
-!   ! ---
-!   ! Observations
-  
-!   !  open(215,file=drv%flag//drv%date//'obs_'//fgrd//'.dat',form='unformatted')
-
-! #ifdef _USE_MPI
-!   if(MyRank .eq. 0) then
-! #endif
-
-!      open(215,file=trim(OBS_FILE),form='unformatted')
-  
-!      write(215) chl%no
-     
-!      close (215)
-!      write(*,*)'nchl ',chl%no
-
-! #ifdef _USE_MPI
-!   endif
-! #endif
 
 end subroutine parallel_wrt_dia
