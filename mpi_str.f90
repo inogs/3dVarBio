@@ -1,4 +1,5 @@
 MODULE mpi_str
+  use set_knd
   use mpi
   
   IMPLICIT NONE
@@ -35,7 +36,22 @@ MODULE mpi_str
   integer  :: localRow, localCol
 
   integer  :: ColumnCommunicator, RowCommunicator
-
   integer(KIND=MPI_OFFSET_KIND) :: MyStart(3), MyCount(3)
+
+  ! Arrays needed for alltoallv communication
+  integer, allocatable, dimension(:) :: SendCountX2D, SendCountX4D, SendDisplX2D, SendDisplX4D
+  integer, allocatable, dimension(:) :: RecCountX2D, RecCountX4D, RecDisplX2D, RecDisplX4D
+
+  ! Arrays needed for the ghost cells exchange
+  REAL(r8), POINTER, DIMENSION(:,:,:)   :: ChlExtended
+  REAL(r8), POINTER, DIMENSION(:)       ::  SendLeft, RecRight, SendRight, RecLeft
+  REAL(r8), POINTER, DIMENSION(:)       ::  SendTop, RecBottom, SendBottom, RecTop
+
+  REAL(r8), POINTER, DIMENSION(:,:,:,:) ::  ChlExtended4D, ChlExtendedAD_4D
+  REAL(r8), POINTER, DIMENSION(:,:)     ::  SendLeft2D, RecRight2D
+  REAL(r8), POINTER, DIMENSION(:,:)     ::  SendRight2D, RecLeft2D
+  REAL(r8), POINTER, DIMENSION(:,:)     ::  SendTop2D, RecBottom2D
+  REAL(r8), POINTER, DIMENSION(:,:)     ::  SendBottom2D, RecTop2D
+  
 
 END MODULE mpi_str

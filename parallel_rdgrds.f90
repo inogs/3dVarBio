@@ -17,7 +17,7 @@ subroutine parallel_rdgrd
   real(r4), ALLOCATABLE          :: x3(:,:,:), x2(:,:), x1(:)
 
   ! integer, allocatable :: ilcit(:,:), ilcjt(:,:)
-  integer(i8) :: ji, jj, jpi, jpj, nn
+  integer(i8) :: ji, jj, jpi, jpj, nn, i
   integer(i8) :: MyRestRow, MyRestCol, OffsetRow, OffsetCol
 
   integer(8) :: GlobalStart(3), GlobalCount(3)
@@ -132,13 +132,67 @@ subroutine parallel_rdgrd
   grd%im = MyCount(1)
   grd%jm = MyCount(2)
 
+  ALLOCATE(ChlExtended(grd%im+1, grd%jm+1, grd%nchl))
+  ALLOCATE(SendLeft(grd%im), RecRight(grd%im))
+  ALLOCATE(SendRight(grd%im), RecLeft(grd%im))
+  ALLOCATE(SendTop(grd%jm), RecBottom(grd%jm))
+  ALLOCATE(SendBottom(grd%jm), RecTop(grd%jm))  
+
+  ALLOCATE(ChlExtendedAD_4D(0:(grd%im+1), 0:(grd%jm+1), grd%km, grd%nchl))
+  ALLOCATE(ChlExtended4D(0:(grd%im+1), 0:(grd%jm+1), grd%km, grd%nchl))
+  ALLOCATE(SendLeft2D(grd%im, grd%km), RecRight2D(grd%im, grd%km))
+  ALLOCATE(SendRight2D(grd%im, grd%km), RecLeft2D(grd%im, grd%km))
+  ALLOCATE(SendTop2D(grd%jm, grd%km), RecBottom2D(grd%jm, grd%km))
+  ALLOCATE(SendBottom2D(grd%jm, grd%km), RecTop2D(grd%jm, grd%km))
+
   !
   ! initializing quantities needed to slicing along i and j directions
   !
   localRow = grd%im / NumProcJ
   localCol = grd%jm / NumProcI
-  if(mod(grd%im, NumProcJ) .ne. 0) print*,"WARNING!!!!!! mod(grd%im, NumProcJ) .ne. 0!!! Case not implemented yet!!"
-  if(mod(grd%jm, NumProcI) .ne. 0) print*,"WARNING!!!!!! mod(grd%jm, NumProcI) .ne. 0!!! Case not implemented yet!!"
+  MyRestRow = mod(grd%im, NumProcJ)
+  MyRestCol = mod(grd%jm, NumProcI)
+  if(MyRestCol .ne. 0) print*,"WARNING!!!!!! mod(grd%jm, NumProcI) .ne. 0!!! Case not implemented yet!!"
+
+  if(MyRestRow .ne. 0) then ! print*,"WARNING!!!!!! mod(grd%im, NumProcJ) .ne. 0!!! Case not implemented yet!!"
+     if(MyPosJ .lt. MyRestRow) &
+          localRow = localRow + 1
+  end if
+
+  SendDisplX4D(1) = 0
+  RecCountX4D(1)  = 0
+
+  SendDisplX2D(1) = 0
+  RecCountX2D(1)  = 0
+
+  do i=1,NumProcJ
+     if(i-1 .lt. MyRestRow) then
+        OffsetRow = 1
+     else
+        OffsetRow = 0
+     end if
+
+     if(i-1 .lt. mod(GlobalCol, NumProcJ)) then
+        OffsetCol = 1
+     else
+        OffsetCol = 0
+     end if
+
+     SendCountX4D(i) = (grd%im / NumProcJ + OffsetRow) * grd%jm * grd%km
+     RecCountX4D(i)  = localRow * grd%km * (GlobalCol / NumProcJ + OffsetCol)
+
+     SendCountX2D(i) = (grd%im / NumProcJ + OffsetRow) * grd%jm
+     RecCountX2D(i)  = localRow * (GlobalCol / NumProcJ + OffsetCol)
+     
+     if(i .lt. NumProcJ) then
+        SendDisplX4D(i+1) = SendDisplX4D(i) + SendCountX4D(i)
+        RecCountX4D(i+1)  = RecCountX4D(i) + RecCountX4D(i)
+
+        SendDisplX2D(i+1) = SendDisplX2D(i) + SendCountX2D(i)
+        RecCountX2D(i+1)  = RecCountX2D(i) + RecCountX2D(i)
+     end if
+  end do
+
   
   ! *****************************************************************************************
   ! *****************************************************************************************
@@ -227,7 +281,7 @@ subroutine parallel_rdgrd
   ALLOCATE(grd%global_msk(GlobalRow, GlobalCol, grd%km))
   ALLOCATE(x3(GlobalRow, GlobalCol, grd%km))
   ierr = nfmpi_get_vara_real_all (ncid, VarId, GlobalStart, GlobalCount, x3)
-  if (ierr .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all msk', ierr)
+  if (ierr .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all global_msk', ierr)
   grd%global_msk(:,:,:) = x3(:,:,:)
   
   

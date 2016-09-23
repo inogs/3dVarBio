@@ -37,15 +37,15 @@ subroutine parallel_obs_chl
   implicit none
   
   INTEGER(i4)   ::  i, j, l, kk
-  REAL(r8), POINTER    ::  ChlExtended(:,:,:)
-  REAL(r8), POINTER    ::  SendLeft(:), RecRight(:), SendTop(:), RecBottom(:)
+  ! REAL(r8), POINTER    ::  ChlExtended(:,:,:)
+  ! REAL(r8), POINTER    ::  SendLeft(:), RecRight(:), SendTop(:), RecBottom(:)
   INTEGER   :: ReqLeft, ReqRight, ReqTop, ReqBottom, ierr
   INTEGER   :: StatRight(MPI_STATUS_SIZE), StatBottom(MPI_STATUS_SIZE)
   INTEGER   :: MyTag
   
-  ALLOCATE(ChlExtended(grd%im+1, grd%jm+1, grd%nchl))
-  ALLOCATE(SendLeft(grd%im), RecRight(grd%im))
-  ALLOCATE(SendTop(grd%im), RecBottom(grd%im))
+  ! ALLOCATE(ChlExtended(grd%im+1, grd%jm+1, grd%nchl))
+  ! ALLOCATE(SendLeft(grd%im), RecRight(grd%im))
+  ! ALLOCATE(SendTop(grd%im), RecBottom(grd%im))
 
   ! Filling array to send
   do i=1,grd%im
@@ -106,9 +106,9 @@ subroutine parallel_obs_chl
      
   enddo
 
-  DEALLOCATE(ChlExtended)
-  DEALLOCATE(SendLeft, RecRight)
-  DEALLOCATE(SendTop, RecBottom)
+  ! DEALLOCATE(ChlExtended)
+  ! DEALLOCATE(SendLeft, RecRight)
+  ! DEALLOCATE(SendTop, RecBottom)
   
 end subroutine parallel_obs_chl
 
@@ -131,20 +131,11 @@ subroutine parallel_obs_chl_ad
   implicit none
   
   INTEGER(i4)   ::  i, j, kk, l
-  REAL(r8), POINTER    ::  ChlExtended(:,:,:)
-  REAL(r8), POINTER    ::  SendLeft(:), RecRight(:), SendRight(:), RecLeft(:)
-  REAL(r8), POINTER    ::  SendTop(:), RecBottom(:), SendBottom(:), RecTop(:)
   INTEGER   :: ReqRight, ReqBottom, ReqLeft, ReqTop, ierr
   INTEGER   :: StatLeft(MPI_STATUS_SIZE), StatRight(MPI_STATUS_SIZE)
   INTEGER   :: StatTop(MPI_STATUS_SIZE), StatBottom(MPI_STATUS_SIZE)
   INTEGER   :: MyTag
   
-  ALLOCATE(ChlExtended(grd%im+1, grd%jm+1, grd%nchl))
-  ALLOCATE(SendLeft(grd%im), RecRight(grd%im))
-  ALLOCATE(SendRight(grd%im), RecLeft(grd%im))
-  ALLOCATE(SendTop(grd%jm), RecBottom(grd%jm))
-  ALLOCATE(SendBottom(grd%jm), RecTop(grd%jm))
-
   ! Filling array to send
   do i=1,grd%im
      SendLeft(i) = grd%chl_ad(i,1,1,1)
@@ -235,11 +226,5 @@ subroutine parallel_obs_chl_ad
   do j=1,grd%jm
      grd%chl_ad(1,j,1,1) = grd%chl_ad(1,j,1,1) + RecTop(j) - SendTop(j)
   end do
-
-  DEALLOCATE(ChlExtended)
-  DEALLOCATE(SendRight, RecLeft)
-  DEALLOCATE(SendLeft, RecRight)
-  DEALLOCATE(SendBottom, RecTop)
-  DEALLOCATE(SendTop, RecBottom)
 
 end subroutine parallel_obs_chl_ad

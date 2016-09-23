@@ -75,6 +75,23 @@ subroutine clean_mem
   DEALLOCATE ( rcf%sc)
 
 #ifdef _USE_MPI
+  DEALLOCATE(SendCountX2D, SendCountX4D)
+  DEALLOCATE(SendDisplX2D, SendDisplX4D)
+  DEALLOCATE(RecCountX2D, RecCountX4D)
+  DEALLOCATE(RecDisplX2D, RecDisplX4D)
+
+  DEALLOCATE(ChlExtended)
+  DEALLOCATE(SendRight, RecLeft)
+  DEALLOCATE(SendLeft, RecRight)
+  DEALLOCATE(SendBottom, RecTop)
+  DEALLOCATE(SendTop, RecBottom)
+
+  DEALLOCATE(ChlExtended4D, ChlExtendedAD_4D)
+  DEALLOCATE(SendLeft2D, RecRight2D)
+  DEALLOCATE(SendRight2D, RecLeft2D)
+  DEALLOCATE(SendTop2D, RecBottom2D)
+  DEALLOCATE(SendBottom2D, RecTop2D)
+
   call MPI_Comm_free(RowCommunicator, ierr)
   call MPI_Comm_free(ColumnCommunicator, ierr)
   if(MyRank .eq. 0) &

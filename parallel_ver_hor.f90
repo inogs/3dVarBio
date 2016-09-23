@@ -50,23 +50,11 @@ subroutine parallel_ver_hor
   INTEGER(i4)    :: iProc, ierr
   REAL(r8), allocatable :: SendBuf4D(:,:,:,:), RecBuf4D(:,:,:,:), DefBuf4D(:,:,:,:)
 
-  REAL(r8), POINTER    ::  ChlExtended(:,:,:,:)
-  REAL(r8), POINTER    ::  SendLeft(:,:), RecRight(:,:)
-  REAL(r8), POINTER    ::  SendRight(:,:), RecLeft(:,:)
-  REAL(r8), POINTER    ::  SendTop(:,:), RecBottom(:,:)
-  REAL(r8), POINTER    ::  SendBottom(:,:), RecTop(:,:)
   INTEGER   :: ReqRecvRight, ReqSendRight, ReqSendLeft, ReqRecvLeft
   INTEGER   :: ReqRecvTop, ReqSendTop, ReqSendBottom, ReqRecvBottom
   INTEGER   :: StatRight(MPI_STATUS_SIZE), StatLeft(MPI_STATUS_SIZE)
   INTEGER   :: StatTop(MPI_STATUS_SIZE), StatBottom(MPI_STATUS_SIZE)
-  INTEGER   :: MyTag
-  
-  ALLOCATE(ChlExtended(0:grd%im+1, 0:grd%jm+1, grd%km, grd%nchl))
-  ALLOCATE(SendLeft(grd%im, grd%km), RecRight(grd%im, grd%km))
-  ALLOCATE(SendRight(grd%im, grd%km), RecLeft(grd%im, grd%km))
-  ALLOCATE(SendTop(grd%jm, grd%km), RecTop(grd%jm, grd%km))
-  ALLOCATE(SendBottom(grd%jm, grd%km), RecBottom(grd%jm, grd%km))
-  
+  INTEGER   :: MyTag  
 
   ione = 1
   
@@ -101,46 +89,46 @@ subroutine parallel_ver_hor
   ! Filling array to send
   do k=1,grd%km
      do i=1,grd%im
-        SendLeft(i,k)  = grd%chl(i,1,k,1)
-        SendRight(i,k) = grd%chl(i,grd%jm,k,1)
+        SendLeft2D(i,k)  = grd%chl(i,1,k,1)
+        SendRight2D(i,k) = grd%chl(i,grd%jm,k,1)
      end do
      do j=1,grd%jm
-        SendTop(j,k)  = grd%chl(1,j,k,1)
-        SendBottom(j,k) = grd%chl(grd%im,j,k,1)
+        SendTop2D(j,k)  = grd%chl(1,j,k,1)
+        SendBottom2D(j,k) = grd%chl(grd%im,j,k,1)
      end do     
   end do
 
   MyTag = 42
-  RecRight(:,:)  = 0
-  RecLeft(:,:)   = 0
-  RecTop(:,:)    = 0
-  RecBottom(:,:) = 0
-  ChlExtended(:,:,:,:) = 0
+  RecRight2D(:,:)  = 0
+  RecLeft2D(:,:)   = 0
+  RecTop2D(:,:)    = 0
+  RecBottom2D(:,:) = 0
+  ChlExtended4D(:,:,:,:) = 0
 
-  call MPI_Isend(SendLeft, grd%im*grd%km, MPI_REAL8, ProcLeft, MyTag, &
+  call MPI_Isend(SendLeft2D, grd%im*grd%km, MPI_REAL8, ProcLeft, MyTag, &
        MPI_COMM_WORLD, ReqSendLeft, ierr)
-  call MPI_Irecv(RecRight, grd%im*grd%km, MPI_REAL8, ProcRight, MyTag, &
+  call MPI_Irecv(RecRight2D, grd%im*grd%km, MPI_REAL8, ProcRight, MyTag, &
        MPI_COMM_WORLD, ReqRecvRight, ierr)
 
-  call MPI_Isend(SendRight, grd%im*grd%km, MPI_REAL8, ProcRight, MyTag, &
+  call MPI_Isend(SendRight2D, grd%im*grd%km, MPI_REAL8, ProcRight, MyTag, &
        MPI_COMM_WORLD, ReqSendRight, ierr)
-  call MPI_Irecv(RecLeft, grd%im*grd%km, MPI_REAL8, ProcLeft, MyTag, &
+  call MPI_Irecv(RecLeft2D, grd%im*grd%km, MPI_REAL8, ProcLeft, MyTag, &
        MPI_COMM_WORLD, ReqRecvLeft, ierr)
 
-  call MPI_Isend(SendTop, grd%jm*grd%km, MPI_REAL8, ProcTop, MyTag, &
+  call MPI_Isend(SendTop2D, grd%jm*grd%km, MPI_REAL8, ProcTop, MyTag, &
        MPI_COMM_WORLD, ReqSendTop, ierr)
-  call MPI_Irecv(RecBottom, grd%jm*grd%km, MPI_REAL8, ProcBottom, MyTag, &
+  call MPI_Irecv(RecBottom2D, grd%jm*grd%km, MPI_REAL8, ProcBottom, MyTag, &
        MPI_COMM_WORLD, ReqRecvBottom, ierr)
 
-  call MPI_Isend(SendBottom, grd%jm*grd%km, MPI_REAL8, ProcBottom, MyTag, &
+  call MPI_Isend(SendBottom2D, grd%jm*grd%km, MPI_REAL8, ProcBottom, MyTag, &
        MPI_COMM_WORLD, ReqSendBottom, ierr)
-  call MPI_Irecv(RecTop, grd%jm*grd%km, MPI_REAL8, ProcTop, MyTag, &
+  call MPI_Irecv(RecTop2D, grd%jm*grd%km, MPI_REAL8, ProcTop, MyTag, &
        MPI_COMM_WORLD, ReqRecvTop, ierr)
   
   do k=1,grd%km
      do j=1,grd%jm
         do i=1,grd%im
-           ChlExtended(i,j,k,1) = grd%chl(i,j,k,1)
+           ChlExtended4D(i,j,k,1) = grd%chl(i,j,k,1)
         end do
      end do
   end do
@@ -152,12 +140,12 @@ subroutine parallel_ver_hor
   
   do k=1,grd%km
      do i=1,grd%im
-        ChlExtended(i,grd%jm+1,k,1) = RecRight(i,k)
-        ChlExtended(i,0,k,1) = RecLeft(i,k)
+        ChlExtended4D(i,grd%jm+1,k,1) = RecRight2D(i,k)
+        ChlExtended4D(i,0,k,1) = RecLeft2D(i,k)
      end do
      do j=1,grd%jm
-        ChlExtended(0,j,k,1) = RecTop(j,k)
-        ChlExtended(grd%im+1,j,k,1) = RecBottom(j,k)
+        ChlExtended4D(0,j,k,1) = RecTop2D(j,k)
+        ChlExtended4D(grd%im+1,j,k,1) = RecBottom2D(j,k)
      end do
   end do
 
@@ -170,14 +158,14 @@ subroutine parallel_ver_hor
                 (grd%msk(i,j,1).eq.1)) then
               do k=1,grd%km
                  if(grd%msk(i,j,k).eq.1) then
-                    chlapp(1)=ChlExtended(i+1,j,  k,l)
-                    chlapp(2)=ChlExtended(i-1,j,  k,l)
-                    chlapp(3)=ChlExtended(i,  j+1,k,l)
-                    chlapp(4)=ChlExtended(i,  j-1,k,l)
-                    chlapp(5)=ChlExtended(i+1,j+1,k,l)
-                    chlapp(6)=ChlExtended(i+1,j-1,k,l)
-                    chlapp(7)=ChlExtended(i-1,j+1,k,l)
-                    chlapp(8)=ChlExtended(i-1,j-1,k,l)
+                    chlapp(1)=ChlExtended4D(i+1,j,  k,l)
+                    chlapp(2)=ChlExtended4D(i-1,j,  k,l)
+                    chlapp(3)=ChlExtended4D(i,  j+1,k,l)
+                    chlapp(4)=ChlExtended4D(i,  j-1,k,l)
+                    chlapp(5)=ChlExtended4D(i+1,j+1,k,l)
+                    chlapp(6)=ChlExtended4D(i+1,j-1,k,l)
+                    chlapp(7)=ChlExtended4D(i-1,j+1,k,l)
+                    chlapp(8)=ChlExtended4D(i-1,j-1,k,l)
                     nestr=0
                     chlsum=0.
                     do jp=1,8
@@ -187,7 +175,7 @@ subroutine parallel_ver_hor
                        endif
                     enddo ! do on jp
                     if (nestr.ne.0) then
-                       ChlExtended(i,j,k,l)=.1*chlsum/nestr
+                       ChlExtended4D(i,j,k,l)=.1*chlsum/nestr
                     endif
                  endif !if on k
               enddo ! do on k
@@ -200,7 +188,7 @@ subroutine parallel_ver_hor
      do k=1,grd%km
         do j=1,grd%jm
            do i=1,grd%im
-              grd%chl(i,j,k,l) = ChlExtended(i,j,k,l)
+              grd%chl(i,j,k,l) = ChlExtended4D(i,j,k,l)
            end do
         end do
      end do
@@ -540,11 +528,6 @@ subroutine parallel_ver_hor
   enddo  !k
 
   DEALLOCATE(SendBuf4D, RecBuf4D, DefBuf4D)
-  DEALLOCATE(ChlExtended)
-  DEALLOCATE(SendLeft, RecRight)
-  DEALLOCATE(SendRight, RecLeft)
-  DEALLOCATE(SendTop, RecBottom)
-  DEALLOCATE(SendBottom, RecTop)
 
 end subroutine parallel_ver_hor
 
@@ -579,12 +562,6 @@ subroutine parallel_ver_hor_ad
   INTEGER(i4)    :: iProc, ierr
   REAL(r8), allocatable :: SendBuf4D(:,:,:,:), RecBuf4D(:,:,:,:), DefBuf4D(:,:,:,:)
   
-  REAL(r8), POINTER    ::  ChlExtended(:,:,:,:)
-  REAL(r8), POINTER    ::  ChlExtendedAD(:,:,:,:)
-  REAL(r8), POINTER    ::  SendLeft(:,:), RecRight(:,:)
-  REAL(r8), POINTER    ::  SendRight(:,:), RecLeft(:,:)
-  REAL(r8), POINTER    ::  SendTop(:,:), RecBottom(:,:)
-  REAL(r8), POINTER    ::  SendBottom(:,:), RecTop(:,:)
   INTEGER   :: ReqRecvRight, ReqSendRight, ReqSendLeft, ReqRecvLeft
   INTEGER   :: ReqRecvTop, ReqSendTop, ReqSendBottom, ReqRecvBottom
   INTEGER   :: StatRight(MPI_STATUS_SIZE), StatLeft(MPI_STATUS_SIZE)
@@ -946,56 +923,49 @@ subroutine parallel_ver_hor_ad
   !
   ! **********************************************************************************
   
-  ALLOCATE(  ChlExtended(0:(grd%im+1), 0:(grd%jm+1), grd%km, grd%nchl))
-  ALLOCATE(ChlExtendedAD(0:(grd%im+1), 0:(grd%jm+1), grd%km, grd%nchl))
-  ALLOCATE(SendLeft(grd%im, grd%km), RecRight(grd%im, grd%km))
-  ALLOCATE(SendRight(grd%im, grd%km), RecLeft(grd%im, grd%km))
-  ALLOCATE(SendTop(grd%jm, grd%km), RecBottom(grd%jm, grd%km))
-  ALLOCATE(SendBottom(grd%jm, grd%km), RecTop(grd%jm, grd%km))
-
   MyTag = 42
-  RecRight(:,:)  = 0
-  RecLeft(:,:)   = 0
-  RecTop(:,:)    = 0
-  RecBottom(:,:) = 0
-  ChlExtended(:,:,:,:) = 0
+  RecRight2D(:,:)  = 0
+  RecLeft2D(:,:)   = 0
+  RecTop2D(:,:)    = 0
+  RecBottom2D(:,:) = 0
+  ChlExtended4D(:,:,:,:) = 0
   
   ! Filling array to send for ChlExtended
   do k=1,grd%km
      do i=1,grd%im
-        SendLeft(i,k)  = grd%chl(i,1,k,1)
-        SendRight(i,k) = grd%chl(i,grd%jm,k,1)
+        SendLeft2D(i,k)  = grd%chl(i,1,k,1)
+        SendRight2D(i,k) = grd%chl(i,grd%jm,k,1)
      end do
      do j=1,grd%jm
-        SendTop(j,k)  = grd%chl(0,j,k,1)
-        SendBottom(j,k) = grd%chl(grd%im,j,k,1)
+        SendTop2D(j,k)  = grd%chl(0,j,k,1)
+        SendBottom2D(j,k) = grd%chl(grd%im,j,k,1)
      end do
   end do
   
-  call MPI_Isend(SendLeft, grd%im*grd%km, MPI_REAL8, ProcLeft, MyTag, &
+  call MPI_Isend(SendLeft2D, grd%im*grd%km, MPI_REAL8, ProcLeft, MyTag, &
        MPI_COMM_WORLD, ReqSendLeft, ierr)
-  call MPI_Irecv(RecRight, grd%im*grd%km, MPI_REAL8, ProcRight, MyTag, &
+  call MPI_Irecv(RecRight2D, grd%im*grd%km, MPI_REAL8, ProcRight, MyTag, &
        MPI_COMM_WORLD, ReqRecvRight, ierr)
 
-  call MPI_Isend(SendRight, grd%im*grd%km, MPI_REAL8, ProcRight, MyTag, &
+  call MPI_Isend(SendRight2D, grd%im*grd%km, MPI_REAL8, ProcRight, MyTag, &
        MPI_COMM_WORLD, ReqSendRight, ierr)
-  call MPI_Irecv(RecLeft, grd%im*grd%km, MPI_REAL8, ProcLeft, MyTag, &
+  call MPI_Irecv(RecLeft2D, grd%im*grd%km, MPI_REAL8, ProcLeft, MyTag, &
        MPI_COMM_WORLD, ReqRecvLeft, ierr)
 
-  call MPI_Isend(SendTop, grd%jm*grd%km, MPI_REAL8, ProcTop, MyTag, &
+  call MPI_Isend(SendTop2D, grd%jm*grd%km, MPI_REAL8, ProcTop, MyTag, &
        MPI_COMM_WORLD, ReqSendTop, ierr)
-  call MPI_Irecv(RecBottom, grd%jm*grd%km, MPI_REAL8, ProcBottom, MyTag, &
+  call MPI_Irecv(RecBottom2D, grd%jm*grd%km, MPI_REAL8, ProcBottom, MyTag, &
        MPI_COMM_WORLD, ReqRecvBottom, ierr)
 
-  call MPI_Isend(SendBottom, grd%jm*grd%km, MPI_REAL8, ProcBottom, MyTag, &
+  call MPI_Isend(SendBottom2D, grd%jm*grd%km, MPI_REAL8, ProcBottom, MyTag, &
        MPI_COMM_WORLD, ReqSendBottom, ierr)
-  call MPI_Irecv(RecTop, grd%jm*grd%km, MPI_REAL8, ProcTop, MyTag, &
+  call MPI_Irecv(RecTop2D, grd%jm*grd%km, MPI_REAL8, ProcTop, MyTag, &
        MPI_COMM_WORLD, ReqRecvTop, ierr)
   
   do k=1,grd%km
      do j=1,grd%jm
         do i=1,grd%im
-           ChlExtended(i,j,k,1) = grd%chl(i,j,k,1)
+           ChlExtended4D(i,j,k,1) = grd%chl(i,j,k,1)
         end do
      end do
   end do
@@ -1007,57 +977,57 @@ subroutine parallel_ver_hor_ad
 
   do k=1,grd%km
      do i=1,grd%im
-        ChlExtended(i,grd%jm+1,k,1) = RecRight(i,k)
-        ChlExtended(i,0,k,1) = RecLeft(i,k)
+        ChlExtended4D(i,grd%jm+1,k,1) = RecRight2D(i,k)
+        ChlExtended4D(i,0,k,1) = RecLeft2D(i,k)
      end do
      do j=1,grd%jm
-        ChlExtended(0,j,k,1) = RecTop(j,k)
-        ChlExtended(grd%im+1,j,k,1) = RecBottom(j,k)
+        ChlExtended4D(0,j,k,1) = RecTop2D(j,k)
+        ChlExtended4D(grd%im+1,j,k,1) = RecBottom2D(j,k)
      end do
   end do
 
   ! Filling array to send for ChlExtendedAD
   do k=1,grd%km
      do i=1,grd%im
-        SendLeft(i,k)  = grd%chl_ad(i,1,k,1)
-        SendRight(i,k) = grd%chl_ad(i,grd%jm,k,1)
+        SendLeft2D(i,k)  = grd%chl_ad(i,1,k,1)
+        SendRight2D(i,k) = grd%chl_ad(i,grd%jm,k,1)
      end do
      do j=1,grd%jm
-        SendTop(j,k)  = grd%chl_ad(1,j,k,1)
-        SendBottom(j,k) = grd%chl_ad(grd%im,j,k,1)
+        SendTop2D(j,k)  = grd%chl_ad(1,j,k,1)
+        SendBottom2D(j,k) = grd%chl_ad(grd%im,j,k,1)
      end do
   end do
 
-  RecRight(:,:)  = 0
-  RecLeft(:,:)   = 0
-  RecTop(:,:)    = 0
-  RecBottom(:,:) = 0
-  ChlExtendedAD(:,:,:,:) = 0
+  RecRight2D(:,:)  = 0
+  RecLeft2D(:,:)   = 0
+  RecTop2D(:,:)    = 0
+  RecBottom2D(:,:) = 0
+  ChlExtendedAD_4D(:,:,:,:) = 0
   
-  call MPI_Isend(SendLeft, grd%im*grd%km, MPI_REAL8, ProcLeft, MyTag, &
+  call MPI_Isend(SendLeft2D, grd%im*grd%km, MPI_REAL8, ProcLeft, MyTag, &
        MPI_COMM_WORLD, ReqSendLeft, ierr)
-  call MPI_Irecv(RecRight, grd%im*grd%km, MPI_REAL8, ProcRight, MyTag, &
+  call MPI_Irecv(RecRight2D, grd%im*grd%km, MPI_REAL8, ProcRight, MyTag, &
        MPI_COMM_WORLD, ReqRecvRight, ierr)
 
-  call MPI_Isend(SendRight, grd%im*grd%km, MPI_REAL8, ProcRight, MyTag, &
+  call MPI_Isend(SendRight2D, grd%im*grd%km, MPI_REAL8, ProcRight, MyTag, &
        MPI_COMM_WORLD, ReqSendRight, ierr)
-  call MPI_Irecv(RecLeft, grd%im*grd%km, MPI_REAL8, ProcLeft, MyTag, &
+  call MPI_Irecv(RecLeft2D, grd%im*grd%km, MPI_REAL8, ProcLeft, MyTag, &
        MPI_COMM_WORLD, ReqRecvLeft, ierr)
 
-  call MPI_Isend(SendTop, grd%jm*grd%km, MPI_REAL8, ProcTop, MyTag, &
+  call MPI_Isend(SendTop2D, grd%jm*grd%km, MPI_REAL8, ProcTop, MyTag, &
        MPI_COMM_WORLD, ReqSendTop, ierr)
-  call MPI_Irecv(RecBottom, grd%jm*grd%km, MPI_REAL8, ProcBottom, MyTag, &
+  call MPI_Irecv(RecBottom2D, grd%jm*grd%km, MPI_REAL8, ProcBottom, MyTag, &
        MPI_COMM_WORLD, ReqRecvBottom, ierr)
 
-  call MPI_Isend(SendBottom, grd%jm*grd%km, MPI_REAL8, ProcBottom, MyTag, &
+  call MPI_Isend(SendBottom2D, grd%jm*grd%km, MPI_REAL8, ProcBottom, MyTag, &
        MPI_COMM_WORLD, ReqSendBottom, ierr)
-  call MPI_Irecv(RecTop, grd%jm*grd%km, MPI_REAL8, ProcTop, MyTag, &
+  call MPI_Irecv(RecTop2D, grd%jm*grd%km, MPI_REAL8, ProcTop, MyTag, &
        MPI_COMM_WORLD, ReqRecvTop, ierr)
 
   do k=1,grd%km
      do j=1,grd%jm
         do i=1,grd%im
-           ChlExtendedAD(i,j,k,1) = grd%chl_ad(i,j,k,1)
+           ChlExtendedAD_4D(i,j,k,1) = grd%chl_ad(i,j,k,1)
         end do
      end do
   end do
@@ -1069,12 +1039,12 @@ subroutine parallel_ver_hor_ad
 
   do k=1,grd%km
      do i=1,grd%im
-        ChlExtendedAD(i,grd%jm+1,k,1) = RecRight(i,k)
-        ChlExtendedAD(i,0,k,1) = RecLeft(i,k)
+        ChlExtendedAD_4D(i,grd%jm+1,k,1) = RecRight2D(i,k)
+        ChlExtendedAD_4D(i,0,k,1) = RecLeft2D(i,k)
      end do
      do j=1,grd%jm
-        ChlExtendedAD(0,j,k,1) = RecTop(j,k)
-        ChlExtendedAD(grd%im+1,j,k,1) = RecBottom(j,k)
+        ChlExtendedAD_4D(0,j,k,1) = RecTop2D(j,k)
+        ChlExtendedAD_4D(grd%im+1,j,k,1) = RecBottom2D(j,k)
      end do
   end do
 
@@ -1087,14 +1057,14 @@ subroutine parallel_ver_hor_ad
                 (grd%msk(i,j,1).eq.1)) then
               do k=1,grd%km
                  if(grd%msk(i,j,k).eq.1) then
-                    chlapp(1)=ChlExtended(i+1,j,  k,l)
-                    chlapp(2)=ChlExtended(i-1,j,  k,l)
-                    chlapp(3)=ChlExtended(i,  j+1,k,l)
-                    chlapp(4)=ChlExtended(i,  j-1,k,l)
-                    chlapp(5)=ChlExtended(i+1,j+1,k,l)
-                    chlapp(6)=ChlExtended(i+1,j-1,k,l)
-                    chlapp(7)=ChlExtended(i-1,j+1,k,l)
-                    chlapp(8)=ChlExtended(i-1,j-1,k,l)
+                    chlapp(1)=ChlExtended4D(i+1,j,  k,l)
+                    chlapp(2)=ChlExtended4D(i-1,j,  k,l)
+                    chlapp(3)=ChlExtended4D(i,  j+1,k,l)
+                    chlapp(4)=ChlExtended4D(i,  j-1,k,l)
+                    chlapp(5)=ChlExtended4D(i+1,j+1,k,l)
+                    chlapp(6)=ChlExtended4D(i+1,j-1,k,l)
+                    chlapp(7)=ChlExtended4D(i-1,j+1,k,l)
+                    chlapp(8)=ChlExtended4D(i-1,j-1,k,l)
                     nestr=0
                     do jp=1,8
                        if ((chlapp(jp).ne.0).and.(chlapp(jp)/chlapp(jp).eq.1)) then
@@ -1102,23 +1072,23 @@ subroutine parallel_ver_hor_ad
                        endif
                     enddo ! do on jp
                     if (nestr.ne.0) then
-                       ChlExtendedAD(i+1,j,  k,l)=ChlExtendedAD(i+1,j,  k,l)+  &
-                            .1*ChlExtendedAD(i,j,k,l)/nestr
-                       ChlExtendedAD(i-1,j,  k,l)=ChlExtendedAD(i-1,j,  k,l)+  &
-                            .1*ChlExtendedAD(i,j,k,l)/nestr
-                       ChlExtendedAD(i,  j+1,k,l)=ChlExtendedAD(i  ,j+1,k,l)+  &
-                            .1*ChlExtendedAD(i,j,k,l)/nestr
-                       ChlExtendedAD(i,  j-1,k,l)=ChlExtendedAD(i  ,j-1,k,l)+  &
-                            .1*ChlExtendedAD(i,j,k,l)/nestr
-                       ChlExtendedAD(i+1,j+1,k,l)=ChlExtendedAD(i+1,j+1,k,l)+  &
-                            .1*ChlExtendedAD(i,j,k,l)/nestr
-                       ChlExtendedAD(i+1,j-1,k,l)=ChlExtendedAD(i+1,j-1,k,l)+  &
-                            .1*ChlExtendedAD(i,j,k,l)/nestr
-                       ChlExtendedAD(i-1,j+1,k,l)=ChlExtendedAD(i-1,j+1,k,l)+  &
-                            .1*ChlExtendedAD(i,j,k,l)/nestr
-                       ChlExtendedAD(i-1,j-1,k,l)=ChlExtendedAD(i-1,j-1,k,l)+  &
-                            .1*ChlExtendedAD(i,j,k,l)/nestr
-                       ChlExtendedAD(i,j,k,l)=0.
+                       ChlExtendedAD_4D(i+1,j,  k,l)=ChlExtendedAD_4D(i+1,j,  k,l)+  &
+                            .1*ChlExtendedAD_4D(i,j,k,l)/nestr
+                       ChlExtendedAD_4D(i-1,j,  k,l)=ChlExtendedAD_4D(i-1,j,  k,l)+  &
+                            .1*ChlExtendedAD_4D(i,j,k,l)/nestr
+                       ChlExtendedAD_4D(i,  j+1,k,l)=ChlExtendedAD_4D(i  ,j+1,k,l)+  &
+                            .1*ChlExtendedAD_4D(i,j,k,l)/nestr
+                       ChlExtendedAD_4D(i,  j-1,k,l)=ChlExtendedAD_4D(i  ,j-1,k,l)+  &
+                            .1*ChlExtendedAD_4D(i,j,k,l)/nestr
+                       ChlExtendedAD_4D(i+1,j+1,k,l)=ChlExtendedAD_4D(i+1,j+1,k,l)+  &
+                            .1*ChlExtendedAD_4D(i,j,k,l)/nestr
+                       ChlExtendedAD_4D(i+1,j-1,k,l)=ChlExtendedAD_4D(i+1,j-1,k,l)+  &
+                            .1*ChlExtendedAD_4D(i,j,k,l)/nestr
+                       ChlExtendedAD_4D(i-1,j+1,k,l)=ChlExtendedAD_4D(i-1,j+1,k,l)+  &
+                            .1*ChlExtendedAD_4D(i,j,k,l)/nestr
+                       ChlExtendedAD_4D(i-1,j-1,k,l)=ChlExtendedAD_4D(i-1,j-1,k,l)+  &
+                            .1*ChlExtendedAD_4D(i,j,k,l)/nestr
+                       ChlExtendedAD_4D(i,j,k,l)=0.
                     endif
                  endif !if on k
               enddo ! do on k
@@ -1130,7 +1100,7 @@ subroutine parallel_ver_hor_ad
   do k=1,grd%km
      do j=1,grd%jm
         do i=1,grd%im
-           grd%chl_ad(i,j,k,1) = ChlExtendedAD(i,j,k,1)
+           grd%chl_ad(i,j,k,1) = ChlExtendedAD_4D(i,j,k,1)
         end do
      end do
   end do
@@ -1142,10 +1112,5 @@ subroutine parallel_ver_hor_ad
   call veof_ad
 
   DEALLOCATE(SendBuf4D, RecBuf4D, DefBuf4D)
-  DEALLOCATE(ChlExtended, ChlExtendedAD)
-  DEALLOCATE(SendLeft, RecRight)
-  DEALLOCATE(SendRight, RecLeft)
-  DEALLOCATE(SendTop, RecBottom)
-  DEALLOCATE(SendBottom, RecTop)
   
 end subroutine parallel_ver_hor_ad

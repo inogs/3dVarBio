@@ -95,6 +95,11 @@ subroutine mynode()
   call MPI_Comm_split(MPI_COMM_WORLD, MyPosI, MyRank, ColumnCommunicator, ierr)
   call MPI_Comm_split(MPI_COMM_WORLD, MyPosJ, MyRank, RowCommunicator, ierr)
 
+  ALLOCATE(SendCountX2D(NumProcJ), SendCountX4D(NumProcJ))
+  ALLOCATE(SendDisplX2D(NumProcJ), SendDisplX4D(NumProcJ))
+  ALLOCATE(RecCountX2D(NumProcJ), RecCountX4D(NumProcJ))
+  ALLOCATE(RecDisplX2D(NumProcJ), RecDisplX4D(NumProcJ))
+  
   ! write(*,*) "MyRank", MyRank, "PosI", MyPosI, "PosJ", MyPosJ, "Left", ProcLeft, "Right", ProcRight, "Top", ProcTop, "Bottom", ProcBottom
 
   if(NumProcI * NumProcJ .ne. size) then
