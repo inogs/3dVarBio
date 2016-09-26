@@ -221,7 +221,8 @@ subroutine parallel_ver_hor
      do iProc=0, NumProcI-1
         do j=1,localCol
            do k=1,grd%km
-              DefBuf4D(i + iProc*localRow,j,k,1) = RecBuf4D(1,k,i,j + iProc*localCol)
+              ! DefBuf4D(i + iProc*localRow,j,k,1) = RecBuf4D(1,k,i,j + iProc*localCol)
+              DefBuf4D(i + iProc*grd%im,j,k,1) = RecBuf4D(1,k,i,j + iProc*localCol)
            end do
         end do
      end do
@@ -260,7 +261,8 @@ subroutine parallel_ver_hor
      do iProc=0, NumProcI-1
         do j=1,localCol
            do k=1,grd%km
-              grd%chl(i,j + iProc*localCol,k,1) = RecBuf4D(1,k,j,i + iProc*localRow)
+              ! grd%chl(i,j + iProc*localCol,k,1) = RecBuf4D(1,k,j,i + iProc*localRow)
+              grd%chl(i,j + iProc*localCol,k,1) = RecBuf4D(1,k,j,i + iProc*grd%im)
            end do
         end do
      end do
@@ -513,7 +515,8 @@ subroutine parallel_ver_hor
         do iProc=0, NumProcI-1
            do j=1,localCol
               do k=1,grd%km
-                 DefBuf4D(i + iProc*localRow,j,k,1) = RecBuf4D(1,k,i,j + iProc*localCol)
+                 ! DefBuf4D(i + iProc*localRow,j,k,1) = RecBuf4D(1,k,i,j + iProc*localCol)
+                 DefBuf4D(i + iProc*grd%im,j,k,1) = RecBuf4D(1,k,i,j + iProc*localCol)
               end do
            end do
         end do
@@ -554,7 +557,8 @@ subroutine parallel_ver_hor
         do iProc=0, NumProcI-1
            do j=1,localCol
               do k=1,grd%km
-                 grd%chl_ad(i,j + iProc*localCol,k,1) = RecBuf4D(1,k,j,i + iProc*localRow)
+                 ! grd%chl_ad(i,j + iProc*localCol,k,1) = RecBuf4D(1,k,j,i + iProc*localRow)
+                 grd%chl_ad(i,j + iProc*localCol,k,1) = RecBuf4D(1,k,j,i + iProc*grd%im)
               end do
            end do
         end do
@@ -711,7 +715,8 @@ subroutine parallel_ver_hor_ad
         do iProc=0, NumProcI-1
            do j=1,localCol
               do k=1,grd%km
-                 DefBuf4D(i + iProc*localRow,j,k,1) = RecBuf4D(1,k,i,j + iProc*localCol)
+                 ! DefBuf4D(i + iProc*localRow,j,k,1) = RecBuf4D(1,k,i,j + iProc*localCol)
+                 DefBuf4D(i + iProc*grd%im,j,k,1) = RecBuf4D(1,k,i,j + iProc*localCol)
               end do
            end do
         end do
@@ -752,7 +757,8 @@ subroutine parallel_ver_hor_ad
         do iProc=0, NumProcI-1
            do j=1,localCol
               do k=1,grd%km
-                 grd%chl(i,j + iProc*localCol,k,1) = RecBuf4D(1,k,j,i + iProc*localRow)
+                 ! grd%chl(i,j + iProc*localCol,k,1) = RecBuf4D(1,k,j,i + iProc*localRow)
+                 grd%chl(i,j + iProc*localCol,k,1) = RecBuf4D(1,k,j,i + iProc*grd%im)
               end do
            end do
         end do
@@ -993,7 +999,8 @@ subroutine parallel_ver_hor_ad
      do iProc=0, NumProcI-1
         do j=1,localCol
            do k=1,grd%km
-              DefBuf4D(i + iProc*localRow,j,k,1) = RecBuf4D(1,k,i,j + iProc*localCol)
+              ! DefBuf4D(i + iProc*localRow,j,k,1) = RecBuf4D(1,k,i,j + iProc*localCol)
+              DefBuf4D(i + iProc*grd%im,j,k,1) = RecBuf4D(1,k,i,j + iProc*localCol)
            end do
         end do
      end do
@@ -1034,12 +1041,13 @@ subroutine parallel_ver_hor_ad
      do iProc=0, NumProcI-1
         do j=1,localCol
            do k=1,grd%km
-              grd%chl_ad(i,j + iProc*localCol,k,1) = RecBuf4D(1,k,j,i + iProc*localRow)
+              ! grd%chl_ad(i,j + iProc*localCol,k,1) = RecBuf4D(1,k,j,i + iProc*localRow)
+              grd%chl_ad(i,j + iProc*localCol,k,1) = RecBuf4D(1,k,j,i + iProc*grd%im)
            end do
         end do
      end do
   end do
-  
+
   ! ---
   ! Average
   if(drv%mask(drv%ktr) .gt. 1) then

@@ -129,7 +129,8 @@ subroutine parallel_def_cov
   do i=1, grd%im
      do iProc=0, NumProcI-1
         do j=1, localCol
-           DefBuf2D(i + iProc*localRow, j) = RecBuf2D(i, j + iProc*localCol)
+           ! DefBuf2D(i + iProc*localRow, j) = RecBuf2D(i, j + iProc*localCol)
+           DefBuf2D(i + iProc*grd%im, j) = RecBuf2D(i, j + iProc*localCol)
         end do
      end do
   end do
@@ -168,7 +169,7 @@ subroutine parallel_def_cov
   ALLOCATE(SendBuf2D(grd%jm, grd%im))
   ALLOCATE( RecBuf1D(localRow*GlobalCol))
   ALLOCATE( DefBuf2D(localRow, GlobalCol))
-  
+
   do j=1,grd%jm
      do i=1,grd%im
         SendBuf2D(j,i) = grd%dy(i,j)
@@ -179,7 +180,7 @@ subroutine parallel_def_cov
   !      GlobalRow*localCol/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
   call MPI_Alltoallv(SendBuf2D, SendCountX2D, SendDisplX2D, MPI_REAL8, &
        RecBuf1D, RecCountX2D, RecDisplX2D, MPI_REAL8, ColumnCommunicator, ierr)
- 
+
   do i=1, localRow
      do iProc=0, NumProcJ-1
         do j=1, RecCountX2D(iProc+1)/localRow ! grd%jm
@@ -280,7 +281,8 @@ subroutine parallel_def_cov
      do iProc=0, NumProcI-1
         do j=1, localCol
            do k=1, grd%km
-              ColBuf3D(i+iProc*localRow, j, k) = RecBuf3D(k, i, j + iProc*localCol)
+              ! ColBuf3D(i+iProc*localRow, j, k) = RecBuf3D(k, i, j + iProc*localCol)
+              ColBuf3D(i+iProc*grd%im, j, k) = RecBuf3D(k, i, j + iProc*localCol)
            end do
         end do
      end do
