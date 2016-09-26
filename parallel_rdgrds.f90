@@ -193,6 +193,7 @@ subroutine parallel_rdgrd
      end if
   end do
 
+  ! print*, "Debugging", MyRank, "SC", SendCountX2D, "RC", RecCountX2D, "SD", SendDisplX2D, "RD", RecDisplX2D
   
   ! *****************************************************************************************
   ! *****************************************************************************************

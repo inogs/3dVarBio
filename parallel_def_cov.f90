@@ -183,7 +183,7 @@ subroutine parallel_def_cov
   do i=1, localRow
      do iProc=0, NumProcJ-1
         do j=1, RecCountX2D(iProc+1)/localRow ! grd%jm
-           DefBuf2D(i, j + iProc*RecDisplX2D(iProc+1)/localRow) = &
+           DefBuf2D(i, j + RecDisplX2D(iProc+1)/localRow) = &
                 RecBuf1D(j + (i-1)*RecCountX2D(iProc+1)/localRow + RecDisplX2D(iProc+1))
         end do
      end do
@@ -414,7 +414,7 @@ subroutine parallel_def_cov
   ! Vertical EOFs
            
   ros%kmt = grd%km * grd%nchl 
-  
+
   call rdeofs
   
   ALLOCATE ( grd%ro(    grd%im, grd%jm, ros%neof))   ; grd%ro    = 0.0
