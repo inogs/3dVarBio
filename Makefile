@@ -148,6 +148,7 @@ OBJS    =  \
 	mpi_utils.o\
 	parallel_costf.o\
 	parallel_rdgrds.o\
+	parallel_rdeofs.o\
 	parallel_wrt_dia.o\
 	parallel_obs_chl.o\
 	parallel_ver_hor.o\

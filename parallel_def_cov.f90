@@ -415,7 +415,7 @@ subroutine parallel_def_cov
            
   ros%kmt = grd%km * grd%nchl 
 
-  call rdeofs
+  call parallel_rdeofs
   
   ALLOCATE ( grd%ro(    grd%im, grd%jm, ros%neof))   ; grd%ro    = 0.0
   ALLOCATE ( grd%ro_ad( grd%im, grd%jm, ros%neof))   ; grd%ro_ad = 0.0

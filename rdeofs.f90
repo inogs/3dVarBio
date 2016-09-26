@@ -36,11 +36,6 @@ subroutine rdeofs
   use grd_str
   use filenames
 
-#ifdef _USE_MPI
-  use mpi
-  use mpi_str
-#endif
-  
   implicit none
   
   INTEGER(i4)                    :: stat, ncid, idvar, neofs, nlevs, nregs
@@ -63,82 +58,40 @@ subroutine rdeofs
   stat = nf90_inquire_dimension (ncid, idvar, len = neofs)
   if (stat /= nf90_noerr) call netcdf_err(stat)
 
-#ifdef _USE_MPI
-  if(MyRank .eq. 0) then
-#endif
-     write(drv%dia,*)'Eof dimensions are: ',ros%nreg, ros%kmt, neofs
-     write(drv%dia,*)'Uses ',ros%neof,' eofs.'
-#ifdef _USE_MPI
-  endif
-#endif
+  write(drv%dia,*)'Eof dimensions are: ',ros%nreg, ros%kmt, neofs
+  write(drv%dia,*)'Uses ',ros%neof,' eofs.'
   
   if(ros%nreg .ne. nregs) then
 
-#ifdef _USE_MPI
-     if(MyRank .eq. 0) then
-#endif
-
-        write(drv%dia,*)'Error: ros%nreg differs from nregs'
-
-#ifdef _USE_MPI
-     endif
-     call MPI_Abort(MPI_COMM_WORLD, -1, stat)
-#else
+     write(drv%dia,*)'Error: ros%nreg differs from nregs'
      
      !stop
      call f_exit(22)
-#endif
      
   endif
   
   if(ros%neof .gt. neofs) then
-
-#ifdef _USE_MPI
-     if(MyRank .eq. 0) then
-#endif
         
-        write(drv%dia,*)'Error: Requires more Eofs than available in the input file.'
-        !stop
+     write(drv%dia,*)'Error: Requires more Eofs than available in the input file.'
+     !stop
 
-#ifdef _USE_MPI
-        
-     endif
-     call MPI_Abort(MPI_COMM_WORLD, -1, stat)
-
-#else
-     
      call f_exit(22)
 
-#endif
-     
   else if(ros%neof .lt. neofs) then
      
-#ifdef _USE_MPI
-     if(MyRank .eq. 0) then
-#endif
-        write(drv%dia,*)'Warning: ros%neof < neofs!'
-        write(drv%dia,*)'ros%neof =', ros%neof
-        write(drv%dia,*)'neofs =', neofs
-        write(drv%dia,*)'continue using ros%neof'
-#ifdef _USE_MPI
-     endif
-#endif
+     write(drv%dia,*)'Warning: ros%neof < neofs!'
+     write(drv%dia,*)'ros%neof =', ros%neof
+     write(drv%dia,*)'neofs =', neofs
+     write(drv%dia,*)'continue using ros%neof'
+
   endif
   
   if(ros%kmt .ne. nlevs) then
-#ifdef _USE_MPI
-     if(MyRank .eq. 0) then
-#endif
 
-        write(drv%dia,*)'Error: Vertical dimension different than in the input file.'
+     write(drv%dia,*)'Error: Vertical dimension different than in the input file.'
 
-#ifdef _USE_MPI
-     endif
-     call MPI_Abort(MPI_COMM_WORLD, -1, stat)
-#else
      !stop
      call f_exit(23)
-#endif
   endif
   
   !  Allocate eof arrays and get data
