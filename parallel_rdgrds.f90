@@ -160,10 +160,10 @@ subroutine parallel_rdgrd
   end if
 
   SendDisplX4D(1) = 0
-  RecCountX4D(1)  = 0
+  RecDisplX4D(1)  = 0
 
   SendDisplX2D(1) = 0
-  RecCountX2D(1)  = 0
+  RecDisplX2D(1)  = 0
 
   do i=1,NumProcJ
      if(i-1 .lt. MyRestRow) then
@@ -186,10 +186,10 @@ subroutine parallel_rdgrd
      
      if(i .lt. NumProcJ) then
         SendDisplX4D(i+1) = SendDisplX4D(i) + SendCountX4D(i)
-        RecCountX4D(i+1)  = RecCountX4D(i) + RecCountX4D(i)
+        RecDisplX4D(i+1)  = RecDisplX4D(i) + RecCountX4D(i)
 
         SendDisplX2D(i+1) = SendDisplX2D(i) + SendCountX2D(i)
-        RecCountX2D(i+1)  = RecCountX2D(i) + RecCountX2D(i)
+        RecDisplX2D(i+1)  = RecDisplX2D(i) + RecCountX2D(i)
      end if
   end do
 

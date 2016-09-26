@@ -162,8 +162,11 @@ subroutine parallel_def_cov
 
   ! MPI_ALLTOALL SECTION
   DEALLOCATE(RecBuf2D, DefBuf2D)
+  ! ALLOCATE(SendBuf2D(grd%jm, grd%im))
+  ! ALLOCATE( RecBuf2D(grd%jm, grd%im))
+  ! ALLOCATE( DefBuf2D(localRow, GlobalCol))
   ALLOCATE(SendBuf2D(grd%jm, grd%im))
-  ALLOCATE( RecBuf2D(grd%jm, grd%im))
+  ALLOCATE( RecBuf1D(localRow*GlobalCol))
   ALLOCATE( DefBuf2D(localRow, GlobalCol))
   
   do j=1,grd%jm
@@ -172,13 +175,16 @@ subroutine parallel_def_cov
      end do
   end do
 
-  call MPI_Alltoall(SendBuf2D, GlobalRow*localCol/NumProcJ, MPI_REAL8, RecBuf2D, &
-       GlobalRow*localCol/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
+  ! call MPI_Alltoall(SendBuf2D, GlobalRow*localCol/NumProcJ, MPI_REAL8, RecBuf2D, &
+  !      GlobalRow*localCol/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
+  call MPI_Alltoallv(SendBuf2D, SendCountX2D, SendDisplX2D, MPI_REAL8, &
+       RecBuf1D, RecCountX2D, RecDisplX2D, MPI_REAL8, ColumnCommunicator, ierr)
  
   do i=1, localRow
      do iProc=0, NumProcJ-1
-        do j=1, grd%jm
-           DefBuf2D(i, j + iProc*localCol) = RecBuf2D(j, i + iProc*localRow)
+        do j=1, RecCountX2D(iProc+1)/localRow ! grd%jm
+           DefBuf2D(i, j + iProc*RecDisplX2D(iProc+1)/localRow) = &
+                RecBuf1D(j + (i-1)*RecCountX2D(iProc+1)/localRow + RecDisplX2D(iProc+1))
         end do
      end do
   end do
@@ -218,9 +224,12 @@ subroutine parallel_def_cov
   grd%imax   = 0
   grd%jmax   = 0
 
+  DEALLOCATE(RecBuf1D)
   ALLOCATE(SendBuf3D(grd%km,grd%jm,grd%im))
-  ALLOCATE( RecBuf3D(grd%km,grd%jm,grd%im))
-  ALLOCATE( DefBuf3D(grd%km, GlobalCol, localRow))
+  ! ALLOCATE( RecBuf3D(grd%km,grd%jm,grd%im))
+  ALLOCATE( RecBuf1D(localRow*GlobalCol*grd%km))
+  ! ALLOCATE( DefBuf3D(grd%km, GlobalCol, localRow))
+  ALLOCATE( DefBuf3D(localRow, GlobalCol, grd%km))
 
   !************* HORIZONTAL SLICING *************!
   do k=1,grd%km
@@ -231,22 +240,26 @@ subroutine parallel_def_cov
      end do
   end do
 
-  call MPI_Alltoall(SendBuf3D, grd%im*grd%jm*grd%km/NumProcJ, MPI_REAL8, &
-       & RecBuf3D, grd%im*grd%jm*grd%km/NumProcJ, MPI_REAL8, ColumnCommunicator,ierr)
+  ! call MPI_Alltoall(SendBuf3D, grd%im*grd%jm*grd%km/NumProcJ, MPI_REAL8, &
+  !      & RecBuf3D, grd%im*grd%jm*grd%km/NumProcJ, MPI_REAL8, ColumnCommunicator,ierr)
+  call MPI_Alltoallv(SendBuf3D, SendCountX4D, SendDisplX4D, MPI_REAL8, &
+       RecBuf1D, RecCountX4D, RecDisplX4D, MPI_REAL8, ColumnCommunicator, ierr)
   
   ! Reordering data
   do i=1, localRow
      do iProc=0, NumProcJ-1
-        do j=1, grd%jm
+        do j=1, RecCountX4D(iProc+1)/(localRow*grd%km) ! grd%jm
            do k=1, grd%km
-              DefBuf3D(k,j+iProc*localCol,i) = RecBuf3D(k, j, i + iProc*localRow)
+              ! DefBuf3D(k,j+iProc*localCol,i) = RecBuf3D(k, j, i + iProc*localRow)
+              DefBuf3D(i,j+RecDisplX4D(iProc+1)/(localRow*grd%km),k) = &
+                   RecBuf1D(k + (j-1)*grd%km + (i-1)*RecCountX4D(iProc+1)/localRow + RecDisplX4D(iProc+1))
            end do
         end do
      end do
   end do
 
   !************* VERTICAL SLICING *************!
-  DEALLOCATE(SendBuf3D, RecBuf3D)
+  DEALLOCATE(SendBuf3D) ! , RecBuf3D)
   ALLOCATE(SendBuf3D(grd%km, grd%im, grd%jm))
   ALLOCATE( RecBuf3D(grd%km, grd%im, grd%jm))
   ALLOCATE( ColBuf3D(GlobalRow, localCol, grd%km))
@@ -297,14 +310,18 @@ subroutine parallel_def_cov
      grd%jmx(k) = 0
      do i = 1, localRow
         kk = grd%jstp(i,1)
-        if( DefBuf3D(k,1,i).eq.1. ) kk = kk + 1
+        ! if( DefBuf3D(k,1,i).eq.1. ) kk = kk + 1
+        if( DefBuf3D(i,1,k).eq.1. ) kk = kk + 1
         grd%jnx(i,1,k) = kk
         do j = 2, GlobalCol
-           if( DefBuf3D(k,j,i).eq.0. .and. DefBuf3D(k,j-1,i).eq.1. ) then
+           ! if( DefBuf3D(k,j,i).eq.0. .and. DefBuf3D(k,j-1,i).eq.1. ) then
+           if( DefBuf3D(i,j,k).eq.0. .and. DefBuf3D(i,j-1,k).eq.1. ) then
               kk = kk + grd%jstp(i,j)
-           else if( DefBuf3D(k,j,i).eq.1. .and. DefBuf3D(k,j-1,i).eq.0. ) then
+           ! else if( DefBuf3D(k,j,i).eq.1. .and. DefBuf3D(k,j-1,i).eq.0. ) then
+           else if( DefBuf3D(i,j,k).eq.1. .and. DefBuf3D(i,j-1,k).eq.0. ) then
               kk = kk + grd%jstp(i,j) + 1
-           else if( DefBuf3D(k,j,i).eq.1. ) then
+           ! else if( DefBuf3D(k,j,i).eq.1. ) then
+           else if( DefBuf3D(i,j,k).eq.1. ) then
               kk = kk + 1
            endif
            grd%jnx(i,j,k) = kk
@@ -352,21 +369,25 @@ subroutine parallel_def_cov
      
      do i = 1, localRow
         kk = grd%jstp(i,1)
-        if( DefBuf3D(k,1,i).eq.1. ) then
+        ! if( DefBuf3D(k,1,i).eq.1. ) then
+        if( DefBuf3D(i,1,k).eq.1. ) then
            kk = kk + 1
            grd%aey(i,1:kk,k) = grd%aly(i,1)
            grd%bey(i,1:kk,k) = grd%bty(i,1)
         endif
         do j = 2, GlobalCol
-           if( DefBuf3D(k,j,i).eq.0. .and. DefBuf3D(k,j-1,i).eq.1. ) then
+           ! if( DefBuf3D(k,j,i).eq.0. .and. DefBuf3D(k,j-1,i).eq.1. ) then
+           if( DefBuf3D(i,j,k).eq.0. .and. DefBuf3D(i,j-1,k).eq.1. ) then
               grd%aey(i,kk+1:kk+grd%jstp(i,j),k) = grd%aly(i,j)
               grd%bey(i,kk+1:kk+grd%jstp(i,j),k) = grd%bty(i,j)
               kk = kk + grd%jstp(i,j)
-           else if( DefBuf3D(k,j,i).eq.1. .and. DefBuf3D(k,j-1,i).eq.0. ) then
+           ! else if( DefBuf3D(k,j,i).eq.1. .and. DefBuf3D(k,j-1,i).eq.0. ) then
+           else if( DefBuf3D(i,j,k).eq.1. .and. DefBuf3D(i,j-1,k).eq.0. ) then
               grd%aey(i,kk+1:kk+grd%jstp(i,j)+1,k) = grd%aly(i,j)
               grd%bey(i,kk+1:kk+grd%jstp(i,j)+1,k) = grd%bty(i,j)
               kk = kk + grd%jstp(i,j) + 1
-           else if( DefBuf3D(k,j,i).eq.1. ) then
+           ! else if( DefBuf3D(k,j,i).eq.1. ) then
+           else if( DefBuf3D(i,j,k).eq.1. ) then
               grd%aey(i,kk+1,k) = grd%aly(i,j)
               grd%bey(i,kk+1,k) = grd%bty(i,j)
               kk = kk + 1
@@ -417,7 +438,8 @@ subroutine parallel_def_cov
   ALLOCATE ( alp_rcy(grd%im,grd%jmax,nthreads)) ; alp_rcy = huge(alp_rcy(1,1,1))
   ALLOCATE ( bta_rcy(grd%im,grd%jmax,nthreads)) ; bta_rcy = huge(bta_rcy(1,1,1))
 
-  DEALLOCATE(SendBuf2D, RecBuf2D, DefBuf2D)
+  ! DEALLOCATE(SendBuf2D, RecBuf2D, DefBuf2D)
+  DEALLOCATE(SendBuf2D, RecBuf1D, DefBuf2D)
   DEALLOCATE(SendBuf3D, RecBuf3D)
   DEALLOCATE(ColBuf3D,  DefBuf3D)
   
