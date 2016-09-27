@@ -215,7 +215,7 @@ subroutine parallel_ver_hor
   end do
   
   call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, &
-       RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, RowCommunicator, ierr)
+       RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, CommSliceX, ierr)
 
   do i=1,grd%im
      do iProc=0, NumProcI-1
@@ -255,7 +255,7 @@ subroutine parallel_ver_hor
   end do
   
   call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, &
-       RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, RowCommunicator, ierr)
+       RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, CommSliceX, ierr)
   
   do i=1,grd%im
      do iProc=0, NumProcI-1
@@ -286,9 +286,9 @@ subroutine parallel_ver_hor
   end do
   
   ! call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, &
-  !      RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
-  call MPI_Alltoallv(SendBuf4D, SendCountX4D, SendDisplX4D, MPI_REAL8, &
-       RecBuf1D, RecCountX4D, RecDisplX4D, MPI_REAL8, ColumnCommunicator, ierr)
+  !      RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, CommSliceY, ierr)
+  call MPI_Alltoallv(SendBuf4D, SendCountY4D, SendDisplY4D, MPI_REAL8, &
+       RecBuf1D, RecCountY4D, RecDisplY4D, MPI_REAL8, CommSliceY, ierr)
   
   ! do i=1,localRow
   !    do iProc=0, NumProcJ-1
@@ -302,10 +302,10 @@ subroutine parallel_ver_hor
 
   do i=1,localRow
      do iProc=0, NumProcJ-1
-        do j=1,RecCountX4D(iProc+1)/(localRow*grd%km)
+        do j=1,RecCountY4D(iProc+1)/(localRow*grd%km)
            do k=1,grd%km
-              DefBuf4D(i,j+RecDisplX4D(iProc+1)/(localRow*grd%km),k,1) = &
-                   RecBuf1D(k + (j-1)*grd%km + (i-1)*RecCountX4D(iProc+1)/localRow + RecDisplX4D(iProc+1))
+              DefBuf4D(i,j+RecDisplY4D(iProc+1)/(localRow*grd%km),k,1) = &
+                   RecBuf1D(k + (j-1)*grd%km + (i-1)*RecCountY4D(iProc+1)/localRow + RecDisplY4D(iProc+1))
            end do
         end do
      end do
@@ -344,16 +344,16 @@ subroutine parallel_ver_hor
   end do
   
   ! call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, &
-  !      RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
-  call MPI_Alltoallv(SendBuf4D, RecCountX4D, RecDisplX4D, MPI_REAL8, &
-       RecBuf1D, SendCountX4D, SendDisplX4D, MPI_REAL8, ColumnCommunicator, ierr)
+  !      RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, CommSliceY, ierr)
+  call MPI_Alltoallv(SendBuf4D, RecCountY4D, RecDisplY4D, MPI_REAL8, &
+       RecBuf1D, SendCountY4D, SendDisplY4D, MPI_REAL8, CommSliceY, ierr)
   
   do j=1,grd%jm
      do iProc=0, NumProcJ-1
-        do i=1, RecCountX4D(iProc+1)/(grd%jm*grd%km) ! localRow
+        do i=1, RecCountY4D(iProc+1)/(grd%jm*grd%km) ! localRow
            do k=1,grd%km
-              grd%chl(i + RecDisplX4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
-                   RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX4D(iProc+1)/grd%jm + RecDisplX4D(iProc+1))
+              grd%chl(i + RecDisplY4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
+                   RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountY4D(iProc+1)/grd%jm + RecDisplY4D(iProc+1))
            end do
         end do
      end do
@@ -393,7 +393,7 @@ subroutine parallel_ver_hor
      end do
      
      ! call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, &
-     !      RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
+     !      RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, CommSliceY, ierr)
      
      ! do i=1,localRow
      !    do iProc=0, NumProcJ-1
@@ -405,15 +405,15 @@ subroutine parallel_ver_hor
      !    end do
      ! end do
 
-     call MPI_Alltoallv(SendBuf4D, SendCountX4D, SendDisplX4D, MPI_REAL8, &
-          RecBuf1D, RecCountX4D, RecDisplX4D, MPI_REAL8, ColumnCommunicator, ierr)
+     call MPI_Alltoallv(SendBuf4D, SendCountY4D, SendDisplY4D, MPI_REAL8, &
+          RecBuf1D, RecCountY4D, RecDisplY4D, MPI_REAL8, CommSliceY, ierr)
      
      do i=1,localRow
         do iProc=0, NumProcJ-1
-           do j=1,RecCountX4D(iProc+1)/(localRow*grd%km)
+           do j=1,RecCountY4D(iProc+1)/(localRow*grd%km)
               do k=1,grd%km
-                 DefBuf4D(i,j+RecDisplX4D(iProc+1)/(localRow*grd%km),k,1) = &
-                      RecBuf1D(k + (j-1)*grd%km + (i-1)*RecCountX4D(iProc+1)/localRow + RecDisplX4D(iProc+1))
+                 DefBuf4D(i,j+RecDisplY4D(iProc+1)/(localRow*grd%km),k,1) = &
+                      RecBuf1D(k + (j-1)*grd%km + (i-1)*RecCountY4D(iProc+1)/localRow + RecDisplY4D(iProc+1))
               end do
            end do
         end do
@@ -449,7 +449,7 @@ subroutine parallel_ver_hor
      ! end do
      
      ! call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, &
-     !      RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
+     !      RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, CommSliceY, ierr)
      
      ! do i=1,localRow
      !    do iProc=0, NumProcJ-1
@@ -475,15 +475,15 @@ subroutine parallel_ver_hor
         end do
      end do
   
-     call MPI_Alltoallv(SendBuf4D, RecCountX4D, RecDisplX4D, MPI_REAL8, &
-          RecBuf1D, SendCountX4D, SendDisplX4D, MPI_REAL8, ColumnCommunicator, ierr)
+     call MPI_Alltoallv(SendBuf4D, RecCountY4D, RecDisplY4D, MPI_REAL8, &
+          RecBuf1D, SendCountY4D, SendDisplY4D, MPI_REAL8, CommSliceY, ierr)
 
      do j=1,grd%jm
         do iProc=0, NumProcJ-1
-           do i=1, RecCountX4D(iProc+1)/(grd%jm*grd%km) ! localRow
+           do i=1, RecCountY4D(iProc+1)/(grd%jm*grd%km) ! localRow
               do k=1,grd%km
-                 grd%chl_ad(i + RecDisplX4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
-                      RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX4D(iProc+1)/grd%jm + RecDisplX4D(iProc+1))
+                 grd%chl_ad(i + RecDisplY4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
+                      RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountY4D(iProc+1)/grd%jm + RecDisplY4D(iProc+1))
               end do
            end do
         end do
@@ -508,7 +508,7 @@ subroutine parallel_ver_hor
      end do
      
      call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, &
-          RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, RowCommunicator, ierr)
+          RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, CommSliceX, ierr)
      
      do i=1,grd%im
         do iProc=0, NumProcI-1
@@ -550,7 +550,7 @@ subroutine parallel_ver_hor
      end do
      
      call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, &
-          RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, RowCommunicator, ierr)
+          RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, CommSliceX, ierr)
      
      do i=1,grd%im
         do iProc=0, NumProcI-1
@@ -708,7 +708,7 @@ subroutine parallel_ver_hor_ad
      end do
      
      call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, &
-          RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, RowCommunicator, ierr)
+          RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, CommSliceX, ierr)
      
      do i=1,grd%im
         do iProc=0, NumProcI-1
@@ -750,7 +750,7 @@ subroutine parallel_ver_hor_ad
      end do
      
      call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, &
-          RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, RowCommunicator, ierr)
+          RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, CommSliceX, ierr)
      
      do i=1,grd%im
         do iProc=0, NumProcI-1
@@ -783,9 +783,9 @@ subroutine parallel_ver_hor_ad
      end do
      
      ! call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, &
-     !      RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
-     call MPI_Alltoallv(SendBuf4D, SendCountX4D, SendDisplX4D, MPI_REAL8, &
-          RecBuf1D, RecCountX4D, RecDisplX4D, MPI_REAL8, ColumnCommunicator, ierr)
+     !      RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, CommSliceY, ierr)
+     call MPI_Alltoallv(SendBuf4D, SendCountY4D, SendDisplY4D, MPI_REAL8, &
+          RecBuf1D, RecCountY4D, RecDisplY4D, MPI_REAL8, CommSliceY, ierr)
      
      ! do i=1,localRow
      !    do iProc=0, NumProcJ-1
@@ -798,10 +798,10 @@ subroutine parallel_ver_hor_ad
      ! end do
      do i=1,localRow
         do iProc=0, NumProcJ-1
-           do j=1,RecCountX4D(iProc+1)/(localRow*grd%km)
+           do j=1,RecCountY4D(iProc+1)/(localRow*grd%km)
               do k=1,grd%km
-                 DefBuf4D(i,j+RecDisplX4D(iProc+1)/(localRow*grd%km),k,1) = &
-                      RecBuf1D(k + (j-1)*grd%km + (i-1)*RecCountX4D(iProc+1)/localRow + RecDisplX4D(iProc+1))
+                 DefBuf4D(i,j+RecDisplY4D(iProc+1)/(localRow*grd%km),k,1) = &
+                      RecBuf1D(k + (j-1)*grd%km + (i-1)*RecCountY4D(iProc+1)/localRow + RecDisplY4D(iProc+1))
               end do
            end do
         end do
@@ -840,7 +840,7 @@ subroutine parallel_ver_hor_ad
      end do
      
      ! call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, &
-     !      RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
+     !      RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, CommSliceY, ierr)
      
      ! do i=1,localRow
      !    do iProc=0, NumProcJ-1
@@ -852,15 +852,15 @@ subroutine parallel_ver_hor_ad
      !    end do
      ! end do
 
-     call MPI_Alltoallv(SendBuf4D, RecCountX4D, RecDisplX4D, MPI_REAL8, &
-          RecBuf1D, SendCountX4D, SendDisplX4D, MPI_REAL8, ColumnCommunicator, ierr)
+     call MPI_Alltoallv(SendBuf4D, RecCountY4D, RecDisplY4D, MPI_REAL8, &
+          RecBuf1D, SendCountY4D, SendDisplY4D, MPI_REAL8, CommSliceY, ierr)
      
      do j=1,grd%jm
         do iProc=0, NumProcJ-1
-           do i=1, RecCountX4D(iProc+1)/(grd%jm*grd%km) ! localRow
+           do i=1, RecCountY4D(iProc+1)/(grd%jm*grd%km) ! localRow
               do k=1,grd%km
-                 grd%chl(i + RecDisplX4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
-                      RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX4D(iProc+1)/grd%jm + RecDisplX4D(iProc+1))
+                 grd%chl(i + RecDisplY4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
+                      RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountY4D(iProc+1)/grd%jm + RecDisplY4D(iProc+1))
               end do
            end do
         end do
@@ -888,7 +888,7 @@ subroutine parallel_ver_hor_ad
   end do
   
   ! call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, &
-  !      RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
+  !      RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, CommSliceY, ierr)
   
   ! do i=1,localRow
   !    do iProc=0, NumProcJ-1
@@ -899,15 +899,15 @@ subroutine parallel_ver_hor_ad
   !       end do
   !    end do
   ! end do
-  call MPI_Alltoallv(SendBuf4D, SendCountX4D, SendDisplX4D, MPI_REAL8, &
-       RecBuf1D, RecCountX4D, RecDisplX4D, MPI_REAL8, ColumnCommunicator, ierr)
+  call MPI_Alltoallv(SendBuf4D, SendCountY4D, SendDisplY4D, MPI_REAL8, &
+       RecBuf1D, RecCountY4D, RecDisplY4D, MPI_REAL8, CommSliceY, ierr)
   
   do i=1,localRow
      do iProc=0, NumProcJ-1
-        do j=1,RecCountX4D(iProc+1)/(localRow*grd%km)
+        do j=1,RecCountY4D(iProc+1)/(localRow*grd%km)
            do k=1,grd%km
-              DefBuf4D(i,j+RecDisplX4D(iProc+1)/(localRow*grd%km),k,1) = &
-                   RecBuf1D(k + (j-1)*grd%km + (i-1)*RecCountX4D(iProc+1)/localRow + RecDisplX4D(iProc+1))
+              DefBuf4D(i,j+RecDisplY4D(iProc+1)/(localRow*grd%km),k,1) = &
+                   RecBuf1D(k + (j-1)*grd%km + (i-1)*RecCountY4D(iProc+1)/localRow + RecDisplY4D(iProc+1))
            end do
         end do
      end do
@@ -946,7 +946,7 @@ subroutine parallel_ver_hor_ad
   end do
   
   ! call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, &
-  !      RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, ColumnCommunicator, ierr)
+  !      RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcJ, MPI_REAL8, CommSliceY, ierr)
   
   ! do i=1,localRow
   !    do iProc=0, NumProcJ-1
@@ -958,15 +958,15 @@ subroutine parallel_ver_hor_ad
   !    end do
   ! end do
 
-  call MPI_Alltoallv(SendBuf4D, RecCountX4D, RecDisplX4D, MPI_REAL8, &
-       RecBuf1D, SendCountX4D, SendDisplX4D, MPI_REAL8, ColumnCommunicator, ierr)
+  call MPI_Alltoallv(SendBuf4D, RecCountY4D, RecDisplY4D, MPI_REAL8, &
+       RecBuf1D, SendCountY4D, SendDisplY4D, MPI_REAL8, CommSliceY, ierr)
   
   do j=1,grd%jm
      do iProc=0, NumProcJ-1
-        do i=1, RecCountX4D(iProc+1)/(grd%jm*grd%km) ! localRow
+        do i=1, RecCountY4D(iProc+1)/(grd%jm*grd%km) ! localRow
            do k=1,grd%km
-              grd%chl_ad(i + RecDisplX4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
-                   RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX4D(iProc+1)/grd%jm + RecDisplX4D(iProc+1))
+              grd%chl_ad(i + RecDisplY4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
+                   RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountY4D(iProc+1)/grd%jm + RecDisplY4D(iProc+1))
            end do
         end do
      end do
@@ -992,7 +992,7 @@ subroutine parallel_ver_hor_ad
   end do
   
   call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, &
-       RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, RowCommunicator, ierr)
+       RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, CommSliceX, ierr)
   
   do i=1,grd%im
      do iProc=0, NumProcI-1
@@ -1034,7 +1034,7 @@ subroutine parallel_ver_hor_ad
   end do
   
   call MPI_Alltoall(SendBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, &
-       RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, RowCommunicator, ierr)
+       RecBuf4D, grd%nchl*grd%km*grd%jm*grd%im/NumProcI, MPI_REAL8, CommSliceX, ierr)
   
   do i=1,grd%im
      do iProc=0, NumProcI-1

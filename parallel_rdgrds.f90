@@ -159,11 +159,11 @@ subroutine parallel_rdgrd
           localRow = localRow + 1
   end if
 
-  SendDisplX4D(1) = 0
-  RecDisplX4D(1)  = 0
+  SendDisplY4D(1) = 0
+  RecDisplY4D(1)  = 0
 
-  SendDisplX2D(1) = 0
-  RecDisplX2D(1)  = 0
+  SendDisplY2D(1) = 0
+  RecDisplY2D(1)  = 0
 
   do i=1,NumProcJ
      if(i-1 .lt. MyRestRow) then
@@ -178,22 +178,22 @@ subroutine parallel_rdgrd
         OffsetCol = 0
      end if
 
-     SendCountX4D(i) = (grd%im / NumProcJ + OffsetRow) * grd%jm * grd%km
-     RecCountX4D(i)  = localRow * grd%km * (GlobalCol / NumProcJ + OffsetCol)
+     SendCountY4D(i) = (grd%im / NumProcJ + OffsetRow) * grd%jm * grd%km
+     RecCountY4D(i)  = localRow * grd%km * (GlobalCol / NumProcJ + OffsetCol)
 
-     SendCountX2D(i) = (grd%im / NumProcJ + OffsetRow) * grd%jm
-     RecCountX2D(i)  = localRow * (GlobalCol / NumProcJ + OffsetCol)
+     SendCountY2D(i) = (grd%im / NumProcJ + OffsetRow) * grd%jm
+     RecCountY2D(i)  = localRow * (GlobalCol / NumProcJ + OffsetCol)
      
      if(i .lt. NumProcJ) then
-        SendDisplX4D(i+1) = SendDisplX4D(i) + SendCountX4D(i)
-        RecDisplX4D(i+1)  = RecDisplX4D(i) + RecCountX4D(i)
+        SendDisplY4D(i+1) = SendDisplY4D(i) + SendCountY4D(i)
+        RecDisplY4D(i+1)  = RecDisplY4D(i) + RecCountY4D(i)
 
-        SendDisplX2D(i+1) = SendDisplX2D(i) + SendCountX2D(i)
-        RecDisplX2D(i+1)  = RecDisplX2D(i) + RecCountX2D(i)
+        SendDisplY2D(i+1) = SendDisplY2D(i) + SendCountY2D(i)
+        RecDisplY2D(i+1)  = RecDisplY2D(i) + RecCountY2D(i)
      end if
   end do
 
-  ! print*, "Debugging", MyRank, "SC", SendCountX2D, "RC", RecCountX2D, "SD", SendDisplX2D, "RD", RecDisplX2D
+  ! print*, "Debugging", MyRank, "SC", SendCountY2D, "RC", RecCountY2D, "SD", SendDisplY2D, "RD", RecDisplY2D
   
   ! *****************************************************************************************
   ! *****************************************************************************************

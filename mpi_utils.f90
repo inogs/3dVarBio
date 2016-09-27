@@ -52,12 +52,8 @@ subroutine mynode()
   call COUNTLINE ('Dom_Dec_jpi.ascii', NumProcI)
   call COUNTWORDS('Dom_Dec_jpi.ascii', NumProcJ)
   
-  NumProcI = 2
-  NumProcJ = 2
-  ! NumProcI = 1
-  ! NumProcJ = Size !2
-  NumProcI = Size
-  NumProcJ = 1
+  NumProcI = 1
+  NumProcJ = Size !2
   
   MyPosI = mod(MyRank, NumProcI)
   MyPosJ = MyRank / NumProcI
@@ -94,13 +90,18 @@ subroutine mynode()
      ProcBottom = MPI_PROC_NULL
   end if
 
-  call MPI_Comm_split(MPI_COMM_WORLD, MyPosI, MyRank, ColumnCommunicator, ierr)
-  call MPI_Comm_split(MPI_COMM_WORLD, MyPosJ, MyRank, RowCommunicator, ierr)
+  call MPI_Comm_split(MPI_COMM_WORLD, MyPosI, MyRank, CommSliceY, ierr)
+  call MPI_Comm_split(MPI_COMM_WORLD, MyPosJ, MyRank, CommSliceX, ierr)
 
-  ALLOCATE(SendCountX2D(NumProcJ), SendCountX4D(NumProcJ))
-  ALLOCATE(SendDisplX2D(NumProcJ), SendDisplX4D(NumProcJ))
-  ALLOCATE(RecCountX2D(NumProcJ), RecCountX4D(NumProcJ))
-  ALLOCATE(RecDisplX2D(NumProcJ), RecDisplX4D(NumProcJ))
+  ALLOCATE(SendCountX2D(NumProcI), SendCountX4D(NumProcI))
+  ALLOCATE(SendDisplX2D(NumProcI), SendDisplX4D(NumProcI))
+  ALLOCATE(RecCountX2D(NumProcI), RecCountX4D(NumProcI))
+  ALLOCATE(RecDisplX2D(NumProcI), RecDisplX4D(NumProcI))
+
+  ALLOCATE(SendCountY2D(NumProcJ), SendCountY4D(NumProcJ))
+  ALLOCATE(SendDisplY2D(NumProcJ), SendDisplY4D(NumProcJ))
+  ALLOCATE(RecCountY2D(NumProcJ), RecCountY4D(NumProcJ))
+  ALLOCATE(RecDisplY2D(NumProcJ), RecDisplY4D(NumProcJ))
   
   ! write(*,*) "MyRank", MyRank, "PosI", MyPosI, "PosJ", MyPosJ, "Left", ProcLeft, "Right", ProcRight, "Top", ProcTop, "Bottom", ProcBottom
 
