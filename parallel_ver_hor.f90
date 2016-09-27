@@ -272,7 +272,6 @@ subroutine parallel_ver_hor
   ! y direction
   DEALLOCATE(SendBuf4D, RecBuf4D, DefBuf4D)
   ALLOCATE(SendBuf4D(grd%nchl, grd%km, grd%jm, grd%im))
-  ! ALLOCATE( RecBuf4D(grd%nchl, grd%km, grd%jm, grd%im))
   ALLOCATE( RecBuf1D(grd%nchl*grd%km*localRow*GlobalCol))
   ALLOCATE( DefBuf4D(localRow, GlobalCol, grd%km, grd%nchl))
   

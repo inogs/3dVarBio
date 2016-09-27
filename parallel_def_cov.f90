@@ -163,9 +163,6 @@ subroutine parallel_def_cov
 
   ! MPI_ALLTOALL SECTION
   DEALLOCATE(RecBuf2D, DefBuf2D)
-  ! ALLOCATE(SendBuf2D(grd%jm, grd%im))
-  ! ALLOCATE( RecBuf2D(grd%jm, grd%im))
-  ! ALLOCATE( DefBuf2D(localRow, GlobalCol))
   ALLOCATE(SendBuf2D(grd%jm, grd%im))
   ALLOCATE( RecBuf1D(localRow*GlobalCol))
   ALLOCATE( DefBuf2D(localRow, GlobalCol))
@@ -183,7 +180,7 @@ subroutine parallel_def_cov
 
   do i=1, localRow
      do iProc=0, NumProcJ-1
-        do j=1, RecCountX2D(iProc+1)/localRow ! grd%jm
+        do j=1, RecCountX2D(iProc+1)/localRow
            DefBuf2D(i, j + RecDisplX2D(iProc+1)/localRow) = &
                 RecBuf1D(j + (i-1)*RecCountX2D(iProc+1)/localRow + RecDisplX2D(iProc+1))
         end do
@@ -227,9 +224,7 @@ subroutine parallel_def_cov
 
   DEALLOCATE(RecBuf1D)
   ALLOCATE(SendBuf3D(grd%km,grd%jm,grd%im))
-  ! ALLOCATE( RecBuf3D(grd%km,grd%jm,grd%im))
   ALLOCATE( RecBuf1D(localRow*GlobalCol*grd%km))
-  ! ALLOCATE( DefBuf3D(grd%km, GlobalCol, localRow))
   ALLOCATE( DefBuf3D(localRow, GlobalCol, grd%km))
 
   !************* HORIZONTAL SLICING *************!
@@ -249,7 +244,7 @@ subroutine parallel_def_cov
   ! Reordering data
   do i=1, localRow
      do iProc=0, NumProcJ-1
-        do j=1, RecCountX4D(iProc+1)/(localRow*grd%km) ! grd%jm
+        do j=1, RecCountX4D(iProc+1)/(localRow*grd%km)
            do k=1, grd%km
               ! DefBuf3D(k,j+iProc*localCol,i) = RecBuf3D(k, j, i + iProc*localRow)
               DefBuf3D(i,j+RecDisplX4D(iProc+1)/(localRow*grd%km),k) = &
@@ -260,7 +255,7 @@ subroutine parallel_def_cov
   end do
 
   !************* VERTICAL SLICING *************!
-  DEALLOCATE(SendBuf3D) ! , RecBuf3D)
+  DEALLOCATE(SendBuf3D)
   ALLOCATE(SendBuf3D(grd%km, grd%im, grd%jm))
   ALLOCATE( RecBuf3D(grd%km, grd%im, grd%jm))
   ALLOCATE( ColBuf3D(GlobalRow, localCol, grd%km))
@@ -312,17 +307,13 @@ subroutine parallel_def_cov
      grd%jmx(k) = 0
      do i = 1, localRow
         kk = grd%jstp(i,1)
-        ! if( DefBuf3D(k,1,i).eq.1. ) kk = kk + 1
         if( DefBuf3D(i,1,k).eq.1. ) kk = kk + 1
         grd%jnx(i,1,k) = kk
         do j = 2, GlobalCol
-           ! if( DefBuf3D(k,j,i).eq.0. .and. DefBuf3D(k,j-1,i).eq.1. ) then
            if( DefBuf3D(i,j,k).eq.0. .and. DefBuf3D(i,j-1,k).eq.1. ) then
               kk = kk + grd%jstp(i,j)
-           ! else if( DefBuf3D(k,j,i).eq.1. .and. DefBuf3D(k,j-1,i).eq.0. ) then
            else if( DefBuf3D(i,j,k).eq.1. .and. DefBuf3D(i,j-1,k).eq.0. ) then
               kk = kk + grd%jstp(i,j) + 1
-           ! else if( DefBuf3D(k,j,i).eq.1. ) then
            else if( DefBuf3D(i,j,k).eq.1. ) then
               kk = kk + 1
            endif
@@ -371,24 +362,20 @@ subroutine parallel_def_cov
      
      do i = 1, localRow
         kk = grd%jstp(i,1)
-        ! if( DefBuf3D(k,1,i).eq.1. ) then
         if( DefBuf3D(i,1,k).eq.1. ) then
            kk = kk + 1
            grd%aey(i,1:kk,k) = grd%aly(i,1)
            grd%bey(i,1:kk,k) = grd%bty(i,1)
         endif
         do j = 2, GlobalCol
-           ! if( DefBuf3D(k,j,i).eq.0. .and. DefBuf3D(k,j-1,i).eq.1. ) then
            if( DefBuf3D(i,j,k).eq.0. .and. DefBuf3D(i,j-1,k).eq.1. ) then
               grd%aey(i,kk+1:kk+grd%jstp(i,j),k) = grd%aly(i,j)
               grd%bey(i,kk+1:kk+grd%jstp(i,j),k) = grd%bty(i,j)
               kk = kk + grd%jstp(i,j)
-           ! else if( DefBuf3D(k,j,i).eq.1. .and. DefBuf3D(k,j-1,i).eq.0. ) then
            else if( DefBuf3D(i,j,k).eq.1. .and. DefBuf3D(i,j-1,k).eq.0. ) then
               grd%aey(i,kk+1:kk+grd%jstp(i,j)+1,k) = grd%aly(i,j)
               grd%bey(i,kk+1:kk+grd%jstp(i,j)+1,k) = grd%bty(i,j)
               kk = kk + grd%jstp(i,j) + 1
-           ! else if( DefBuf3D(k,j,i).eq.1. ) then
            else if( DefBuf3D(i,j,k).eq.1. ) then
               grd%aey(i,kk+1,k) = grd%aly(i,j)
               grd%bey(i,kk+1,k) = grd%bty(i,j)
