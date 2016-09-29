@@ -350,10 +350,10 @@ subroutine parallel_ver_hor
   
   do j=1,grd%jm
      do iProc=0, NumProcJ-1
-        do i=1, RecCountY4D(iProc+1)/(grd%jm*grd%km) ! localRow
+        do i=1, SendCountY4D(iProc+1)/(grd%jm*grd%km) ! localRow
            do k=1,grd%km
-              grd%chl(i + RecDisplY4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
-                   RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountY4D(iProc+1)/grd%jm + RecDisplY4D(iProc+1))
+              grd%chl(i + SendDisplY4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
+                   RecBuf1D(k + (i-1)*grd%km + (j-1)*SendCountY4D(iProc+1)/grd%jm + SendDisplY4D(iProc+1))
            end do
         end do
      end do
@@ -480,10 +480,10 @@ subroutine parallel_ver_hor
 
      do j=1,grd%jm
         do iProc=0, NumProcJ-1
-           do i=1, RecCountY4D(iProc+1)/(grd%jm*grd%km) ! localRow
+           do i=1, SendCountY4D(iProc+1)/(grd%jm*grd%km) ! localRow
               do k=1,grd%km
-                 grd%chl_ad(i + RecDisplY4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
-                      RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountY4D(iProc+1)/grd%jm + RecDisplY4D(iProc+1))
+                 grd%chl_ad(i + SendDisplY4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
+                      RecBuf1D(k + (i-1)*grd%km + (j-1)*SendCountY4D(iProc+1)/grd%jm + SendDisplY4D(iProc+1))
               end do
            end do
         end do
@@ -857,10 +857,10 @@ subroutine parallel_ver_hor_ad
      
      do j=1,grd%jm
         do iProc=0, NumProcJ-1
-           do i=1, RecCountY4D(iProc+1)/(grd%jm*grd%km) ! localRow
+           do i=1, SendCountY4D(iProc+1)/(grd%jm*grd%km) ! localRow
               do k=1,grd%km
-                 grd%chl(i + RecDisplY4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
-                      RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountY4D(iProc+1)/grd%jm + RecDisplY4D(iProc+1))
+                 grd%chl(i + SendDisplY4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
+                      RecBuf1D(k + (i-1)*grd%km + (j-1)*SendCountY4D(iProc+1)/grd%jm + SendDisplY4D(iProc+1))
               end do
            end do
         end do
@@ -963,10 +963,10 @@ subroutine parallel_ver_hor_ad
   
   do j=1,grd%jm
      do iProc=0, NumProcJ-1
-        do i=1, RecCountY4D(iProc+1)/(grd%jm*grd%km) ! localRow
+        do i=1, SendCountY4D(iProc+1)/(grd%jm*grd%km) ! localRow
            do k=1,grd%km
-              grd%chl_ad(i + RecDisplY4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
-                   RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountY4D(iProc+1)/grd%jm + RecDisplY4D(iProc+1))
+              grd%chl_ad(i + SendDisplY4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
+                   RecBuf1D(k + (i-1)*grd%km + (j-1)*SendCountY4D(iProc+1)/grd%jm + SendDisplY4D(iProc+1))
            end do
         end do
      end do
