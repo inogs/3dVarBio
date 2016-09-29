@@ -122,7 +122,7 @@ subroutine rcfl_y_ad( im, jm, km, jmax, al, bt, fld, jnx, jmx)
 #ifdef _USE_MPI
      do j=1,GlobalCol
         do i=1,localRow
-           if(grd%global_msk(i + MyRank*localRow,j,1).eq.1) then
+           if(grd%global_msk(i + GlobalRowOffset,j,1).eq.1) then
               fld(i,j,k) = c_rcy(i,jnx(i,j,k),tid)
            end if
         end do

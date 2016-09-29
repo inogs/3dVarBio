@@ -18,7 +18,9 @@ subroutine parallel_rdgrd
 
   ! integer, allocatable :: ilcit(:,:), ilcjt(:,:)
   integer(i8) :: ji, jj, jpi, jpj, nn, i
-  integer(i8) :: MyRestRow, MyRestCol, OffsetRow, OffsetCol
+  integer(i8) :: GlobalRestRow, GlobalRestCol
+  integer(i8) :: SliceRestRow, SliceRestCol
+  integer(i8) :: OffsetRow, OffsetCol
 
   integer(8) :: GlobalStart(3), GlobalCount(3)
   integer(KIND=MPI_OFFSET_KIND) MyOffset
@@ -86,27 +88,27 @@ subroutine parallel_rdgrd
   !
   !*******************************************
   
-  MyRestCol = mod(GlobalRow, NumProcI)
-  MyRestRow = mod(GlobalCol, NumProcJ)
+  GlobalRestCol = mod(GlobalRow, NumProcI)
+  GlobalRestRow = mod(GlobalCol, NumProcJ)
   
   ! computing rests for X direction
   MyCount(1) = GlobalRow / NumProcI
   MyCount(2) = GlobalCol / NumProcJ
   OffsetCol = 0
-  if (mod(MyRank, NumProcI) .lt. MyRestCol) then
+  if (mod(MyRank, NumProcI) .lt. GlobalRestCol) then
      MyCount(1) = MyCount(1) + 1
      OffsetCol = mod(MyRank, NumProcI)
   else
-     OffsetCol = MyRestCol
+     OffsetCol = GlobalRestCol
   end if
   
   ! computing rests for Y direction
   OffsetRow = 0
   TmpInt = MyRank / NumProcI
-  if (TmpInt .lt. MyRestRow) then
+  if (TmpInt .lt. GlobalRestRow) then
      MyCount(2) = MyCount(2) + 1
   else
-     OffsetRow = MyRestRow
+     OffsetRow = GlobalRestRow
   end if
   
   TmpInt = GlobalRow / NumProcI
@@ -150,13 +152,17 @@ subroutine parallel_rdgrd
   !
   localRow = grd%im / NumProcJ
   localCol = grd%jm / NumProcI
-  MyRestRow = mod(grd%im, NumProcJ)
-  MyRestCol = mod(grd%jm, NumProcI)
-  if(MyRestCol .ne. 0) print*,"WARNING!!!!!! mod(grd%jm, NumProcI) .ne. 0!!! Case not implemented yet!!"
+  SliceRestRow = mod(grd%im, NumProcJ)
+  SliceRestCol = mod(grd%jm, NumProcI)
+  if(SliceRestCol .ne. 0) print*,"WARNING!!!!!! mod(grd%jm, NumProcI) .ne. 0!!! Case not implemented yet!!"
 
-  if(MyRestRow .ne. 0) then ! print*,"WARNING!!!!!! mod(grd%im, NumProcJ) .ne. 0!!! Case not implemented yet!!"
-     if(MyPosJ .lt. MyRestRow) &
-          localRow = localRow + 1
+  if(SliceRestRow .ne. 0) then ! print*,"WARNING!!!!!! mod(grd%im, NumProcJ) .ne. 0!!! Case not implemented yet!!"
+     if(MyPosJ .lt. SliceRestRow) then
+        localRow = localRow + 1
+        TmpInt = 0 !MyPosJ
+     else
+        TmpInt = SliceRestRow
+     end if
   end if
 
   SendDisplY4D(1) = 0
@@ -166,7 +172,7 @@ subroutine parallel_rdgrd
   RecDisplY2D(1)  = 0
 
   do i=1,NumProcJ
-     if(i-1 .lt. MyRestRow) then
+     if(i-1 .lt. SliceRestRow) then
         OffsetRow = 1
      else
         OffsetRow = 0
@@ -192,6 +198,8 @@ subroutine parallel_rdgrd
         RecDisplY2D(i+1)  = RecDisplY2D(i) + RecCountY2D(i)
      end if
   end do
+
+  GlobalRowOffset = SendDisplY2D(MyRank+1)/grd%jm
 
   ! print*, "Debugging", MyRank, "SC", SendCountY2D, "RC", RecCountY2D, "SD", SendDisplY2D, "RD", RecDisplY2D
   

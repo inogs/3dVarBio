@@ -93,8 +93,8 @@ subroutine parallel_def_cov
   enddo
 
   ! Computes the global maximum and minimum
-  call MPI_Allreduce(MPI_IN_PLACE, rcf%dsmx, 1, MPI_REAL, MPI_MAX, MPI_COMM_WORLD, ierr)
-  call MPI_Allreduce(MPI_IN_PLACE, rcf%dsmn, 1, MPI_REAL, MPI_MIN, MPI_COMM_WORLD, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, rcf%dsmx, 1, MPI_REAL8, MPI_MAX, MPI_COMM_WORLD, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, rcf%dsmn, 1, MPI_REAL8, MPI_MIN, MPI_COMM_WORLD, ierr)
   
   rcf%dsmx = rcf%dsmx + max(1.d0,(rcf%dsmx-rcf%dsmn)/(rcf%ntb-2.))
   

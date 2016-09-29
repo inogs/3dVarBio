@@ -25,6 +25,8 @@ MODULE mpi_str
   !     GlobalCol : global number of columns
   !     localRow : number of row slicing in i direction
   !     localCol : number of col slicing in j direction
+  !     GlobalRowOffset : offset needed to read grd%global_msk
+  !     GlobalColOffset : offset needed to read grd%global_msk
   !
   !-------------------------------------------------------!
   
@@ -34,7 +36,8 @@ MODULE mpi_str
   integer  :: NumProcI, NumProcJ, NumProcIJ
   integer  :: GlobalRow, GlobalCol
   integer  :: localRow, localCol
-
+  integer  :: GlobalRowOffset, GlobalColOffset
+  
   integer  :: CommSliceY, CommSliceX
   integer(KIND=MPI_OFFSET_KIND) :: MyStart(3), MyCount(3)
 
