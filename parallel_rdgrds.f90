@@ -18,9 +18,9 @@ subroutine parallel_rdgrd
 
   ! integer, allocatable :: ilcit(:,:), ilcjt(:,:)
   integer(i8) :: ji, jj, jpi, jpj, nn, i
-  integer(i8) :: GlobalRestRow, GlobalRestCol
+  integer(i8) :: GlobalRestCol, GlobalRestRow
   integer(i8) :: SliceRestRow, SliceRestCol
-  integer(i8) :: OffsetRow, OffsetCol
+  integer(i8) :: OffsetCol, OffsetRow
 
   integer(8) :: GlobalStart(3), GlobalCount(3)
   integer(KIND=MPI_OFFSET_KIND) MyOffset
@@ -88,35 +88,35 @@ subroutine parallel_rdgrd
   !
   !*******************************************
   
-  GlobalRestCol = mod(GlobalRow, NumProcI)
-  GlobalRestRow = mod(GlobalCol, NumProcJ)
+  GlobalRestRow = mod(GlobalRow, NumProcI)
+  GlobalRestCol = mod(GlobalCol, NumProcJ)
   
   ! computing rests for X direction
   MyCount(1) = GlobalRow / NumProcI
   MyCount(2) = GlobalCol / NumProcJ
 
-  OffsetCol = 0
-  if (MyPosI .lt. GlobalRestCol) then
-     MyCount(1) = MyCount(1) + 1
-     OffsetCol = MyPosI
-  else
-     OffsetCol = GlobalRestCol
-  end if
-  
-  ! computing rests for Y direction
   OffsetRow = 0
-  if (MyPosJ .lt. GlobalRestRow) then
-     MyCount(2) = MyCount(2) + 1
+  if (MyPosI .lt. GlobalRestRow) then
+     MyCount(1) = MyCount(1) + 1
+     OffsetRow = MyPosI
   else
      OffsetRow = GlobalRestRow
   end if
   
+  ! computing rests for Y direction
+  OffsetCol = 0
+  if (MyPosJ .lt. GlobalRestCol) then
+     MyCount(2) = MyCount(2) + 1
+  else
+     OffsetCol = GlobalRestCol
+  end if
+  
   TmpInt = GlobalRow / NumProcI
-  MyStart(1) = TmpInt * MyPosI + OffsetCol + 1
+  MyStart(1) = TmpInt * MyPosI + OffsetRow + 1
   MyCount(1) = MyCount(1)
   
   TmpInt = MyRank / NumProcI
-  MyStart(2) = mod(MyCount(2) * TmpInt + OffsetRow, GlobalCol) + 1
+  MyStart(2) = mod(MyCount(2) * TmpInt + OffsetCol, GlobalCol) + 1
   MyCount(2) = MyCount(2)
 
   ! taking all values along k direction
@@ -165,22 +165,22 @@ subroutine parallel_rdgrd
 
   do i=1,NumProcJ
      if(i-1 .lt. SliceRestRow) then
-        OffsetRow = 1
-     else
-        OffsetRow = 0
-     end if
-
-     if(i-1 .lt. mod(GlobalCol, NumProcJ)) then
         OffsetCol = 1
      else
         OffsetCol = 0
      end if
 
-     SendCountY4D(i) = (grd%im / NumProcJ + OffsetRow) * grd%jm * grd%km
-     RecCountY4D(i)  = localRow * grd%km * (GlobalCol / NumProcJ + OffsetCol)
+     if(i-1 .lt. mod(GlobalCol, NumProcJ)) then
+        OffsetRow = 1
+     else
+        OffsetRow = 0
+     end if
 
-     SendCountY2D(i) = (grd%im / NumProcJ + OffsetRow) * grd%jm
-     RecCountY2D(i)  = localRow * (GlobalCol / NumProcJ + OffsetCol)
+     SendCountY4D(i) = (grd%im / NumProcJ + OffsetCol) * grd%jm * grd%km
+     RecCountY4D(i)  = localRow * grd%km * (GlobalCol / NumProcJ + OffsetRow)
+
+     SendCountY2D(i) = (grd%im / NumProcJ + OffsetCol) * grd%jm
+     RecCountY2D(i)  = localRow * (GlobalCol / NumProcJ + OffsetRow)
      
      if(i .lt. NumProcJ) then
         SendDisplY4D(i+1) = SendDisplY4D(i) + SendCountY4D(i)
@@ -191,13 +191,13 @@ subroutine parallel_rdgrd
      end if
   end do
 
-  if(MyPosI .lt. GlobalRestCol) then
+  if(MyPosI .lt. GlobalRestRow) then
      TmpInt = 1
   else
      TmpInt = 0
   end if
 
-  GlobalRowOffset = SendDisplY2D(MyPosJ+1)/grd%jm + MyPosI*grd%im + TmpInt*GlobalRestCol
+  GlobalRowOffset = SendDisplY2D(MyPosJ+1)/grd%jm + MyPosI*grd%im + TmpInt*GlobalRestRow
 
   ! print*, "Debugging", MyRank, "SC", SendCountY2D, "RC", RecCountY2D, "SD", SendDisplY2D, "RD", RecDisplY2D
   
