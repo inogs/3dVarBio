@@ -149,12 +149,51 @@ subroutine parallel_rdgrd
   localCol = grd%jm / NumProcI
   SliceRestRow = mod(grd%im, NumProcJ)
   SliceRestCol = mod(grd%jm, NumProcI)
-  if(SliceRestCol .ne. 0) print*,"WARNING!!!!!! mod(grd%jm, NumProcI) .ne. 0!!! Case not implemented yet!!"
 
-  if(SliceRestRow .ne. 0) then
-     if(MyPosJ .lt. SliceRestRow) then
-        localRow = localRow + 1
+  ! x direction (-> GlobalRow)
+  if(SliceRestCol .ne. 0) then !print*,"WARNING!!!!!! mod(grd%jm, NumProcI) .ne. 0!!! Case not implemented yet!!"
+     if(MyPosI .lt. SliceRestCol) &
+          localCol = localCol + 1
+  end if
+
+  SendDisplX4D(1) = 0
+  RecDisplX4D(1)  = 0
+
+  SendDisplX2D(1) = 0
+  RecDisplX2D(1)  = 0
+
+  do i=1,NumProcI
+     if(i-1 .lt. SliceRestCol) then
+        OffsetRow = 1
+     else
+        OffsetRow = 0
      end if
+
+     if(i-1 .lt. mod(GlobalRow, NumProcI)) then
+        OffsetCol = 1
+     else
+        OffsetCol = 0
+     end if
+
+     SendCountX4D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im * grd%km
+     RecCountX4D(i)  = localCol * grd%km * (GlobalRow / NumProcI + OffsetCol)
+
+     SendCountX2D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im
+     RecCountX2D(i)  = localCol * (GlobalRow / NumProcI + OffsetCol)
+     
+     if(i .lt. NumProcI) then
+        SendDisplX4D(i+1) = SendDisplX4D(i) + SendCountX4D(i)
+        RecDisplX4D(i+1)  = RecDisplX4D(i) + RecCountX4D(i)
+
+        SendDisplX2D(i+1) = SendDisplX2D(i) + SendCountX2D(i)
+        RecDisplX2D(i+1)  = RecDisplX2D(i) + RecCountX2D(i)
+     end if
+  end do
+
+  ! y direction (-> GlobalCol)
+  if(SliceRestRow .ne. 0) then
+     if(MyPosJ .lt. SliceRestRow) &
+          localRow = localRow + 1
   end if
 
   SendDisplY4D(1) = 0
@@ -192,12 +231,18 @@ subroutine parallel_rdgrd
   end do
 
   if(MyPosI .lt. GlobalRestRow) then
-     TmpInt = 1
-  else
      TmpInt = 0
+  else
+     TmpInt = 1
   end if
-
   GlobalRowOffset = SendDisplY2D(MyPosJ+1)/grd%jm + MyPosI*grd%im + TmpInt*GlobalRestRow
+
+  if(MyPosJ .lt. GlobalRestCol) then
+     TmpInt = 0
+  else
+     TmpInt = 1
+  end if
+  GlobalColOffset = SendDisplX2D(MyPosI+1)/grd%im + MyPosJ*grd%jm + TmpInt*GlobalRestCol
 
   ! print*, "Debugging", MyRank, "SC", SendCountY2D, "RC", RecCountY2D, "SD", SendDisplY2D, "RD", RecDisplY2D
   

@@ -109,7 +109,8 @@ subroutine rcfl_x( im, jm, km, imax, al, bt, fld, inx, imx)
 #ifdef _USE_MPI
      do j=1,localCol
         do i=1,GlobalRow
-           if(grd%global_msk(i,j + MyRank*localCol,1).eq.1) then
+           ! if(grd%global_msk(i,j + MyRank*localCol,1).eq.1) then
+           if(grd%global_msk(i,j + GlobalColOffset,1).eq.1) then
               fld(i,j,k) = a_rcx(j,inx(i,j,k),tid)
            end if
         end do
