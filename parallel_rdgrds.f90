@@ -94,25 +94,25 @@ subroutine parallel_rdgrd
   ! computing rests for X direction
   MyCount(1) = GlobalRow / NumProcI
   MyCount(2) = GlobalCol / NumProcJ
+
   OffsetCol = 0
-  if (mod(MyRank, NumProcI) .lt. GlobalRestCol) then
+  if (MyPosI .lt. GlobalRestCol) then
      MyCount(1) = MyCount(1) + 1
-     OffsetCol = mod(MyRank, NumProcI)
+     OffsetCol = MyPosI
   else
      OffsetCol = GlobalRestCol
   end if
   
   ! computing rests for Y direction
   OffsetRow = 0
-  TmpInt = MyRank / NumProcI
-  if (TmpInt .lt. GlobalRestRow) then
+  if (MyPosJ .lt. GlobalRestRow) then
      MyCount(2) = MyCount(2) + 1
   else
      OffsetRow = GlobalRestRow
   end if
   
   TmpInt = GlobalRow / NumProcI
-  MyStart(1) = TmpInt * mod(MyRank, NumProcI) + OffsetCol + 1
+  MyStart(1) = TmpInt * MyPosI + OffsetCol + 1
   MyCount(1) = MyCount(1)
   
   TmpInt = MyRank / NumProcI
@@ -123,13 +123,8 @@ subroutine parallel_rdgrd
   MyStart(3) = 1
   MyCount(3) = grd%km
   
-  if(MyRank .eq. 0) then
-     write(*,*) "MyRank = ", MyRank, " MyStart = ", MyStart, " MyCount = ", &
-          MyCount, " Sum = ", MyCount + MyStart
-  else
-     write(*,*) "MyRank = ", MyRank, " MyStart = ", MyStart, " MyCount = ", &
-          MyCount, " Sum = ", MyCount +MyStart
-  end if
+  write(*,*) "MyRank = ", MyRank, " MyStart = ", MyStart, " MyCount = ", &
+       MyCount, " Sum = ", MyCount + MyStart
 
   grd%im = MyCount(1)
   grd%jm = MyCount(2)
@@ -156,12 +151,9 @@ subroutine parallel_rdgrd
   SliceRestCol = mod(grd%jm, NumProcI)
   if(SliceRestCol .ne. 0) print*,"WARNING!!!!!! mod(grd%jm, NumProcI) .ne. 0!!! Case not implemented yet!!"
 
-  if(SliceRestRow .ne. 0) then ! print*,"WARNING!!!!!! mod(grd%im, NumProcJ) .ne. 0!!! Case not implemented yet!!"
+  if(SliceRestRow .ne. 0) then
      if(MyPosJ .lt. SliceRestRow) then
         localRow = localRow + 1
-        TmpInt = 0 !MyPosJ
-     else
-        TmpInt = SliceRestRow
      end if
   end if
 
@@ -199,7 +191,13 @@ subroutine parallel_rdgrd
      end if
   end do
 
-  GlobalRowOffset = SendDisplY2D(MyRank+1)/grd%jm
+  if(MyPosI .lt. GlobalRestCol) then
+     TmpInt = 1
+  else
+     TmpInt = 0
+  end if
+
+  GlobalRowOffset = SendDisplY2D(MyPosJ+1)/grd%jm + MyPosI*grd%im + TmpInt*GlobalRestCol
 
   ! print*, "Debugging", MyRank, "SC", SendCountY2D, "RC", RecCountY2D, "SD", SendDisplY2D, "RD", RecDisplY2D
   
