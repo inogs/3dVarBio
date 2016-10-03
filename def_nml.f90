@@ -202,5 +202,6 @@ endif
   grd%nchl = nchl
   chl%dep  = chl_dep
   drv%argo = 0 !1
-
+  drv%ReadDomDec = 0 !1
+  
 end subroutine def_nml

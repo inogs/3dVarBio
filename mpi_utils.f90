@@ -52,8 +52,8 @@ subroutine mynode()
   call COUNTLINE ('Dom_Dec_jpi.ascii', NumProcI)
   call COUNTWORDS('Dom_Dec_jpi.ascii', NumProcJ)
   
-  NumProcI = 3
-  NumProcJ = 2
+  ! NumProcI = 2
+  ! NumProcJ = 3
   ! NumProcI = Size
   ! NumProcJ = 1 !2
   

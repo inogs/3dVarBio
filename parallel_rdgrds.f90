@@ -16,9 +16,9 @@ subroutine parallel_rdgrd
   integer(i8) :: TmpInt, VarId
   real(r4), ALLOCATABLE          :: x3(:,:,:), x2(:,:), x1(:)
 
-  ! integer, allocatable :: ilcit(:,:), ilcjt(:,:)
-  integer(i8) :: ji, jj, jpi, jpj, nn, i
-  integer(i8) :: GlobalRestCol, GlobalRestRow
+  integer, allocatable :: ilcit(:,:), ilcjt(:,:)
+  integer(i8) :: ji, jj ! jpi, jpj, nn, i 
+  integer(i8) :: GlobalRestCol, GlobalRestRow, i
   integer(i8) :: SliceRestRow, SliceRestCol
   integer(i8) :: OffsetCol, OffsetRow
 
@@ -49,201 +49,341 @@ subroutine parallel_rdgrd
      WRITE(*,*) ' '
      WRITE(*,*) ' GlobalRow  : first  dimension of global domain --> i ',GlobalRow
      WRITE(*,*) ' GlobalCol  : second dimension of global domain --> j ',GlobalCol
+     WRITE(*,*) ' ReadDomDec : ',drv%ReadDomDec
      WRITE(*,*) ' '
   endif
-
-  ! allocate(ilcit(NumProcI, NumProcJ)) ; ilcit = huge(ilcit(1,1))
-  ! allocate(ilcjt(NumProcI, NumProcJ)) ; ilcjt = huge(ilcjt(1,1))
-  
-  ! open(3333,file='Dom_Dec_jpi.ascii', form='formatted')
-  ! open(3334,file='Dom_Dec_jpj.ascii', form='formatted')
-  
-  ! read(3333,*) ((ilcit(ji,jj), jj=1,NumProcJ),ji=1,NumProcI)
-  ! read(3334,*) ((ilcjt(ji,jj), jj=1,NumProcJ),ji=1,NumProcI)
-  
-  ! close(3333)
-  ! close(3334)
-
-  ! do nn =1, NumProcI*NumProcJ
-  !    if(MyRank+1 .EQ. nn) then
-  !       ji = 1 + mod(nn -1, NumProcI)
-  !       jj = 1 + (nn -1)/NumProcI
-  !       jpi =  ilcit(ji,jj) 
-  !       jpj =  ilcjt(ji,jj)
-  !    endif
-  ! enddo  
-  
-  !*******************************************
-  !
-  ! PDICERBO version of the domain decomposition:
-  ! the domain is divided among the processes into slices
-  ! of size (GlobalRow / NumProcI, GlobalCol / NumProcJ).
-  ! Clearly, the division is done tacking into account 
-  ! rests. The only condition we need is that NumProcI*NumProcJ = NPROC
-  !
-  ! WARNING!!! netcdf stores data in ROW MAJOR order
-  ! while here we are reading in column major order.
-  ! We have to take into account this simply swapping ("ideally")
-  ! the entries of MyStart and MyCount
-  !
-  !*******************************************
   
   GlobalRestRow = mod(GlobalRow, NumProcI)
   GlobalRestCol = mod(GlobalCol, NumProcJ)
   
-  ! computing rests for X direction
-  MyCount(1) = GlobalRow / NumProcI
-  MyCount(2) = GlobalCol / NumProcJ
-
-  OffsetRow = 0
-  if (MyPosI .lt. GlobalRestRow) then
-     MyCount(1) = MyCount(1) + 1
-     OffsetRow = MyPosI
-  else
-     OffsetRow = GlobalRestRow
-  end if
+  if(drv%ReadDomDec .eq. 1) then
+     allocate(ilcit(NumProcI, NumProcJ)) ; ilcit = huge(ilcit(1,1))
+     allocate(ilcjt(NumProcI, NumProcJ)) ; ilcjt = huge(ilcjt(1,1))
+     
+     open(3333,file='Dom_Dec_jpi.ascii', form='formatted')
+     open(3334,file='Dom_Dec_jpj.ascii', form='formatted')
+     
+     read(3333,*) ((ilcit(ji,jj), jj=1,NumProcJ),ji=1,NumProcI)
+     read(3334,*) ((ilcjt(ji,jj), jj=1,NumProcJ),ji=1,NumProcI)
   
-  ! computing rests for Y direction
-  OffsetCol = 0
-  if (MyPosJ .lt. GlobalRestCol) then
-     MyCount(2) = MyCount(2) + 1
-  else
-     OffsetCol = GlobalRestCol
-  end if
-  
-  TmpInt = GlobalRow / NumProcI
-  MyStart(1) = TmpInt * MyPosI + OffsetRow + 1
-  MyCount(1) = MyCount(1)
-  
-  TmpInt = MyRank / NumProcI
-  MyStart(2) = mod(MyCount(2) * TmpInt + OffsetCol, GlobalCol) + 1
-  MyCount(2) = MyCount(2)
+     close(3333)
+     close(3334)
 
-  ! taking all values along k direction
-  MyStart(3) = 1
-  MyCount(3) = grd%km
+     do ji=1,NumProcI
+        do jj=1,NumProcJ
+           if(NumProcJ .gt. 1) then
+              if(mod(NumProcJ-jj, NumProcJ-1) .eq. 0) then
+                 ilcjt(ji,jj) = ilcjt(ji,jj) - 1
+              else
+                 ilcjt(ji,jj) = ilcjt(ji,jj) - 2
+              end if
+           end if
+           if(NumProcI .gt. 1) then
+              if(mod(NumProcI-ji, NumProcI-1) .eq. 0) then
+                 ilcit(ji,jj) = ilcit(ji,jj) - 1
+              else
+                 ilcit(ji,jj) = ilcit(ji,jj) - 2
+              end if
+           end if
+        end do
+     end do
+
+     grd%im = ilcit(MyPosI+1, MyPosJ+1)
+     grd%jm = ilcjt(MyPosI+1, MyPosJ+1)
+     MyCount(1) = grd%im
+     MyCount(2) = grd%jm
+     MyCount(3) = grd%km
+
+     MyStart(:) = 1
+
+     do i=1,MyPosI
+        MyStart(1) = MyStart(1) + ilcit(i,MyPosJ+1)
+     end do
+     do i=1,MyPosJ
+        MyStart(2) = MyStart(2) + ilcjt(MyPosI+1, i)
+     end do
+     MyStart(3) = 1
+
+     write(*,*) "MyRank = ", MyRank, " MyStart = ", MyStart, " MyCount = ", MyCount
+
+     !
+     ! initializing quantities needed to slicing along i and j directions
+     !
+     localRow = grd%im / NumProcJ
+     localCol = grd%jm / NumProcI
+     SliceRestRow = mod(grd%im, NumProcJ)
+     SliceRestCol = mod(grd%jm, NumProcI)
+
+     ! x direction (-> GlobalRow)
+     if(SliceRestCol .ne. 0) then !print*,"WARNING!!!!!! mod(grd%jm, NumProcI) .ne. 0!!! Case not implemented yet!!"
+        if(MyPosI .lt. SliceRestCol) &
+             localCol = localCol + 1
+     end if
+     
+     SendDisplX4D(1) = 0
+     RecDisplX4D(1)  = 0
+     
+     SendDisplX2D(1) = 0
+     RecDisplX2D(1)  = 0
+     
+     do i=1,NumProcI
+        if(i-1 .lt. SliceRestCol) then
+           OffsetRow = 1
+        else
+           OffsetRow = 0
+        end if
+        
+        if(i-1 .lt. mod(GlobalRow, NumProcI)) then
+           OffsetCol = 1
+        else
+           OffsetCol = 0
+        end if
+        
+        SendCountX4D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im * grd%km
+        RecCountX4D(i)  = localCol * grd%km * ilcit(i, MyPosJ+1) ! (GlobalRow / NumProcI + OffsetCol)
+        
+        SendCountX2D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im
+        RecCountX2D(i)  = localCol * ilcit(i, MyPosJ+1) ! (GlobalRow / NumProcI + OffsetCol)
+        
+        if(i .lt. NumProcI) then
+           SendDisplX4D(i+1) = SendDisplX4D(i) + SendCountX4D(i)
+           RecDisplX4D(i+1)  = RecDisplX4D(i) + RecCountX4D(i)
+           
+           SendDisplX2D(i+1) = SendDisplX2D(i) + SendCountX2D(i)
+           RecDisplX2D(i+1)  = RecDisplX2D(i) + RecCountX2D(i)
+        end if
+     end do
+
+     ! y direction (-> GlobalCol)
+     if(SliceRestRow .ne. 0) then
+        if(MyPosJ .lt. SliceRestRow) &
+             localRow = localRow + 1
+     end if
+     
+     SendDisplY4D(1) = 0
+     RecDisplY4D(1)  = 0
+     
+     SendDisplY2D(1) = 0
+     RecDisplY2D(1)  = 0
+     
+     do i=1,NumProcJ
+        if(i-1 .lt. SliceRestRow) then
+           OffsetCol = 1
+        else
+           OffsetCol = 0
+        end if
+        
+        if(i-1 .lt. mod(GlobalCol, NumProcJ)) then
+           OffsetRow = 1
+        else
+           OffsetRow = 0
+        end if
+        
+        SendCountY4D(i) = (grd%im / NumProcJ + OffsetCol) * grd%jm * grd%km
+        RecCountY4D(i)  = localRow * grd%km * ilcjt(MyPosI+1, i)
+        
+        SendCountY2D(i) = (grd%im / NumProcJ + OffsetCol) * grd%jm
+        RecCountY2D(i)  = localRow * ilcjt(MyPosI+1, i)
+        
+        if(i .lt. NumProcJ) then
+           SendDisplY4D(i+1) = SendDisplY4D(i) + SendCountY4D(i)
+           RecDisplY4D(i+1)  = RecDisplY4D(i) + RecCountY4D(i)
+           
+           SendDisplY2D(i+1) = SendDisplY2D(i) + SendCountY2D(i)
+           RecDisplY2D(i+1)  = RecDisplY2D(i) + RecCountY2D(i)
+        end if
+     end do
+
+     if(MyPosI .lt. GlobalRestRow) then
+        TmpInt = 0
+     else
+        TmpInt = 1
+     end if
+     GlobalRowOffset = SendDisplY2D(MyPosJ+1)/grd%jm
+     do i=1,MyPosI
+        GlobalRowOffset = GlobalRowOffset + ilcit(i, MyPosJ+1)
+     end do
   
-  write(*,*) "MyRank = ", MyRank, " MyStart = ", MyStart, " MyCount = ", &
-       MyCount, " Sum = ", MyCount + MyStart
-
-  grd%im = MyCount(1)
-  grd%jm = MyCount(2)
-
+     if(MyPosJ .lt. GlobalRestCol) then
+        TmpInt = 0
+     else
+        TmpInt = 1
+     end if
+     GlobalColOffset = SendDisplX2D(MyPosI+1)/grd%im
+     do i=1,MyPosJ
+        GlobalColOffset = GlobalColOffset + ilcjt(MyPosI+1, i)
+     end do
+  
+  else ! drv%ReadDomDec .eq. 0
+     !*******************************************
+     !
+     ! PDICERBO version of the domain decomposition:
+     ! the domain is divided among the processes into slices
+     ! of size (GlobalRow / NumProcI, GlobalCol / NumProcJ).
+     ! Clearly, the division is done tacking into account 
+     ! rests. The only condition we need is that NumProcI*NumProcJ = NPROC
+     !
+     ! WARNING!!! netcdf stores data in ROW MAJOR order
+     ! while here we are reading in column major order.
+     ! We have to take into account this simply swapping ("ideally")
+     ! the entries of MyStart and MyCount
+     !
+     !*******************************************
+          
+     ! computing rests for X direction
+     MyCount(1) = GlobalRow / NumProcI
+     MyCount(2) = GlobalCol / NumProcJ
+     
+     OffsetRow = 0
+     if (MyPosI .lt. GlobalRestRow) then
+        MyCount(1) = MyCount(1) + 1
+        OffsetRow = MyPosI
+     else
+        OffsetRow = GlobalRestRow
+     end if
+     
+     ! computing rests for Y direction
+     OffsetCol = 0
+     if (MyPosJ .lt. GlobalRestCol) then
+        MyCount(2) = MyCount(2) + 1
+     else
+        OffsetCol = GlobalRestCol
+     end if
+     
+     TmpInt = GlobalRow / NumProcI
+     MyStart(1) = TmpInt * MyPosI + OffsetRow + 1
+     MyCount(1) = MyCount(1)
+     
+     TmpInt = MyRank / NumProcI
+     MyStart(2) = mod(MyCount(2) * TmpInt + OffsetCol, GlobalCol) + 1
+     MyCount(2) = MyCount(2)
+     
+     ! taking all values along k direction
+     MyStart(3) = 1
+     MyCount(3) = grd%km
+     
+     write(*,*) "MyRank = ", MyRank, " MyStart = ", MyStart, " MyCount = ", MyCount
+     
+     grd%im = MyCount(1)
+     grd%jm = MyCount(2)
+     
+     !
+     ! initializing quantities needed to slicing along i and j directions
+     !
+     localRow = grd%im / NumProcJ
+     localCol = grd%jm / NumProcI
+     SliceRestRow = mod(grd%im, NumProcJ)
+     SliceRestCol = mod(grd%jm, NumProcI)
+     
+     ! x direction (-> GlobalRow)
+     if(SliceRestCol .ne. 0) then
+        if(MyPosI .lt. SliceRestCol) &
+             localCol = localCol + 1
+     end if
+     
+     SendDisplX4D(1) = 0
+     RecDisplX4D(1)  = 0
+     
+     SendDisplX2D(1) = 0
+     RecDisplX2D(1)  = 0
+     
+     do i=1,NumProcI
+        if(i-1 .lt. SliceRestCol) then
+           OffsetRow = 1
+        else
+           OffsetRow = 0
+        end if
+        
+        if(i-1 .lt. mod(GlobalRow, NumProcI)) then
+           OffsetCol = 1
+        else
+           OffsetCol = 0
+        end if
+        
+        SendCountX4D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im * grd%km
+        RecCountX4D(i)  = localCol * grd%km * (GlobalRow / NumProcI + OffsetCol)
+        
+        SendCountX2D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im
+        RecCountX2D(i)  = localCol * (GlobalRow / NumProcI + OffsetCol)
+        
+        if(i .lt. NumProcI) then
+           SendDisplX4D(i+1) = SendDisplX4D(i) + SendCountX4D(i)
+           RecDisplX4D(i+1)  = RecDisplX4D(i) + RecCountX4D(i)
+           
+           SendDisplX2D(i+1) = SendDisplX2D(i) + SendCountX2D(i)
+           RecDisplX2D(i+1)  = RecDisplX2D(i) + RecCountX2D(i)
+        end if
+     end do
+     
+     ! y direction (-> GlobalCol)
+     if(SliceRestRow .ne. 0) then
+        if(MyPosJ .lt. SliceRestRow) &
+             localRow = localRow + 1
+     end if
+     
+     SendDisplY4D(1) = 0
+     RecDisplY4D(1)  = 0
+     
+     SendDisplY2D(1) = 0
+     RecDisplY2D(1)  = 0
+     
+     do i=1,NumProcJ
+        if(i-1 .lt. SliceRestRow) then
+           OffsetCol = 1
+        else
+           OffsetCol = 0
+        end if
+        
+        if(i-1 .lt. mod(GlobalCol, NumProcJ)) then
+           OffsetRow = 1
+        else
+           OffsetRow = 0
+        end if
+        
+        SendCountY4D(i) = (grd%im / NumProcJ + OffsetCol) * grd%jm * grd%km
+        RecCountY4D(i)  = localRow * grd%km * (GlobalCol / NumProcJ + OffsetRow)
+        
+        SendCountY2D(i) = (grd%im / NumProcJ + OffsetCol) * grd%jm
+        RecCountY2D(i)  = localRow * (GlobalCol / NumProcJ + OffsetRow)
+        
+        if(i .lt. NumProcJ) then
+           SendDisplY4D(i+1) = SendDisplY4D(i) + SendCountY4D(i)
+           RecDisplY4D(i+1)  = RecDisplY4D(i) + RecCountY4D(i)
+           
+           SendDisplY2D(i+1) = SendDisplY2D(i) + SendCountY2D(i)
+           RecDisplY2D(i+1)  = RecDisplY2D(i) + RecCountY2D(i)
+        end if
+     end do
+     
+     if(MyPosI .lt. GlobalRestRow) then
+        TmpInt = 0
+     else
+        TmpInt = 1
+     end if
+     GlobalRowOffset = SendDisplY2D(MyPosJ+1)/grd%jm + MyPosI*grd%im + TmpInt*GlobalRestRow
+     
+     if(MyPosJ .lt. GlobalRestCol) then
+        TmpInt = 0
+     else
+        TmpInt = 1
+     end if
+     GlobalColOffset = SendDisplX2D(MyPosI+1)/grd%im + MyPosJ*grd%jm + TmpInt*GlobalRestCol
+     
+  end if ! drv%ReadDomDec .eq. 0
+  
   ALLOCATE(ChlExtended(grd%im+1, grd%jm+1, grd%nchl))
   ALLOCATE(SendLeft(grd%im), RecRight(grd%im))
   ALLOCATE(SendRight(grd%im), RecLeft(grd%im))
   ALLOCATE(SendTop(grd%jm), RecBottom(grd%jm))
   ALLOCATE(SendBottom(grd%jm), RecTop(grd%jm))  
-
+  
   ALLOCATE(ChlExtendedAD_4D(0:(grd%im+1), 0:(grd%jm+1), grd%km, grd%nchl))
   ALLOCATE(ChlExtended4D(0:(grd%im+1), 0:(grd%jm+1), grd%km, grd%nchl))
   ALLOCATE(SendLeft2D(grd%im, grd%km), RecRight2D(grd%im, grd%km))
   ALLOCATE(SendRight2D(grd%im, grd%km), RecLeft2D(grd%im, grd%km))
   ALLOCATE(SendTop2D(grd%jm, grd%km), RecBottom2D(grd%jm, grd%km))
   ALLOCATE(SendBottom2D(grd%jm, grd%km), RecTop2D(grd%jm, grd%km))
-
-  !
-  ! initializing quantities needed to slicing along i and j directions
-  !
-  localRow = grd%im / NumProcJ
-  localCol = grd%jm / NumProcI
-  SliceRestRow = mod(grd%im, NumProcJ)
-  SliceRestCol = mod(grd%jm, NumProcI)
-
-  ! x direction (-> GlobalRow)
-  if(SliceRestCol .ne. 0) then !print*,"WARNING!!!!!! mod(grd%jm, NumProcI) .ne. 0!!! Case not implemented yet!!"
-     if(MyPosI .lt. SliceRestCol) &
-          localCol = localCol + 1
-  end if
-
-  SendDisplX4D(1) = 0
-  RecDisplX4D(1)  = 0
-
-  SendDisplX2D(1) = 0
-  RecDisplX2D(1)  = 0
-
-  do i=1,NumProcI
-     if(i-1 .lt. SliceRestCol) then
-        OffsetRow = 1
-     else
-        OffsetRow = 0
-     end if
-
-     if(i-1 .lt. mod(GlobalRow, NumProcI)) then
-        OffsetCol = 1
-     else
-        OffsetCol = 0
-     end if
-
-     SendCountX4D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im * grd%km
-     RecCountX4D(i)  = localCol * grd%km * (GlobalRow / NumProcI + OffsetCol)
-
-     SendCountX2D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im
-     RecCountX2D(i)  = localCol * (GlobalRow / NumProcI + OffsetCol)
-     
-     if(i .lt. NumProcI) then
-        SendDisplX4D(i+1) = SendDisplX4D(i) + SendCountX4D(i)
-        RecDisplX4D(i+1)  = RecDisplX4D(i) + RecCountX4D(i)
-
-        SendDisplX2D(i+1) = SendDisplX2D(i) + SendCountX2D(i)
-        RecDisplX2D(i+1)  = RecDisplX2D(i) + RecCountX2D(i)
-     end if
-  end do
-
-  ! y direction (-> GlobalCol)
-  if(SliceRestRow .ne. 0) then
-     if(MyPosJ .lt. SliceRestRow) &
-          localRow = localRow + 1
-  end if
-
-  SendDisplY4D(1) = 0
-  RecDisplY4D(1)  = 0
-
-  SendDisplY2D(1) = 0
-  RecDisplY2D(1)  = 0
-
-  do i=1,NumProcJ
-     if(i-1 .lt. SliceRestRow) then
-        OffsetCol = 1
-     else
-        OffsetCol = 0
-     end if
-
-     if(i-1 .lt. mod(GlobalCol, NumProcJ)) then
-        OffsetRow = 1
-     else
-        OffsetRow = 0
-     end if
-
-     SendCountY4D(i) = (grd%im / NumProcJ + OffsetCol) * grd%jm * grd%km
-     RecCountY4D(i)  = localRow * grd%km * (GlobalCol / NumProcJ + OffsetRow)
-
-     SendCountY2D(i) = (grd%im / NumProcJ + OffsetCol) * grd%jm
-     RecCountY2D(i)  = localRow * (GlobalCol / NumProcJ + OffsetRow)
-     
-     if(i .lt. NumProcJ) then
-        SendDisplY4D(i+1) = SendDisplY4D(i) + SendCountY4D(i)
-        RecDisplY4D(i+1)  = RecDisplY4D(i) + RecCountY4D(i)
-
-        SendDisplY2D(i+1) = SendDisplY2D(i) + SendCountY2D(i)
-        RecDisplY2D(i+1)  = RecDisplY2D(i) + RecCountY2D(i)
-     end if
-  end do
-
-  if(MyPosI .lt. GlobalRestRow) then
-     TmpInt = 0
-  else
-     TmpInt = 1
-  end if
-  GlobalRowOffset = SendDisplY2D(MyPosJ+1)/grd%jm + MyPosI*grd%im + TmpInt*GlobalRestRow
-
-  if(MyPosJ .lt. GlobalRestCol) then
-     TmpInt = 0
-  else
-     TmpInt = 1
-  end if
-  GlobalColOffset = SendDisplX2D(MyPosI+1)/grd%im + MyPosJ*grd%jm + TmpInt*GlobalRestCol
-
+  
   ! print*, "Debugging", MyRank, "SC", SendCountY2D, "RC", RecCountY2D, "SD", SendDisplY2D, "RD", RecDisplY2D
   
   ! *****************************************************************************************
