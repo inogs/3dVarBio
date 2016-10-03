@@ -140,10 +140,10 @@ subroutine parallel_rdgrd
         end if
         
         SendCountX4D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im * grd%km
-        RecCountX4D(i)  = localCol * grd%km * ilcit(i, MyPosJ+1) ! (GlobalRow / NumProcI + OffsetCol)
+        RecCountX4D(i)  = localCol * grd%km * ilcit(i, MyPosJ+1)
         
         SendCountX2D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im
-        RecCountX2D(i)  = localCol * ilcit(i, MyPosJ+1) ! (GlobalRow / NumProcI + OffsetCol)
+        RecCountX2D(i)  = localCol * ilcit(i, MyPosJ+1)
         
         if(i .lt. NumProcI) then
            SendDisplX4D(i+1) = SendDisplX4D(i) + SendCountX4D(i)
