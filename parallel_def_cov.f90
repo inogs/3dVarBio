@@ -120,23 +120,12 @@ subroutine parallel_def_cov
   DEALLOCATE ( sfct, jnxx, al, bt ) 
   
   ! preparing the call to MPI_ALLTOALL
-  ! ALLOCATE(RecBuf2D(grd%im, grd%jm))
   ALLOCATE(RecBuf1D(GlobalRow*localCol))
   ALLOCATE(DefBuf2D(GlobalRow, localCol))
 
-  ! call MPI_Alltoall(grd%dx, GlobalRow*localCol/NumProcI, MPI_REAL8, RecBuf2D, &
-  !      GlobalRow*localCol/NumProcI, MPI_REAL8, CommSliceX, ierr)
   call MPI_Alltoallv(grd%dx, SendCountX2D, SendDisplX2D, MPI_REAL8, &
        RecBuf1D, RecCountX2D, RecDisplX2D, MPI_REAL8, CommSliceX, ierr)
 
-  ! do i=1, grd%im
-  !    do iProc=0, NumProcI-1
-  !       do j=1, localCol
-  !          ! DefBuf2D(i + iProc*localRow, j) = RecBuf2D(i, j + iProc*localCol)
-  !          DefBuf2D(i + iProc*grd%im, j) = RecBuf2D(i, j + iProc*localCol)
-  !       end do
-  !    end do
-  ! end do
   do j=1, localCol
      do iProc=0, NumProcI-1
         do i=1, RecCountX2D(iProc+1)/localCol
@@ -260,10 +249,21 @@ subroutine parallel_def_cov
      end do
   end do
 
+  ! ! debug
+  ! print*, "DEBUGGING", MyRank, localRow, RecCountY4D(1)/(localRow*grd%km), grd%km
+  if(size .eq. 1) then
+     do k=1,grd%km
+        do j=1,grd%jm
+           do i=1,grd%im
+              DefBuf3D(i,j,k) = grd%msr(i,j,k)
+           end do
+        end do
+     end do
+  end if
+
   !************* VERTICAL SLICING *************!
   DEALLOCATE(SendBuf3D, RecBuf1D)
   ALLOCATE(SendBuf3D(grd%km, grd%im, grd%jm))
-  ! ALLOCATE( RecBuf3D(grd%km, grd%im, grd%jm))
   ALLOCATE( RecBuf1D(GlobalRow*localCol*grd%km))
   ALLOCATE( ColBuf3D(GlobalRow, localCol, grd%km))
 
@@ -275,22 +275,9 @@ subroutine parallel_def_cov
      end do
   end do
 
-  ! call MPI_Alltoall(SendBuf3D, grd%im*grd%jm*grd%km/NumProcI, MPI_REAL8, &
-  !      & RecBuf3D, grd%im*grd%jm*grd%km/NumProcI, MPI_REAL8, CommSliceX,ierr)
   call MPI_Alltoallv(SendBuf3D, SendCountX4D, SendDisplX4D, MPI_REAL8, &
        RecBuf1D, RecCountX4D, RecDisplX4D, MPI_REAL8, CommSliceX, ierr)
 
-  ! Reordering data
-  ! do i=1, grd%im
-  !    do iProc=0, NumProcI-1
-  !       do j=1, localCol
-  !          do k=1, grd%km
-  !             ! ColBuf3D(i+iProc*localRow, j, k) = RecBuf3D(k, i, j + iProc*localCol)
-  !             ColBuf3D(i+iProc*grd%im, j, k) = RecBuf3D(k, i, j + iProc*localCol)
-  !          end do
-  !       end do
-  !    end do
-  ! end do
   do j=1, localCol
      do iProc=0, NumProcI-1
         do i=1, RecCountX4D(iProc+1)/(localCol*grd%km)
@@ -446,9 +433,8 @@ subroutine parallel_def_cov
   ALLOCATE ( alp_rcy(grd%im,grd%jmax,nthreads)) ; alp_rcy = huge(alp_rcy(1,1,1))
   ALLOCATE ( bta_rcy(grd%im,grd%jmax,nthreads)) ; bta_rcy = huge(bta_rcy(1,1,1))
 
-  ! DEALLOCATE(SendBuf2D, RecBuf2D, DefBuf2D)
   DEALLOCATE(SendBuf2D, RecBuf1D, DefBuf2D)
-  DEALLOCATE(SendBuf3D) !, RecBuf3D)
+  DEALLOCATE(SendBuf3D)
   DEALLOCATE(ColBuf3D,  DefBuf3D)
   
 end subroutine parallel_def_cov
