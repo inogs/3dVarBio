@@ -358,6 +358,7 @@ subroutine parallel_ver_hor
            end do
         end do
      end do
+     DEALLOCATE(SendBuf4D, RecBuf1D)
   else
      ! Apply recursive filter in y direction
      call rcfl_y( localRow, GlobalCol, grd%km*grd%nchl, grd%jmax, grd%aey, grd%bey, grd%chl, grd%jnx, grd%jmx)
@@ -383,7 +384,6 @@ subroutine parallel_ver_hor
      ! ---
      ! y direction
      if(NumProcJ .gt. 1) then
-        DEALLOCATE(SendBuf4D, RecBuf1D)
         ALLOCATE(SendBuf4D(grd%nchl, grd%km, grd%jm, grd%im))
         ALLOCATE( RecBuf1D(grd%nchl*grd%km*localRow*GlobalCol))
      
@@ -454,6 +454,7 @@ subroutine parallel_ver_hor
               end do
            end do
         end do
+        DEALLOCATE(SendBuf4D, RecBuf1D, DefBuf4D)
      else
         
         ! ---
@@ -476,7 +477,6 @@ subroutine parallel_ver_hor
      ! ---
      ! x direction
      if(NumProcI .gt. 1) then
-        DEALLOCATE(SendBuf4D, RecBuf1D, DefBuf4D)
         ALLOCATE(SendBuf4D(grd%nchl, grd%km, grd%im, grd%jm))
         ALLOCATE( RecBuf1D(grd%nchl*grd%km*GlobalRow*localCol))
         ALLOCATE( DefBuf4D(GlobalRow, localCol, grd%km, grd%nchl))
@@ -546,6 +546,8 @@ subroutine parallel_ver_hor
               end do
            end do
         end do
+        DEALLOCATE(SendBuf4D, RecBuf1D, DefBuf4D)
+
      else
         ! ---
         ! Scale by the scaling factor
@@ -604,9 +606,6 @@ subroutine parallel_ver_hor
         enddo  !i
      enddo  !j
   enddo  !k
-
-  if(NumProcI + NumProcJ .gt. 2) &
-       DEALLOCATE(SendBuf4D, RecBuf1D, DefBuf4D)
 
 end subroutine parallel_ver_hor
 

@@ -54,8 +54,8 @@ subroutine mynode()
   
   ! NumProcI = 2
   ! NumProcJ = 3
-  ! NumProcI = Size
-  ! NumProcJ = 1 !2
+  NumProcI = 1 !Size
+  NumProcJ = Size !1 !2
   
   MyPosI = mod(MyRank, NumProcI)
   MyPosJ = MyRank / NumProcI
