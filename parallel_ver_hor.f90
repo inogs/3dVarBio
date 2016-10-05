@@ -270,7 +270,9 @@ subroutine parallel_ver_hor
         end do
      end do
      DEALLOCATE(SendBuf4D, RecBuf1D, DefBuf4D)
-  else
+
+  else ! NumProcI .eq. 1
+
      call rcfl_x( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, grd%chl, grd%inx, grd%imx)
      
      do l=1,grd%nchl
@@ -283,6 +285,7 @@ subroutine parallel_ver_hor
         !$OMP END DO
         !$OMP END PARALLEL
      enddo
+
   end if
 
   ! ---
@@ -563,6 +566,7 @@ subroutine parallel_ver_hor
         enddo
         
         call rcfl_x_ad( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, grd%chl_ad, grd%inx, grd%imx)
+
      end if
      
      ! ---
@@ -692,20 +696,300 @@ subroutine parallel_ver_hor_ad
      
      ! ---
      ! x direction
+     if(NumProcI .gt. 1) then
+        ALLOCATE(SendBuf4D(grd%nchl, grd%km, grd%im, grd%jm))
+        ALLOCATE( RecBuf1D(GlobalRow*localCol*grd%km*grd%nchl))
+        ALLOCATE( DefBuf4D(GlobalRow, localCol, grd%km, grd%nchl))
+        
+        do l=1,grd%nchl
+           do k=1,grd%km
+              do j=1,grd%jm
+                 do i=1,grd%im
+                    SendBuf4D(l,k,i,j) = grd%chl(i,j,k,l)
+                 end do
+              end do
+           end do
+        end do
+        
+        call MPI_Alltoallv(SendBuf4D, SendCountX4D, SendDisplX4D, MPI_REAL8, &
+             RecBuf1D, RecCountX4D, RecDisplX4D, MPI_REAL8, CommSliceX, ierr)
+        
+        do j=1,localCol
+           do iProc=0, NumProcI-1
+              do i=1,RecCountX4D(iProc+1)/(localCol*grd%km)
+                 do k=1,grd%km
+                    DefBuf4D(i + RecDisplX4D(iProc+1)/(localCol*grd%km),j,k,1) = &
+                         RecBuf1D(k + (i-1)*grd%km +(j-1)*RecCountX4D(iProc+1)/localCol + RecDisplX4D(iProc+1))
+                 end do
+              end do
+           end do
+        end do
+     
+        call rcfl_x( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, DefBuf4D, grd%inx, grd%imx)
+        
+        ! ---
+        ! Scale by the scaling factor
+        do l=1,grd%nchl
+           !$OMP PARALLEL  &
+           !$OMP PRIVATE(k)
+           !$OMP DO
+           do k=1,grd%km
+              DefBuf4D(:,:,k,l) = DefBuf4D(:,:,k,l) * grd%scx(:,:) 
+           enddo
+           !$OMP END DO
+           !$OMP END PARALLEL  
+        enddo
+        
+        ! Reordering data to send back
+        DEALLOCATE(SendBuf4D, RecBuf1D)
+        ALLOCATE(SendBuf4D(grd%nchl, grd%km, localCol, GlobalRow))
+        ALLOCATE( RecBuf1D(grd%nchl*grd%km*grd%jm*grd%im))
+        
+        do k=1,grd%km
+           do j=1,localCol
+              do i=1,GlobalRow
+                 SendBuf4D(1,k,j,i) = DefBuf4D(i,j,k,1)
+              end do
+           end do
+        end do
+        
+        call MPI_Alltoallv(SendBuf4D, RecCountX4D, RecDisplX4D, MPI_REAL8, &
+             RecBuf1D, SendCountX4D, SendDisplX4D, MPI_REAL8, CommSliceX, ierr)
+        
+        do i=1,grd%im
+           do iProc=0, NumProcI-1
+              do j=1,SendCountX4D(iProc+1)/(grd%im*grd%km)
+                 do k=1,grd%km
+                    grd%chl(i, j + SendDisplX4D(iProc+1)/(grd%im*grd%km),k,1) = &
+                         RecBuf1D(k + (j-1)*grd%km +(i-1)*SendCountX4D(iProc+1)/grd%im + SendDisplX4D(iProc+1))
+                 end do
+              end do
+           end do
+        end do
+        DEALLOCATE(SendBuf4D, RecBuf1D, DefBuf4D)
+        
+     else ! NumProcI .eq. 1
+        call rcfl_x( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, grd%chl, grd%inx, grd%imx)
+        
+        ! ---
+        ! Scale by the scaling factor
+        do l=1,grd%nchl
+           !$OMP PARALLEL  &
+           !$OMP PRIVATE(k)
+           !$OMP DO
+           do k=1,grd%km
+              grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:) 
+           enddo
+           !$OMP END DO
+           !$OMP END PARALLEL  
+        enddo
+     end if
+
+
+     ! ! ---
+     ! ! y direction
+     if(NumProcJ .gt. 1) then
+        ALLOCATE(SendBuf4D(grd%nchl, grd%km, grd%jm, grd%im))
+        ALLOCATE( RecBuf1D(grd%nchl*grd%km*localRow*GlobalCol))     
+        ALLOCATE( DefBuf4D(localRow, GlobalCol, grd%km, grd%nchl))
+        
+        do l=1,grd%nchl
+           do k=1,grd%km
+              do j=1,grd%jm
+                 do i=1,grd%im
+                    SendBuf4D(l,k,j,i) = grd%chl(i,j,k,l)
+                 end do
+              end do
+           end do
+        end do
+        
+        call MPI_Alltoallv(SendBuf4D, SendCountY4D, SendDisplY4D, MPI_REAL8, &
+             RecBuf1D, RecCountY4D, RecDisplY4D, MPI_REAL8, CommSliceY, ierr)
+        
+        do i=1,localRow
+           do iProc=0, NumProcJ-1
+              do j=1,RecCountY4D(iProc+1)/(localRow*grd%km)
+                 do k=1,grd%km
+                    DefBuf4D(i,j+RecDisplY4D(iProc+1)/(localRow*grd%km),k,1) = &
+                         RecBuf1D(k + (j-1)*grd%km + (i-1)*RecCountY4D(iProc+1)/localRow + RecDisplY4D(iProc+1))
+                 end do
+              end do
+           end do
+        end do
+        
+        ! Apply recursive filter in y direction
+        call rcfl_y( localRow, GlobalCol, grd%km*grd%nchl, grd%jmax, grd%aey, grd%bey, DefBuf4D, grd%jnx, grd%jmx)
+        
+        ! ---
+        ! Scale by the scaling factor
+        do l=1,grd%nchl
+           !$OMP PARALLEL  &
+           !$OMP PRIVATE(k)
+           !$OMP DO
+           do k=1,grd%km
+              DefBuf4D(:,:,k,l) = DefBuf4D(:,:,k,l) * grd%scy(:,:) 
+           enddo
+           !$OMP END DO
+           !$OMP END PARALLEL  
+        enddo
+        
+        ! Reordering data to send back
+        DEALLOCATE(SendBuf4D, RecBuf1D)
+        ALLOCATE(SendBuf4D(grd%nchl, grd%km, localRow, GlobalCol))
+        ALLOCATE( RecBuf1D(grd%nchl*grd%km*grd%jm*grd%im))
+        
+        do j=1,GlobalCol
+           do i=1,localRow
+              do k=1,grd%km
+                 SendBuf4D(1,k,i,j) = DefBuf4D(i,j,k,1)
+              end do
+           end do
+        end do
+        
+        call MPI_Alltoallv(SendBuf4D, RecCountY4D, RecDisplY4D, MPI_REAL8, &
+             RecBuf1D, SendCountY4D, SendDisplY4D, MPI_REAL8, CommSliceY, ierr)
+        
+        do j=1,grd%jm
+           do iProc=0, NumProcJ-1
+              do i=1, SendCountY4D(iProc+1)/(grd%jm*grd%km)
+                 do k=1,grd%km
+                    grd%chl(i + SendDisplY4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
+                         RecBuf1D(k + (i-1)*grd%km + (j-1)*SendCountY4D(iProc+1)/grd%jm + SendDisplY4D(iProc+1))
+                 end do
+              end do
+           end do
+        end do
+        
+     else ! NumProcJ .eq. 1
+        ! Apply recursive filter in y direction
+        call rcfl_y( localRow, GlobalCol, grd%km*grd%nchl, grd%jmax, grd%aey, grd%bey, grd%chl, grd%jnx, grd%jmx)
+        
+        ! ---
+        ! Scale by the scaling factor
+        do l=1,grd%nchl
+           !$OMP PARALLEL  &
+           !$OMP PRIVATE(k)
+           !$OMP DO
+           do k=1,grd%km
+              grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:) 
+           enddo
+           !$OMP END DO
+           !$OMP END PARALLEL  
+        enddo
+     end if
+
+  endif
+  
+  ! ---
+  ! y direction
+  if(NumProcJ .gt. 1) then
+     DEALLOCATE(SendBuf4D, RecBuf1D)
+     ALLOCATE(SendBuf4D(grd%nchl, grd%km, grd%jm, grd%im))
+     ALLOCATE( RecBuf1D(grd%nchl*grd%km*localRow*GlobalCol))
+     
+     do l=1,grd%nchl
+        do k=1,grd%km
+           do j=1,grd%jm
+              do i=1,grd%im
+                 SendBuf4D(l,k,j,i) = grd%chl_ad(i,j,k,l)
+              end do
+           end do
+        end do
+     end do
+
+     call MPI_Alltoallv(SendBuf4D, SendCountY4D, SendDisplY4D, MPI_REAL8, &
+          RecBuf1D, RecCountY4D, RecDisplY4D, MPI_REAL8, CommSliceY, ierr)
+     
+     do i=1,localRow
+        do iProc=0, NumProcJ-1
+           do j=1,RecCountY4D(iProc+1)/(localRow*grd%km)
+              do k=1,grd%km
+                 DefBuf4D(i,j+RecDisplY4D(iProc+1)/(localRow*grd%km),k,1) = &
+                      RecBuf1D(k + (j-1)*grd%km + (i-1)*RecCountY4D(iProc+1)/localRow + RecDisplY4D(iProc+1))
+              end do
+           end do
+        end do
+     end do
+     
+     ! ---
+     ! Scale by the scaling factor
+     do l=1,grd%nchl
+        !$OMP PARALLEL  &
+        !$OMP PRIVATE(k)
+        !$OMP DO
+        do k=1,grd%km
+           DefBuf4D(:,:,k,l) = DefBuf4D(:,:,k,l) * grd%scy(:,:) 
+        enddo
+        !$OMP END DO
+        !$OMP END PARALLEL  
+     enddo
+     
+     ! Apply recursive filter in y direction
+     call rcfl_y_ad( localRow, GlobalCol, grd%km*grd%nchl, grd%jmax, grd%aey, grd%bey, DefBuf4D, grd%jnx, grd%jmx)
+     
+     ! Reordering data to send back
+     DEALLOCATE(SendBuf4D, RecBuf1D)
+     ALLOCATE(SendBuf4D(grd%nchl, grd%km, localRow, GlobalCol))
+     ALLOCATE( RecBuf1D(grd%nchl*grd%km*grd%jm*grd%im))
+     
+     do j=1,GlobalCol
+        do i=1,localRow
+           do k=1,grd%km
+              SendBuf4D(1,k,i,j) = DefBuf4D(i,j,k,1)
+           end do
+        end do
+     end do
+     
+     call MPI_Alltoallv(SendBuf4D, RecCountY4D, RecDisplY4D, MPI_REAL8, &
+          RecBuf1D, SendCountY4D, SendDisplY4D, MPI_REAL8, CommSliceY, ierr)
+     
+     do j=1,grd%jm
+        do iProc=0, NumProcJ-1
+           do i=1, SendCountY4D(iProc+1)/(grd%jm*grd%km)
+              do k=1,grd%km
+                 grd%chl_ad(i + SendDisplY4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
+                      RecBuf1D(k + (i-1)*grd%km + (j-1)*SendCountY4D(iProc+1)/grd%jm + SendDisplY4D(iProc+1))
+              end do
+           end do
+        end do
+     end do
+     DEALLOCATE(SendBuf4D, RecBuf1D, DefBuf4D)
+     
+  else ! NumProcJ .eq. 1
+     ! ---
+     ! Scale by the scaling factor
+     do l=1,grd%nchl
+        !$OMP PARALLEL  &
+        !$OMP PRIVATE(k)
+        !$OMP DO
+        do k=1,grd%km
+           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:) 
+        enddo
+        !$OMP END DO
+        !$OMP END PARALLEL  
+     enddo
+     
+     ! Apply recursive filter in y direction
+     call rcfl_y_ad( localRow, GlobalCol, grd%km*grd%nchl, grd%jmax, grd%aey, grd%bey, grd%chl_ad, grd%jnx, grd%jmx)
+  end if
+  
+  ! ---
+  ! x direction
+  if(NumProcI .gt. 1) then
      ALLOCATE(SendBuf4D(grd%nchl, grd%km, grd%im, grd%jm))
-     ALLOCATE( RecBuf1D(GlobalRow*localCol*grd%km*grd%nchl))
+     ALLOCATE( RecBuf1D(grd%nchl*grd%km*localCol*GlobalRow))
      ALLOCATE( DefBuf4D(GlobalRow, localCol, grd%km, grd%nchl))
      
      do l=1,grd%nchl
         do k=1,grd%km
            do j=1,grd%jm
               do i=1,grd%im
-                 SendBuf4D(l,k,i,j) = grd%chl(i,j,k,l)
+                 SendBuf4D(l,k,i,j) = grd%chl_ad(i,j,k,l)
               end do
            end do
         end do
      end do
-
+  
      call MPI_Alltoallv(SendBuf4D, SendCountX4D, SendDisplX4D, MPI_REAL8, &
           RecBuf1D, RecCountX4D, RecDisplX4D, MPI_REAL8, CommSliceX, ierr)
      
@@ -714,13 +998,11 @@ subroutine parallel_ver_hor_ad
            do i=1,RecCountX4D(iProc+1)/(localCol*grd%km)
               do k=1,grd%km
                  DefBuf4D(i + RecDisplX4D(iProc+1)/(localCol*grd%km),j,k,1) = &
-                      RecBuf1D(k + (i-1)*grd%km +(j-1)*RecCountX4D(iProc+1)/localCol + RecDisplX4D(iProc+1))
+                      RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX4D(iProc+1)/localCol + RecDisplX4D(iProc+1))
               end do
            end do
         end do
      end do
-     
-     call rcfl_x( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, DefBuf4D, grd%inx, grd%imx)
      
      ! ---
      ! Scale by the scaling factor
@@ -734,7 +1016,9 @@ subroutine parallel_ver_hor_ad
         !$OMP END DO
         !$OMP END PARALLEL  
      enddo
-
+     
+     call rcfl_x_ad( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, DefBuf4D, grd%inx, grd%imx)
+  
      ! Reordering data to send back
      DEALLOCATE(SendBuf4D, RecBuf1D)
      ALLOCATE(SendBuf4D(grd%nchl, grd%km, localCol, GlobalRow))
@@ -750,54 +1034,21 @@ subroutine parallel_ver_hor_ad
      
      call MPI_Alltoallv(SendBuf4D, RecCountX4D, RecDisplX4D, MPI_REAL8, &
           RecBuf1D, SendCountX4D, SendDisplX4D, MPI_REAL8, CommSliceX, ierr)
-
+     
      do i=1,grd%im
         do iProc=0, NumProcI-1
            do j=1,SendCountX4D(iProc+1)/(grd%im*grd%km)
               do k=1,grd%km
-                 grd%chl(i, j + SendDisplX4D(iProc+1)/(grd%im*grd%km),k,1) = &
+                 grd%chl_ad(i, j + SendDisplX4D(iProc+1)/(grd%im*grd%km),k,1) = &
                       RecBuf1D(k + (j-1)*grd%km +(i-1)*SendCountX4D(iProc+1)/grd%im + SendDisplX4D(iProc+1))
               end do
            end do
         end do
      end do
-
-
-
-     ! ! ---
-     ! ! y direction
+     
      DEALLOCATE(SendBuf4D, RecBuf1D, DefBuf4D)
-     ALLOCATE(SendBuf4D(grd%nchl, grd%km, grd%jm, grd%im))
-     ALLOCATE( RecBuf1D(grd%nchl*grd%km*localRow*GlobalCol))     
-     ALLOCATE( DefBuf4D(localRow, GlobalCol, grd%km, grd%nchl))
-
-     do l=1,grd%nchl
-        do k=1,grd%km
-           do j=1,grd%jm
-              do i=1,grd%im
-                 SendBuf4D(l,k,j,i) = grd%chl(i,j,k,l)
-              end do
-           end do
-        end do
-     end do
-     
-     call MPI_Alltoallv(SendBuf4D, SendCountY4D, SendDisplY4D, MPI_REAL8, &
-          RecBuf1D, RecCountY4D, RecDisplY4D, MPI_REAL8, CommSliceY, ierr)
-     
-     do i=1,localRow
-        do iProc=0, NumProcJ-1
-           do j=1,RecCountY4D(iProc+1)/(localRow*grd%km)
-              do k=1,grd%km
-                 DefBuf4D(i,j+RecDisplY4D(iProc+1)/(localRow*grd%km),k,1) = &
-                      RecBuf1D(k + (j-1)*grd%km + (i-1)*RecCountY4D(iProc+1)/localRow + RecDisplY4D(iProc+1))
-              end do
-           end do
-        end do
-     end do
-     
-     ! Apply recursive filter in y direction
-     call rcfl_y( localRow, GlobalCol, grd%km*grd%nchl, grd%jmax, grd%aey, grd%bey, DefBuf4D, grd%jnx, grd%jmx)
-
+  
+  else ! NumProcI .eq. 1
      ! ---
      ! Scale by the scaling factor
      do l=1,grd%nchl
@@ -805,188 +1056,14 @@ subroutine parallel_ver_hor_ad
         !$OMP PRIVATE(k)
         !$OMP DO
         do k=1,grd%km
-           DefBuf4D(:,:,k,l) = DefBuf4D(:,:,k,l) * grd%scy(:,:) 
+           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:) 
         enddo
         !$OMP END DO
         !$OMP END PARALLEL  
      enddo
-
-     ! Reordering data to send back
-     DEALLOCATE(SendBuf4D, RecBuf1D)
-     ALLOCATE(SendBuf4D(grd%nchl, grd%km, localRow, GlobalCol))
-     ALLOCATE( RecBuf1D(grd%nchl*grd%km*grd%jm*grd%im))
      
-     do j=1,GlobalCol
-        do i=1,localRow
-           do k=1,grd%km
-              SendBuf4D(1,k,i,j) = DefBuf4D(i,j,k,1)
-           end do
-        end do
-     end do
-
-     call MPI_Alltoallv(SendBuf4D, RecCountY4D, RecDisplY4D, MPI_REAL8, &
-          RecBuf1D, SendCountY4D, SendDisplY4D, MPI_REAL8, CommSliceY, ierr)
-     
-     do j=1,grd%jm
-        do iProc=0, NumProcJ-1
-           do i=1, SendCountY4D(iProc+1)/(grd%jm*grd%km)
-              do k=1,grd%km
-                 grd%chl(i + SendDisplY4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
-                      RecBuf1D(k + (i-1)*grd%km + (j-1)*SendCountY4D(iProc+1)/grd%jm + SendDisplY4D(iProc+1))
-              end do
-           end do
-        end do
-     end do
-     
-  endif
-  
-  ! ---
-  ! y direction
-  DEALLOCATE(SendBuf4D, RecBuf1D)
-  ALLOCATE(SendBuf4D(grd%nchl, grd%km, grd%jm, grd%im))
-  ALLOCATE( RecBuf1D(grd%nchl*grd%km*localRow*GlobalCol))
-  
-  do l=1,grd%nchl
-     do k=1,grd%km
-        do j=1,grd%jm
-           do i=1,grd%im
-              SendBuf4D(l,k,j,i) = grd%chl_ad(i,j,k,l)
-           end do
-        end do
-     end do
-  end do
-
-  call MPI_Alltoallv(SendBuf4D, SendCountY4D, SendDisplY4D, MPI_REAL8, &
-       RecBuf1D, RecCountY4D, RecDisplY4D, MPI_REAL8, CommSliceY, ierr)
-  
-  do i=1,localRow
-     do iProc=0, NumProcJ-1
-        do j=1,RecCountY4D(iProc+1)/(localRow*grd%km)
-           do k=1,grd%km
-              DefBuf4D(i,j+RecDisplY4D(iProc+1)/(localRow*grd%km),k,1) = &
-                   RecBuf1D(k + (j-1)*grd%km + (i-1)*RecCountY4D(iProc+1)/localRow + RecDisplY4D(iProc+1))
-           end do
-        end do
-     end do
-  end do
-  
-  ! ---
-  ! Scale by the scaling factor
-  do l=1,grd%nchl
-     !$OMP PARALLEL  &
-     !$OMP PRIVATE(k)
-     !$OMP DO
-     do k=1,grd%km
-        DefBuf4D(:,:,k,l) = DefBuf4D(:,:,k,l) * grd%scy(:,:) 
-     enddo
-     !$OMP END DO
-     !$OMP END PARALLEL  
-  enddo
-
-  ! Apply recursive filter in y direction
-  call rcfl_y_ad( localRow, GlobalCol, grd%km*grd%nchl, grd%jmax, grd%aey, grd%bey, DefBuf4D, grd%jnx, grd%jmx)
-
-  ! Reordering data to send back
-  DEALLOCATE(SendBuf4D, RecBuf1D)
-  ALLOCATE(SendBuf4D(grd%nchl, grd%km, localRow, GlobalCol))
-  ALLOCATE( RecBuf1D(grd%nchl*grd%km*grd%jm*grd%im))
-  
-  do j=1,GlobalCol
-     do i=1,localRow
-        do k=1,grd%km
-           SendBuf4D(1,k,i,j) = DefBuf4D(i,j,k,1)
-        end do
-     end do
-  end do
-  
-  call MPI_Alltoallv(SendBuf4D, RecCountY4D, RecDisplY4D, MPI_REAL8, &
-       RecBuf1D, SendCountY4D, SendDisplY4D, MPI_REAL8, CommSliceY, ierr)
-  
-  do j=1,grd%jm
-     do iProc=0, NumProcJ-1
-        do i=1, SendCountY4D(iProc+1)/(grd%jm*grd%km)
-           do k=1,grd%km
-              grd%chl_ad(i + SendDisplY4D(iProc+1)/(grd%jm*grd%km),j,k,1) = &
-                   RecBuf1D(k + (i-1)*grd%km + (j-1)*SendCountY4D(iProc+1)/grd%jm + SendDisplY4D(iProc+1))
-           end do
-        end do
-     end do
-  end do
-  
-  
-  ! ---
-  ! x direction
-  DEALLOCATE(SendBuf4D, RecBuf1D, DefBuf4D)
-  ALLOCATE(SendBuf4D(grd%nchl, grd%km, grd%im, grd%jm))
-  ! ALLOCATE( RecBuf4D(grd%nchl, grd%km, grd%im, grd%jm))
-  ALLOCATE( RecBuf1D(grd%nchl*grd%km*localCol*GlobalRow))
-  ALLOCATE( DefBuf4D(GlobalRow, localCol, grd%km, grd%nchl))
-  
-  do l=1,grd%nchl
-     do k=1,grd%km
-        do j=1,grd%jm
-           do i=1,grd%im
-              SendBuf4D(l,k,i,j) = grd%chl_ad(i,j,k,l)
-           end do
-        end do
-     end do
-  end do
-  
-  call MPI_Alltoallv(SendBuf4D, SendCountX4D, SendDisplX4D, MPI_REAL8, &
-       RecBuf1D, RecCountX4D, RecDisplX4D, MPI_REAL8, CommSliceX, ierr)
-
-  do j=1,localCol
-     do iProc=0, NumProcI-1
-        do i=1,RecCountX4D(iProc+1)/(localCol*grd%km)
-           do k=1,grd%km
-              DefBuf4D(i + RecDisplX4D(iProc+1)/(localCol*grd%km),j,k,1) = &
-                   RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX4D(iProc+1)/localCol + RecDisplX4D(iProc+1))
-           end do
-        end do
-     end do
-  end do
-  
-  ! ---
-  ! Scale by the scaling factor
-  do l=1,grd%nchl
-     !$OMP PARALLEL  &
-     !$OMP PRIVATE(k)
-     !$OMP DO
-     do k=1,grd%km
-        DefBuf4D(:,:,k,l) = DefBuf4D(:,:,k,l) * grd%scx(:,:) 
-     enddo
-     !$OMP END DO
-     !$OMP END PARALLEL  
-  enddo
-
-  call rcfl_x_ad( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, DefBuf4D, grd%inx, grd%imx)
-  
-  ! Reordering data to send back
-  DEALLOCATE(SendBuf4D, RecBuf1D)
-  ALLOCATE(SendBuf4D(grd%nchl, grd%km, localCol, GlobalRow))
-  ALLOCATE( RecBuf1D(grd%nchl*grd%km*grd%jm*grd%im))
-     
-  do k=1,grd%km
-     do j=1,localCol
-        do i=1,GlobalRow
-           SendBuf4D(1,k,j,i) = DefBuf4D(i,j,k,1)
-        end do
-     end do
-  end do
-  
-  call MPI_Alltoallv(SendBuf4D, RecCountX4D, RecDisplX4D, MPI_REAL8, &
-       RecBuf1D, SendCountX4D, SendDisplX4D, MPI_REAL8, CommSliceX, ierr)
-  
-  do i=1,grd%im
-     do iProc=0, NumProcI-1
-        do j=1,SendCountX4D(iProc+1)/(grd%im*grd%km)
-           do k=1,grd%km
-              grd%chl_ad(i, j + SendDisplX4D(iProc+1)/(grd%im*grd%km),k,1) = &
-                   RecBuf1D(k + (j-1)*grd%km +(i-1)*SendCountX4D(iProc+1)/grd%im + SendDisplX4D(iProc+1))
-           end do
-        end do
-     end do
-  end do
+     call rcfl_x_ad( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, grd%chl_ad, grd%inx, grd%imx)
+  end if
   
   ! ---
   ! Average
@@ -1198,7 +1275,5 @@ subroutine parallel_ver_hor_ad
   ! ---
   ! Vertical EOFs           
   call veof_ad
-
-  DEALLOCATE(SendBuf4D, RecBuf1D, DefBuf4D)
   
 end subroutine parallel_ver_hor_ad
