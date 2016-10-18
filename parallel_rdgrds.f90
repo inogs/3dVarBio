@@ -45,6 +45,15 @@ subroutine parallel_rdgrd
   if(MyRank .eq. 0) then
      write(drv%dia,*)'Grid dimensions are: ',GlobalRow,GlobalCol,grd%km
 
+     write(drv%dia,*) ' '
+     write(drv%dia,*) 'Dom_Size'
+     write(drv%dia,*) ' '
+     write(drv%dia,*) ' number of processors following i : NumProcI   = ', NumProcI
+     write(drv%dia,*) ' number of processors following j : NumProcJ   = ', NumProcJ
+     write(drv%dia,*) ' '
+     write(drv%dia,*) ' local domains : < or = NumProcI x NumProcJ number of processors   = ', NumProcIJ
+     write(drv%dia,*) ' '
+
      WRITE(*,*) 'Dimension_Med_Grid'
      WRITE(*,*) ' '
      WRITE(*,*) ' GlobalRow  : first  dimension of global domain --> i ',GlobalRow

@@ -18,6 +18,7 @@ subroutine tao_minimizer
   PetscInt        ::   n, M, GlobalStart, MyEnd
   PetscScalar     ::   MyTolerance
   integer(i4)     ::   j
+  real(8)         ::   MaxGrad
   
   ! Working arrays
   PetscInt, allocatable, dimension(:)     :: loc
@@ -83,27 +84,39 @@ subroutine tao_minimizer
   ! Create Tao object and set type BLMVM (ones that use BFGS minimization algorithm)
   call TaoCreate(MPI_COMM_WORLD, tao, ierr)
   CHKERRQ(ierr)
-  call TaoSetType(tao,"blmvm",ierr)
+  ! call TaoSetType(tao,"blmvm",ierr)
+  call TaoSetType(tao,"lmvm",ierr)
   CHKERRQ(ierr)
   
   ! Set initial solution array, MyBounds and MyFuncAndGradient routines
   call TaoSetInitialVector(tao, MyState, ierr)
   CHKERRQ(ierr)
-  call TaoSetVariableBoundsRoutine(tao, MyBounds, PETSC_NULL_OBJECT, ierr)
-  CHKERRQ(ierr)
+  ! call TaoSetVariableBoundsRoutine(tao, MyBounds, PETSC_NULL_OBJECT, ierr)
+  ! CHKERRQ(ierr)
   call TaoSetObjectiveAndGradientRoutine(tao, MyFuncAndGradient, PETSC_NULL_OBJECT, ierr)
   CHKERRQ(ierr)
 
   ! Set MyTolerance and ConvergenceTest
-  ! MyTolerance = 1.0d1
-  MyTolerance = 2.0d-2
-  call TaoSetTolerances(tao, MyTolerance, PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr)
-  CHKERRQ(ierr)
-  call TaoSetConvergenceTest(tao, MyConvTest, PETSC_NULL_OBJECT, ierr)
+  call parallel_costf
+  MaxGrad = 0
+  do j=1,ctl%n
+     MaxGrad = max(MaxGrad, abs(ctl%g_c(j)))
+  end do
+
+  call MPI_Allreduce(MPI_IN_PLACE, MaxGrad, 1, MPI_REAL8, MPI_MAX, MPI_COMM_WORLD, ierr)
+  MyTolerance = ctl%pgper * MaxGrad
+  if(MyRank .eq. 0) then
+     print*, "Setting MyTolerance", MyTolerance
+     write(drv%dia,*), "Setting MyTolerance", MyTolerance
+  endif
+
+  call TaoSetTolerances(tao, MyTolerance, 1.0d-4, ctl%pgper, ierr) !PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr) !
   CHKERRQ(ierr)
 
+  ! call TaoSetConvergenceTest(tao, MyConvTest, PETSC_NULL_OBJECT, ierr)
+  ! CHKERRQ(ierr)
+
   ! Perform minimization
-  ! print*, "MyRank", MyRank, "starting TaoSolve"
   call TaoSolve(tao, ierr)
   CHKERRQ(ierr)
 
@@ -144,8 +157,7 @@ subroutine tao_minimizer
      write(drv%dia,*) ''
      
      print*, ""
-     print*, "Minimization done with ", drv%MyCounter
-     print*, "iterations"
+     print*, "Minimization done with ", drv%MyCounter, "iterations"
      print*, ""
   endif
 
