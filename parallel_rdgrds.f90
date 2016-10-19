@@ -246,7 +246,7 @@ subroutine DomainDecomposition
      endif
      call MPI_Bcast(ilcit, NumProcI, MPI_INT, 0, MPI_COMM_WORLD, ierr)
      call MPI_Bcast(ilcjt, NumProcI, MPI_INT, 0, MPI_COMM_WORLD, ierr)
-     print*, "MyRank", MyRank, ilcit(:,:), ilcjt(:,:)
+    !  print*, "MyRank", MyRank, ilcit(:,:), ilcjt(:,:)
 
     !  call MPI_Barrier(MPI_COMM_WORLD, ierr)
     !  call MPI_Abort(MPI_COMM_WORLD, -1, ierr)
