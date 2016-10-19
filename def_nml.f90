@@ -39,7 +39,7 @@ subroutine def_nml
 #ifdef _USE_MPI
   use mpi_str
 #endif
-  
+
   implicit none
 
   INTEGER(i4), PARAMETER    :: ngrids = 3
@@ -94,7 +94,7 @@ endif
 #ifdef _USE_MPI
   if(MyRank .eq. 0) then
 #endif
-     
+
   write(drv%dia,*) '------------------------------------------------------------'
   write(drv%dia,*) '  '
   write(drv%dia,*) '                      NAMELISTS: '
@@ -127,11 +127,11 @@ endif
 
 ! ---
   read(11,ctllst)
-  
+
 #ifdef _USE_MPI
   if(MyRank .eq. 0) then
 #endif
-     
+
   write(drv%dia,*) '------------------------------------------------------------'
   write(drv%dia,*) ' MINIMIZER NAMELIST INPUT: '
   write(drv%dia,*) ' Number of saved vectors:         ctl_m    = ', ctl_m
@@ -142,21 +142,21 @@ endif
 endif
 #endif
 
-       ctl%m     = ctl_m  
+       ctl%m     = ctl_m
        ctl%pgtol = ctl_tol
        ctl%pgper = ctl_per
 
 ! ---
   read(11,covlst)
-  
+
 #ifdef _USE_MPI
   if(MyRank .eq. 0) then
 #endif
-     
+
   write(drv%dia,*) '------------------------------------------------------------'
   write(drv%dia,*) ' COVARIANCE NAMELIST INPUT: '
-  write(drv%dia,*) ' Number of EOFs:                  neof     = ', neof    
-  write(drv%dia,*) ' Number of regions:               nreg     = ', nreg    
+  write(drv%dia,*) ' Number of EOFs:                  neof     = ', neof
+  write(drv%dia,*) ' Number of regions:               nreg     = ', nreg
   write(drv%dia,*) ' Read EOFs from a file:           read_eof = ', read_eof
   write(drv%dia,*) ' Half number of iterations:       rcf_ntr  = ', rcf_ntr
   write(drv%dia,*) ' Horizontal correlation radius:   rcf_L    = ', rcf_L
@@ -175,19 +175,19 @@ endif
 
 ! ---
   read(11,biolst)
-  
+
 #ifdef _USE_MPI
   if(MyRank .eq. 0) then
 #endif
-     
+
   write(drv%dia,*) '------------------------------------------------------------'
   write(drv%dia,*) '------------------------------------------------------------'
   write(drv%dia,*) ' BIOLOGY NAMELIST INPUT: '
-  write(drv%dia,*) ' Biological assimilation          biol     = ', biol    
-  write(drv%dia,*) ' Biological+physical assimilation bphy     = ', bphy    
-  write(drv%dia,*) ' Number of phytoplankton species  nchl     = ', nchl    
+  write(drv%dia,*) ' Biological assimilation          biol     = ', biol
+  write(drv%dia,*) ' Biological+physical assimilation bphy     = ', bphy
+  write(drv%dia,*) ' Number of phytoplankton species  nchl     = ', nchl
   write(drv%dia,*) ' Minimum depth for chlorophyll    chl_dep  = ', chl_dep
-  
+
   write(drv%dia,*) '------------------------------------------------------------'
   write(drv%dia,*) '------------------------------------------------------------'
   write(drv%dia,*) ''
@@ -202,6 +202,6 @@ endif
   grd%nchl = nchl
   chl%dep  = chl_dep
   drv%argo = 0 !1
-  drv%ReadDomDec = 0 !1
-  
+  drv%ReadDomDec = 1
+
 end subroutine def_nml

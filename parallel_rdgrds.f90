@@ -191,45 +191,92 @@ subroutine DomainDecomposition
   implicit none
 
   integer, allocatable :: ilcit(:,:), ilcjt(:,:)
-  integer(i8) :: ji, jj, TmpInt ! jpi, jpj, nn, i
-  integer(i8) :: GlobalRestCol, GlobalRestRow, i
+  integer(i8) :: ji, jj, TmpInt, ierr ! jpi, jpj, nn, i
+  integer(i8) :: GlobalRestCol, GlobalRestRow
+  integer(i8) :: i, j, k
+  integer(i8) :: NWaterPoints, TmpWaterPoints
+  integer(i8) :: NRows, NCols
   integer(i8) :: SliceRestRow, SliceRestCol
   integer(i8) :: OffsetCol, OffsetRow
 
   GlobalRestRow = mod(GlobalRow, NumProcI)
   GlobalRestCol = mod(GlobalCol, NumProcJ)
-  print*, "Within DomainDecomposition Subroutine!!!!"
+
   if(drv%ReadDomDec .eq. 1) then
      allocate(ilcit(NumProcI, NumProcJ)) ; ilcit = huge(ilcit(1,1))
      allocate(ilcjt(NumProcI, NumProcJ)) ; ilcjt = huge(ilcjt(1,1))
+     NWaterPoints = 0
 
-     open(3333,file='Dom_Dec_jpi.ascii', form='formatted')
-     open(3334,file='Dom_Dec_jpj.ascii', form='formatted')
+     if(MyRank .eq. 0) then
+       do k=1,grd%km
+          do j=1,GlobalCol
+            do i=1,GlobalRow
+             if (grd%global_msk(i,j,k).eq.1) then
+                NWaterPoints = NWaterPoints + 1
+              endif
+            enddo
+          enddo
+        enddo
+        print*, "MyRank: ", MyRank, "Number of Water Points: ", NWaterPoints
 
-     read(3333,*) ((ilcit(ji,jj), jj=1,NumProcJ),ji=1,NumProcI)
-     read(3334,*) ((ilcjt(ji,jj), jj=1,NumProcJ),ji=1,NumProcI)
-
-     close(3333)
-     close(3334)
-
-     do ji=1,NumProcI
-        do jj=1,NumProcJ
-           if(NumProcJ .gt. 1) then
-              if(mod(NumProcJ-jj, NumProcJ-1) .eq. 0) then
-                 ilcjt(ji,jj) = ilcjt(ji,jj) - 1
-              else
-                 ilcjt(ji,jj) = ilcjt(ji,jj) - 2
-              end if
-           end if
-           if(NumProcI .gt. 1) then
-              if(mod(NumProcI-ji, NumProcI-1) .eq. 0) then
-                 ilcit(ji,jj) = ilcit(ji,jj) - 1
-              else
-                 ilcit(ji,jj) = ilcit(ji,jj) - 2
-              end if
-           end if
+        TmpWaterPoints = 0
+        TmpInt = 1
+        NRows = 0
+        do i=1,GlobalRow
+          do j=1,GlobalCol
+            do k=1,grd%km
+              if(grd%global_msk(i,j,k) .eq. 1) then
+                TmpWaterPoints = TmpWaterPoints + 1
+              endif
+            end do
+          end do
+          NRows = NRows + 1
+          if(TmpWaterPoints .ge. NWaterPoints/size .or. i .eq. GlobalRow) then
+            print*, "Process", TmpInt-1, "has", TmpWaterPoints, "Water Points"
+            ilcit(TmpInt, 1) = NRows
+            ilcjt(TmpInt, 1) = GlobalCol
+            TmpWaterPoints = 0
+            NRows = 0
+            TmpInt = TmpInt + 1
+          endif
         end do
-     end do
+        write(*,*) ""
+        write(*,*) "ilcit:", ilcit(:,1)
+        write(*,*) ""
+     endif
+     call MPI_Bcast(ilcit, NumProcI, MPI_INT, 0, MPI_COMM_WORLD, ierr)
+     call MPI_Bcast(ilcjt, NumProcI, MPI_INT, 0, MPI_COMM_WORLD, ierr)
+     print*, "MyRank", MyRank, ilcit(:,:), ilcjt(:,:)
+
+    !  call MPI_Barrier(MPI_COMM_WORLD, ierr)
+    !  call MPI_Abort(MPI_COMM_WORLD, -1, ierr)
+    !  open(3333,file='Dom_Dec_jpi.ascii', form='formatted')
+    !  open(3334,file='Dom_Dec_jpj.ascii', form='formatted')
+     !
+    !  read(3333,*) ((ilcit(ji,jj), jj=1,NumProcJ),ji=1,NumProcI)
+    !  read(3334,*) ((ilcjt(ji,jj), jj=1,NumProcJ),ji=1,NumProcI)
+     !
+    !  close(3333)
+    !  close(3334)
+     !
+    !  do ji=1,NumProcI
+    !     do jj=1,NumProcJ
+    !        if(NumProcJ .gt. 1) then
+    !           if(mod(NumProcJ-jj, NumProcJ-1) .eq. 0) then
+    !              ilcjt(ji,jj) = ilcjt(ji,jj) - 1
+    !           else
+    !              ilcjt(ji,jj) = ilcjt(ji,jj) - 2
+    !           end if
+    !        end if
+    !        if(NumProcI .gt. 1) then
+    !           if(mod(NumProcI-ji, NumProcI-1) .eq. 0) then
+    !              ilcit(ji,jj) = ilcit(ji,jj) - 1
+    !           else
+    !              ilcit(ji,jj) = ilcit(ji,jj) - 2
+    !           end if
+    !        end if
+    !     end do
+    !  end do
 
      grd%im = ilcit(MyPosI+1, MyPosJ+1)
      grd%jm = ilcjt(MyPosI+1, MyPosJ+1)
