@@ -190,7 +190,7 @@ subroutine DomainDecomposition
 
   implicit none
 
-  integer, allocatable :: ilcit(:,:), ilcjt(:,:)
+  integer, allocatable :: ilcit(:,:), ilcjt(:,:), BalancedSlice(:,:)
   integer(i8) :: ji, jj, TmpInt, ierr ! jpi, jpj, nn, i
   integer(i8) :: GlobalRestCol, GlobalRestRow
   integer(i8) :: i, j, k
@@ -203,8 +203,9 @@ subroutine DomainDecomposition
   GlobalRestCol = mod(GlobalCol, NumProcJ)
 
   if(drv%ReadDomDec .eq. 1) then
-     allocate(ilcit(NumProcI, NumProcJ)) ; ilcit = huge(ilcit(1,1))
-     allocate(ilcjt(NumProcI, NumProcJ)) ; ilcjt = huge(ilcjt(1,1))
+     allocate(ilcit(NumProcI, NumProcJ))
+     allocate(ilcjt(NumProcI, NumProcJ))
+     allocate(BalancedSlice(NumProcI, NumProcJ))
      NWaterPoints = 0
 
      if(MyRank .eq. 0) then
@@ -217,7 +218,7 @@ subroutine DomainDecomposition
             enddo
           enddo
         enddo
-        print*, "MyRank: ", MyRank, "Number of Water Points: ", NWaterPoints
+        print*, "Total number of Water Points: ", NWaterPoints
 
         TmpWaterPoints = 0
         TmpInt = 1
@@ -240,12 +241,39 @@ subroutine DomainDecomposition
             TmpInt = TmpInt + 1
           endif
         end do
+        print*, ""
+        print*, "Compute quantities for slicing along x direction"
+        print*, ""
+
+        TmpWaterPoints = 0
+        TmpInt = 1
+        NCols = 0
+        do j=1,GlobalCol
+          do i=1,GlobalRow
+            do k=1,grd%km
+              if(grd%global_msk(i,j,k) .eq. 1) then
+                TmpWaterPoints = TmpWaterPoints + 1
+              endif
+            end do
+          end do
+          NCols = NCols + 1
+          if(TmpWaterPoints .ge. NWaterPoints/size .or. j .eq. GlobalCol) then
+            print*, "Process", TmpInt-1, "has", TmpWaterPoints, "Water Points"
+            BalancedSlice(TmpInt, 1) = NCols
+            TmpWaterPoints = 0
+            NCols = 0
+            TmpInt = TmpInt + 1
+          endif
+        end do
+
         write(*,*) ""
         write(*,*) "ilcit:", ilcit(:,1)
+        write(*,*) "BalancedSlice:", BalancedSlice(:,:)
         write(*,*) ""
      endif
      call MPI_Bcast(ilcit, NumProcI, MPI_INT, 0, MPI_COMM_WORLD, ierr)
      call MPI_Bcast(ilcjt, NumProcI, MPI_INT, 0, MPI_COMM_WORLD, ierr)
+     call MPI_Bcast(BalancedSlice, NumProcI, MPI_INT, 0, MPI_COMM_WORLD, ierr)
     !  print*, "MyRank", MyRank, ilcit(:,:), ilcjt(:,:)
 
     !  call MPI_Barrier(MPI_COMM_WORLD, ierr)
@@ -300,15 +328,15 @@ subroutine DomainDecomposition
      ! initializing quantities needed to slicing along i and j directions
      !
      localRow = grd%im / NumProcJ
-     localCol = grd%jm / NumProcI
-     SliceRestRow = mod(grd%im, NumProcJ)
-     SliceRestCol = mod(grd%jm, NumProcI)
-
-     ! x direction (-> GlobalRow)
-     if(SliceRestCol .ne. 0) then !print*,"WARNING!!!!!! mod(grd%jm, NumProcI) .ne. 0!!! Case not implemented yet!!"
-        if(MyPosI .lt. SliceRestCol) &
-             localCol = localCol + 1
-     end if
+     localCol = BalancedSlice(MyPosI+1, MyPosJ+1) ! grd%jm / NumProcI
+    !  SliceRestRow = mod(grd%im, NumProcJ)
+    !  SliceRestCol = 0 !mod(grd%jm, NumProcI)
+     !
+    !  ! x direction (-> GlobalRow)
+    !  if(SliceRestCol .ne. 0) then !print*,"WARNING!!!!!! mod(grd%jm, NumProcI) .ne. 0!!! Case not implemented yet!!"
+    !     if(MyPosI .lt. SliceRestCol) &
+    !          localCol = localCol + 1
+    !  end if
 
      SendDisplX4D(1) = 0
      RecDisplX4D(1)  = 0
@@ -317,22 +345,25 @@ subroutine DomainDecomposition
      RecDisplX2D(1)  = 0
 
      do i=1,NumProcI
-        if(i-1 .lt. SliceRestCol) then
-           OffsetRow = 1
-        else
-           OffsetRow = 0
-        end if
+        ! if(i-1 .lt. SliceRestCol) then
+        !    OffsetRow = 1
+        ! else
+        !    OffsetRow = 0
+        ! end if
+        !
+        ! if(i-1 .lt. mod(GlobalRow, NumProcI)) then
+        !    OffsetCol = 1
+        ! else
+        !    OffsetCol = 0
+        ! end if
 
-        if(i-1 .lt. mod(GlobalRow, NumProcI)) then
-           OffsetCol = 1
-        else
-           OffsetCol = 0
-        end if
-
-        SendCountX4D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im * grd%km
+        ! SendCountX4D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im * grd%km
+        ! RecCountX4D(i)  = localCol * grd%km * ilcit(i, MyPosJ+1)
+        SendCountX4D(i) = BalancedSlice(i,1) * grd%im * grd%km
         RecCountX4D(i)  = localCol * grd%km * ilcit(i, MyPosJ+1)
 
-        SendCountX2D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im
+        ! SendCountX2D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im
+        SendCountX2D(i) = BalancedSlice(i,1) * grd%im
         RecCountX2D(i)  = localCol * ilcit(i, MyPosJ+1)
 
         if(i .lt. NumProcI) then
@@ -345,10 +376,10 @@ subroutine DomainDecomposition
      end do
 
      ! y direction (-> GlobalCol)
-     if(SliceRestRow .ne. 0) then
-        if(MyPosJ .lt. SliceRestRow) &
-             localRow = localRow + 1
-     end if
+    !  if(SliceRestRow .ne. 0) then
+    !     if(MyPosJ .lt. SliceRestRow) &
+    !          localRow = localRow + 1
+    !  end if
 
      SendDisplY4D(1) = 0
      RecDisplY4D(1)  = 0
@@ -356,33 +387,38 @@ subroutine DomainDecomposition
      SendDisplY2D(1) = 0
      RecDisplY2D(1)  = 0
 
-     do i=1,NumProcJ
-        if(i-1 .lt. SliceRestRow) then
-           OffsetCol = 1
-        else
-           OffsetCol = 0
-        end if
+     SendCountY4D(1) = grd%im * grd%jm * grd%km
+     RecCountY4D(1)  = localRow * grd%km * ilcjt(MyPosI+1, MyPosJ+1)
+     SendCountY2D(1) = grd%im * grd%jm
+     RecCountY2D(1)  = localRow * ilcjt(MyPosI+1, MyPosJ+1)
 
-        if(i-1 .lt. mod(GlobalCol, NumProcJ)) then
-           OffsetRow = 1
-        else
-           OffsetRow = 0
-        end if
-
-        SendCountY4D(i) = (grd%im / NumProcJ + OffsetCol) * grd%jm * grd%km
-        RecCountY4D(i)  = localRow * grd%km * ilcjt(MyPosI+1, i)
-
-        SendCountY2D(i) = (grd%im / NumProcJ + OffsetCol) * grd%jm
-        RecCountY2D(i)  = localRow * ilcjt(MyPosI+1, i)
-
-        if(i .lt. NumProcJ) then
-           SendDisplY4D(i+1) = SendDisplY4D(i) + SendCountY4D(i)
-           RecDisplY4D(i+1)  = RecDisplY4D(i) + RecCountY4D(i)
-
-           SendDisplY2D(i+1) = SendDisplY2D(i) + SendCountY2D(i)
-           RecDisplY2D(i+1)  = RecDisplY2D(i) + RecCountY2D(i)
-        end if
-     end do
+    !  do i=1,NumProcJ
+    !     if(i-1 .lt. SliceRestRow) then
+    !        OffsetCol = 1
+    !     else
+    !        OffsetCol = 0
+    !     end if
+     !
+    !     if(i-1 .lt. mod(GlobalCol, NumProcJ)) then
+    !        OffsetRow = 1
+    !     else
+    !        OffsetRow = 0
+    !     end if
+     !
+    !     SendCountY4D(i) = (grd%im / NumProcJ + OffsetCol) * grd%jm * grd%km
+    !     RecCountY4D(i)  = localRow * grd%km * ilcjt(MyPosI+1, i)
+     !
+    !     SendCountY2D(i) = (grd%im / NumProcJ + OffsetCol) * grd%jm
+    !     RecCountY2D(i)  = localRow * ilcjt(MyPosI+1, i)
+     !
+    !     if(i .lt. NumProcJ) then
+    !        SendDisplY4D(i+1) = SendDisplY4D(i) + SendCountY4D(i)
+    !        RecDisplY4D(i+1)  = RecDisplY4D(i) + RecCountY4D(i)
+     !
+    !        SendDisplY2D(i+1) = SendDisplY2D(i) + SendCountY2D(i)
+    !        RecDisplY2D(i+1)  = RecDisplY2D(i) + RecCountY2D(i)
+    !     end if
+    !  end do
 
      if(MyPosI .lt. GlobalRestRow) then
         TmpInt = 0
@@ -404,7 +440,7 @@ subroutine DomainDecomposition
         GlobalColOffset = GlobalColOffset + ilcjt(MyPosI+1, i)
      end do
 
-     DEALLOCATE(ilcit, ilcjt)
+     DEALLOCATE(ilcit, ilcjt, BalancedSlice)
 
   else ! drv%ReadDomDec .eq. 0
      !*******************************************
