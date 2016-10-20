@@ -194,7 +194,7 @@ subroutine DomainDecomposition
   integer(i8) :: ji, jj, TmpInt, ierr ! jpi, jpj, nn, i
   integer(i8) :: GlobalRestCol, GlobalRestRow
   integer(i8) :: i, j, k
-  integer(i8) :: NWaterPoints, TmpWaterPoints
+  integer(i8) :: NCoastX, NCoastY, TmpCoast
   integer(i8) :: NRows, NCols
   integer(i8) :: SliceRestRow, SliceRestCol
   integer(i8) :: OffsetCol, OffsetRow
@@ -206,37 +206,61 @@ subroutine DomainDecomposition
      allocate(ilcit(NumProcI, NumProcJ))
      allocate(ilcjt(NumProcI, NumProcJ))
      allocate(BalancedSlice(NumProcI, NumProcJ))
-     NWaterPoints = 0
 
      if(MyRank .eq. 0) then
+       NCoastX = 0
+       NCoastY = 0
+
+       ! compute the number of Coast Points along X direction
        do k=1,grd%km
           do j=1,GlobalCol
-            do i=1,GlobalRow
-             if (grd%global_msk(i,j,k).eq.1) then
-                NWaterPoints = NWaterPoints + 1
+            do i=2,GlobalRow
+              if (grd%global_msk(i,j,k).eq.1 .and. grd%global_msk(i-1,j,k).eq.0 &
+              .or. grd%global_msk(i,j,k).eq.0 .and. grd%global_msk(i-1,j,k).eq.1 &
+              .or. grd%global_msk(i,j,k).eq.1) then
+                NCoastX = NCoastX + 1
               endif
             enddo
           enddo
         enddo
-        print*, "Total number of Water Points: ", NWaterPoints
 
-        TmpWaterPoints = 0
+        ! compute the number of Coast Points along Y direction
+        do k=1,grd%km
+          do i=1,GlobalRow
+           do j=2,GlobalCol
+               if (grd%global_msk(i,j,k).eq.1 .and. grd%global_msk(i,j-1,k).eq.0 &
+               .or. grd%global_msk(i,j,k).eq.0 .and. grd%global_msk(i,j-1,k).eq.1 &
+               .or. grd%global_msk(i,j,k).eq.1) then
+                 NCoastY = NCoastY + 1
+               endif
+             enddo
+           enddo
+         enddo
+
+        print*, "Total number of X Coast Points: ", NCoastX, "Y Coast Points: ", NCoastY
+
+        TmpCoast = 0
         TmpInt = 1
-        NRows = 0
-        do i=1,GlobalRow
+        NRows = 1
+        do i=2,GlobalRow
+
           do j=1,GlobalCol
             do k=1,grd%km
-              if(grd%global_msk(i,j,k) .eq. 1) then
-                TmpWaterPoints = TmpWaterPoints + 1
+              ! if(grd%global_msk(i,j,k) .eq. 1) then
+              if (grd%global_msk(i,j,k).eq.1 .and. grd%global_msk(i-1,j,k).eq.0 &
+              .or. grd%global_msk(i,j,k).eq.0 .and. grd%global_msk(i-1,j,k).eq.1 &
+              .or. grd%global_msk(i,j,k).eq.1) then
+                TmpCoast = TmpCoast + 1
               endif
             end do
           end do
+
           NRows = NRows + 1
-          if(TmpWaterPoints .ge. NWaterPoints/size .or. i .eq. GlobalRow) then
-            print*, "Process", TmpInt-1, "has", TmpWaterPoints, "Water Points"
+          if(TmpCoast .ge. NCoastX/size .or. i .eq. GlobalRow) then
+            print*, "Process", TmpInt-1, "has", TmpCoast, "Water Points"
             ilcit(TmpInt, 1) = NRows
             ilcjt(TmpInt, 1) = GlobalCol
-            TmpWaterPoints = 0
+            TmpCoast = 0
             NRows = 0
             TmpInt = TmpInt + 1
           endif
@@ -245,22 +269,25 @@ subroutine DomainDecomposition
         print*, "Compute quantities for slicing along x direction"
         print*, ""
 
-        TmpWaterPoints = 0
+        TmpCoast = 0
         TmpInt = 1
-        NCols = 0
-        do j=1,GlobalCol
+        NCols = 1
+        do j=2,GlobalCol
           do i=1,GlobalRow
             do k=1,grd%km
-              if(grd%global_msk(i,j,k) .eq. 1) then
-                TmpWaterPoints = TmpWaterPoints + 1
+              ! if(grd%global_msk(i,j,k) .eq. 1) then
+              if (grd%global_msk(i,j,k).eq.1 .and. grd%global_msk(i,j-1,k).eq.0 &
+              .or. grd%global_msk(i,j,k).eq.0 .and. grd%global_msk(i,j-1,k).eq.1 &
+              .or. grd%global_msk(i,j,k).eq.1) then
+                TmpCoast = TmpCoast + 1
               endif
             end do
           end do
           NCols = NCols + 1
-          if(TmpWaterPoints .ge. NWaterPoints/size .or. j .eq. GlobalCol) then
-            print*, "Process", TmpInt-1, "has", TmpWaterPoints, "Water Points"
+          if(TmpCoast .ge. NCoastY/size .or. j .eq. GlobalCol) then
+            print*, "Process", TmpInt-1, "has", TmpCoast, "Water Points"
             BalancedSlice(TmpInt, 1) = NCols
-            TmpWaterPoints = 0
+            TmpCoast = 0
             NCols = 0
             TmpInt = TmpInt + 1
           endif
