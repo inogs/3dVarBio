@@ -8,6 +8,7 @@ subroutine parallel_rdgrd
   use mpi
   use mpi_str
   use pnetcdf
+  use cns_str
 
   implicit none
 
@@ -69,7 +70,31 @@ subroutine parallel_rdgrd
   grd%global_msk(:,:,:) = x3(:,:,:)
   DEALLOCATE(x3)
 
+  ALLOCATE(x2(GlobalRow, GlobalCol))
+  ALLOCATE(grd%dx(GlobalRow, GlobalCol))
+  ALLOCATE(grd%dy(GlobalRow, GlobalCol))
+  ALLOCATE(grd%istp(GlobalRow, GlobalCol))
+  ALLOCATE(grd%jstp(GlobalRow, GlobalCol))
+
+  ierr = nf90mpi_inq_varid (ncid, 'dx', VarId)
+  if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_inq_varid', ierr)
+  ierr = nfmpi_get_vara_real_all (ncid, VarId, GlobalStart, GlobalCount, x2)
+  if (ierr .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all dx', ierr)
+  grd%dx(:,:) = x2(:,:)
+
+  ierr = nf90mpi_inq_varid (ncid, 'dy', VarId)
+  if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_inq_varid', ierr)
+  ierr = nfmpi_get_vara_real_all (ncid, VarId, GlobalStart, GlobalCount, x2)
+  if (ierr .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all dy', ierr)
+  grd%dy(:,:) = x2(:,:)
+
+  grd%istp = int( rcf%L * rcf%efc / grd%dx(:,:) )+1
+  grd%jstp = int( rcf%L * rcf%efc / grd%dy(:,:) )+1
+
   call DomainDecomposition
+  DEALLOCATE(grd%dx, grd%dy)
+  DEALLOCATE(grd%istp, grd%jstp)
+  DEALLOCATE(x2)
 
   ALLOCATE(ChlExtended(grd%im+1, grd%jm+1, grd%nchl))
   ALLOCATE(SendLeft(grd%im), RecRight(grd%im))
@@ -193,11 +218,13 @@ subroutine DomainDecomposition
   integer, allocatable :: ilcit(:,:), ilcjt(:,:), BalancedSlice(:,:)
   integer(i8) :: ji, jj, TmpInt, ierr ! jpi, jpj, nn, i
   integer(i8) :: GlobalRestCol, GlobalRestRow
-  integer(i8) :: i, j, k
+  integer(i8) :: i, j, k, kk
   integer(i8) :: NCoastX, NCoastY, TmpCoast
   integer(i8) :: NRows, NCols
   integer(i8) :: SliceRestRow, SliceRestCol
   integer(i8) :: OffsetCol, OffsetRow
+
+  integer, allocatable :: ToBalanceX(:), ToBalanceY(:)
 
   GlobalRestRow = mod(GlobalRow, NumProcI)
   GlobalRestCol = mod(GlobalCol, NumProcJ)
@@ -208,99 +235,167 @@ subroutine DomainDecomposition
      allocate(BalancedSlice(NumProcI, NumProcJ))
 
      if(MyRank .eq. 0) then
-       NCoastX = 0
-       NCoastY = 0
 
-       ! compute the number of Coast Points along X direction
-       do k=1,grd%km
-          do j=1,GlobalCol
-            do i=2,GlobalRow
-              if (grd%global_msk(i,j,k).eq.1 .and. grd%global_msk(i-1,j,k).eq.0 &
-              .or. grd%global_msk(i,j,k).eq.0 .and. grd%global_msk(i-1,j,k).eq.1 &
-              .or. grd%global_msk(i,j,k).eq.1) then
-                NCoastX = NCoastX + 1
-              endif
-            enddo
-          enddo
-        enddo
+        ! ALLOCATE(ToBalanceX(GlobalCol, grd%km))
+        ! ALLOCATE(ToBalanceY(GlobalRow, grd%km))
+        ! ToBalanceX(:,:) = 0
+        ! ToBalanceY(:,:) = 0
+        ALLOCATE(ToBalanceX(GlobalCol))
+        ALLOCATE(ToBalanceY(GlobalRow))
+        ToBalanceX(:) = 0
+        ToBalanceY(:) = 0
 
-        ! compute the number of Coast Points along Y direction
-        do k=1,grd%km
-          do i=1,GlobalRow
-           do j=2,GlobalCol
-               if (grd%global_msk(i,j,k).eq.1 .and. grd%global_msk(i,j-1,k).eq.0 &
-               .or. grd%global_msk(i,j,k).eq.0 .and. grd%global_msk(i,j-1,k).eq.1 &
-               .or. grd%global_msk(i,j,k).eq.1) then
-                 NCoastY = NCoastY + 1
-               endif
-             enddo
+        do k = 1, grd%km
+           
+           do j = 1, GlobalCol
+              kk = grd%istp(1,j)
+              if( grd%global_msk(1,j,k).eq.1. ) kk = kk + 1
+              do i = 2, GlobalRow
+                 if( grd%global_msk(i,j,k).eq.0. .and. grd%global_msk(i-1,j,k).eq.1. ) then
+                    kk = kk + grd%istp(i,j)
+                 else if( grd%global_msk(i,j,k).eq.1. .and. grd%global_msk(i-1,j,k).eq.0. ) then
+                    kk = kk + grd%istp(i,j) + 1
+                 else if( grd%global_msk(i,j,k).eq.1. ) then
+                    kk = kk + 1
+                 endif
+              enddo
+              ! ToBalanceX(j,k) = kk+grd%istp(GlobalRow,j) ! max( ToBalanceX(k), kk+grd%istp(grd%im,j))
+              ToBalanceX(j) = ToBalanceX(j) + kk+grd%istp(GlobalRow,j) ! max( ToBalanceX(k), kk+grd%istp(grd%im,j))
            enddo
-         enddo
-
+           ! grd%imax   = max( grd%imax, ToBalanceX(k))
+           
+           do i = 1, GlobalRow
+              kk = grd%jstp(i,1)
+              if( grd%global_msk(i,1,k).eq.1. ) kk = kk + 1
+              do j = 2, GlobalCol
+                 if( grd%global_msk(i,j,k).eq.0. .and. grd%global_msk(i,j-1,k).eq.1. ) then
+                    kk = kk + grd%jstp(i,j)
+                 else if( grd%global_msk(i,j,k).eq.1. .and. grd%global_msk(i,j-1,k).eq.0. ) then
+                    kk = kk + grd%jstp(i,j) + 1
+                 else if( grd%global_msk(i,j,k).eq.1. ) then
+                    kk = kk + 1
+                 endif
+              enddo
+              ! ToBalanceY(i,k) = kk+grd%jstp(i,GlobalCol) !max( ToBalanceY(k), kk+grd%jstp(i,grd%jm))
+              ToBalanceY(i) = ToBalanceY(i) + kk+grd%jstp(i,GlobalCol) !max( ToBalanceY(k), kk+grd%jstp(i,grd%jm))
+           enddo
+           ! grd%jmax   = max( grd%jmax, ToBalanceY(k))
+           
+        enddo
+        
+        NCoastX = 0
+        NCoastY = 0
+        do j=1,GlobalCol
+           NCoastX = NCoastX + ToBalanceX(j)
+        end do
+        do i=1,GlobalRow
+           NCoastY = NCoastY + ToBalanceY(i)
+        end do
+        
+       
         print*, "Total number of X Coast Points: ", NCoastX, "Y Coast Points: ", NCoastY
+       
+        TmpCoast = 0
+        TmpInt = 1
+        NCols  = 0
+        do j = 1, GlobalCol
+           TmpCoast = TmpCoast + ToBalanceX(j)
+           NCols = NCols + 1
+           if(TmpCoast .ge. NCoastX/size .or. j .eq. GlobalCol) then
+              print*, "Process", TmpInt-1, "has", TmpCoast, "Coast Points on X"
+              BalancedSlice(TmpInt, 1) = NCols
+              TmpCoast = 0
+              NCols = 0
+              TmpInt = TmpInt + 1
+           endif
+        end do
 
         TmpCoast = 0
         TmpInt = 1
-        NRows = 1
-        do i=2,GlobalRow
-
-          do j=1,GlobalCol
-            do k=1,grd%km
-              ! if(grd%global_msk(i,j,k) .eq. 1) then
-              if (grd%global_msk(i,j,k).eq.1 .and. grd%global_msk(i-1,j,k).eq.0 &
-              .or. grd%global_msk(i,j,k).eq.0 .and. grd%global_msk(i-1,j,k).eq.1 &
-              .or. grd%global_msk(i,j,k).eq.1) then
-                TmpCoast = TmpCoast + 1
-              endif
-            end do
-          end do
-
-          NRows = NRows + 1
-          if(TmpCoast .ge. NCoastX/size .or. i .eq. GlobalRow) then
-            print*, "Process", TmpInt-1, "has", TmpCoast, "Water Points"
-            ilcit(TmpInt, 1) = NRows
-            ilcjt(TmpInt, 1) = GlobalCol
-            TmpCoast = 0
-            NRows = 0
-            TmpInt = TmpInt + 1
-          endif
+        NRows  = 0
+        do i = 1, GlobalRow
+           TmpCoast = TmpCoast + ToBalanceY(i)
+           NRows = NRows + 1
+           if(TmpCoast .ge. NCoastY/size .or. i .eq. GlobalRow) then
+              print*, "Process", TmpInt-1, "has", TmpCoast, "Coast Points on Y"
+              ilcit(TmpInt, 1) = NRows
+              ilcjt(TmpInt, 1) = GlobalCol
+              TmpCoast = 0
+              NRows = 0
+              TmpInt = TmpInt + 1
+           endif
         end do
-        print*, ""
-        print*, "Compute quantities for slicing along x direction"
-        print*, ""
 
-        TmpCoast = 0
-        TmpInt = 1
-        NCols = 1
-        do j=2,GlobalCol
-          do i=1,GlobalRow
-            do k=1,grd%km
-              ! if(grd%global_msk(i,j,k) .eq. 1) then
-              if (grd%global_msk(i,j,k).eq.1 .and. grd%global_msk(i,j-1,k).eq.0 &
-              .or. grd%global_msk(i,j,k).eq.0 .and. grd%global_msk(i,j-1,k).eq.1 &
-              .or. grd%global_msk(i,j,k).eq.1) then
-                TmpCoast = TmpCoast + 1
-              endif
-            end do
-          end do
-          NCols = NCols + 1
-          if(TmpCoast .ge. NCoastY/size .or. j .eq. GlobalCol) then
-            print*, "Process", TmpInt-1, "has", TmpCoast, "Water Points"
-            BalancedSlice(TmpInt, 1) = NCols
-            TmpCoast = 0
-            NCols = 0
-            TmpInt = TmpInt + 1
-          endif
-        end do
+
+        ! do i=2,GlobalRow
+           
+        !    do j=1,GlobalCol
+        !       do k=1,grd%km
+        !          ! if(grd%global_msk(i,j,k) .eq. 1) then
+        !          ! if (grd%global_msk(i,j,k).eq.1 .and. grd%global_msk(i-1,j,k).eq.0 &
+        !          ! .or. grd%global_msk(i,j,k).eq.0 .and. grd%global_msk(i-1,j,k).eq.1 &
+        !          ! .or. grd%global_msk(i,j,k).eq.1) then
+        !          !   TmpCoast = TmpCoast + 1
+        !          ! endif
+        !          if (grd%global_msk(i,j,k).eq.1 .and. grd%global_msk(i-1,j,k).eq.0) TmpCoast = TmpCoast + 1
+        !          if (grd%global_msk(i,j,k).eq.0 .and. grd%global_msk(i-1,j,k).eq.1) TmpCoast = TmpCoast + 1
+        !          if (grd%global_msk(i,j,k).eq.1) TmpCoast = TmpCoast + 1
+        !       end do
+        !    end do
+          
+        !    NRows = NRows + 1
+        !    if(TmpCoast .ge. NCoastX/size .or. i .eq. GlobalRow) then
+        !       print*, "Process", TmpInt-1, "has", TmpCoast, "Coast Points on X"
+        !       ilcit(TmpInt, 1) = NRows
+        !       ilcjt(TmpInt, 1) = GlobalCol
+        !       TmpCoast = 0
+        !       NRows = 0
+        !       TmpInt = TmpInt + 1
+        !    endif
+        ! end do
+        ! print*, ""
+        ! print*, "Compute quantities for slicing along x direction"
+        ! print*, ""
+        
+        ! TmpCoast = 0
+        ! TmpInt = 1
+        ! NCols = 1
+        ! do j=2,GlobalCol
+        !   do i=1,GlobalRow
+        !      do k=1,grd%km
+        !        ! if(grd%global_msk(i,j,k) .eq. 1) then
+        !        ! if (grd%global_msk(i,j,k).eq.1 .and. grd%global_msk(i,j-1,k).eq.0 &
+        !        ! .or. grd%global_msk(i,j,k).eq.0 .and. grd%global_msk(i,j-1,k).eq.1 &
+        !        ! .or. grd%global_msk(i,j,k).eq.1) then
+        !        !   TmpCoast = TmpCoast + 1
+        !        ! endif
+        !        if (grd%global_msk(i,j,k).eq.1 .and. grd%global_msk(i,j-1,k).eq.0) TmpCoast = TmpCoast + 1
+        !        if (grd%global_msk(i,j,k).eq.0 .and. grd%global_msk(i,j-1,k).eq.1) TmpCoast = TmpCoast + 1
+        !        if (grd%global_msk(i,j,k).eq.1) TmpCoast = TmpCoast + 1
+        !     end do
+        !   end do
+        !   NCols = NCols + 1
+        !   if(TmpCoast .ge. NCoastY/size .or. j .eq. GlobalCol) then
+        !     print*, "Process", TmpInt-1, "has", TmpCoast, "Coast Points on Y"
+        !     BalancedSlice(TmpInt, 1) = NCols
+        !     TmpCoast = 0
+        !     NCols = 0
+        !     TmpInt = TmpInt + 1
+        !   endif
+        ! end do
 
         write(*,*) ""
         write(*,*) "ilcit:", ilcit(:,1)
         write(*,*) "BalancedSlice:", BalancedSlice(:,:)
         write(*,*) ""
+        
+        DEALLOCATE(ToBalanceX, ToBalanceY)
+
      endif
      call MPI_Bcast(ilcit, NumProcI, MPI_INT, 0, MPI_COMM_WORLD, ierr)
      call MPI_Bcast(ilcjt, NumProcI, MPI_INT, 0, MPI_COMM_WORLD, ierr)
      call MPI_Bcast(BalancedSlice, NumProcI, MPI_INT, 0, MPI_COMM_WORLD, ierr)
+
     !  print*, "MyRank", MyRank, ilcit(:,:), ilcjt(:,:)
 
     !  call MPI_Barrier(MPI_COMM_WORLD, ierr)
