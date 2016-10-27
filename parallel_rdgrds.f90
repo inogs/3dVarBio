@@ -223,8 +223,10 @@ subroutine DomainDecomposition
   integer(i8) :: NRows, NCols
   integer(i8) :: SliceRestRow, SliceRestCol
   integer(i8) :: OffsetCol, OffsetRow
+  real        :: TotX, TotY, C
+  integer     :: nnx, ii, iProc, i0
 
-  integer, allocatable :: ToBalanceX(:), ToBalanceY(:)
+  integer, allocatable :: ToBalanceX(:,:), ToBalanceY(:,:)
 
   GlobalRestRow = mod(GlobalRow, NumProcI)
   GlobalRestCol = mod(GlobalCol, NumProcJ)
@@ -240,10 +242,10 @@ subroutine DomainDecomposition
         ! ALLOCATE(ToBalanceY(GlobalRow, grd%km))
         ! ToBalanceX(:,:) = 0
         ! ToBalanceY(:,:) = 0
-        ALLOCATE(ToBalanceX(GlobalCol))
-        ALLOCATE(ToBalanceY(GlobalRow))
-        ToBalanceX(:) = 0
-        ToBalanceY(:) = 0
+        ALLOCATE(ToBalanceX(GlobalCol, grd%km))
+        ALLOCATE(ToBalanceY(GlobalRow, grd%km))
+        ToBalanceX(:,:) = 0
+        ToBalanceY(:,:) = 0
 
         do k = 1, grd%km
            
@@ -260,7 +262,8 @@ subroutine DomainDecomposition
                  endif
               enddo
               ! ToBalanceX(j,k) = kk+grd%istp(GlobalRow,j) ! max( ToBalanceX(k), kk+grd%istp(grd%im,j))
-              ToBalanceX(j) = ToBalanceX(j) + kk+grd%istp(GlobalRow,j) ! max( ToBalanceX(k), kk+grd%istp(grd%im,j))
+              ! ToBalanceX(j) = ToBalanceX(j) + kk+grd%istp(GlobalRow,j) ! max( ToBalanceX(k), kk+grd%istp(grd%im,j))
+              ToBalanceX(j,k) = kk+grd%istp(GlobalRow,j)
            enddo
            ! grd%imax   = max( grd%imax, ToBalanceX(k))
            
@@ -277,7 +280,8 @@ subroutine DomainDecomposition
                  endif
               enddo
               ! ToBalanceY(i,k) = kk+grd%jstp(i,GlobalCol) !max( ToBalanceY(k), kk+grd%jstp(i,grd%jm))
-              ToBalanceY(i) = ToBalanceY(i) + kk+grd%jstp(i,GlobalCol) !max( ToBalanceY(k), kk+grd%jstp(i,grd%jm))
+              ! ToBalanceY(i) = ToBalanceY(i) + kk+grd%jstp(i,GlobalCol) !max( ToBalanceY(k), kk+grd%jstp(i,grd%jm))
+              ToBalanceY(i,k) = kk+grd%jstp(i,GlobalCol)
            enddo
            ! grd%jmax   = max( grd%jmax, ToBalanceY(k))
            
@@ -286,45 +290,138 @@ subroutine DomainDecomposition
         NCoastX = 0
         NCoastY = 0
         do j=1,GlobalCol
-           NCoastX = NCoastX + ToBalanceX(j)
+           do k=1,grd%km
+              NCoastX = NCoastX + ToBalanceX(j,k)
+           end do
         end do
         do i=1,GlobalRow
-           NCoastY = NCoastY + ToBalanceY(i)
+           do k=1,grd%km
+              NCoastY = NCoastY + ToBalanceY(i,k)
+           end do
         end do
         
        
         print*, "Total number of X Coast Points: ", NCoastX, "Y Coast Points: ", NCoastY
-       
-        TmpCoast = 0
-        TmpInt = 1
-        NCols  = 0
-        do j = 1, GlobalCol
-           TmpCoast = TmpCoast + ToBalanceX(j)
-           NCols = NCols + 1
-           if(TmpCoast .ge. NCoastX/size .or. j .eq. GlobalCol) then
-              print*, "Process", TmpInt-1, "has", TmpCoast, "Coast Points on X"
-              BalancedSlice(TmpInt, 1) = NCols
-              TmpCoast = 0
-              NCols = 0
-              TmpInt = TmpInt + 1
-           endif
+
+        TotX = 0
+        TotY = 0
+        do k=1,grd%km
+           TotX = TotX + MAXVAL(ToBalanceX(:,k))
+           TotY = TotY + MAXVAL(ToBalanceY(:,k))
         end do
 
-        TmpCoast = 0
-        TmpInt = 1
-        NRows  = 0
-        do i = 1, GlobalRow
-           TmpCoast = TmpCoast + ToBalanceY(i)
-           NRows = NRows + 1
-           if(TmpCoast .ge. NCoastY/size .or. i .eq. GlobalRow) then
-              print*, "Process", TmpInt-1, "has", TmpCoast, "Coast Points on Y"
-              ilcit(TmpInt, 1) = NRows
-              ilcjt(TmpInt, 1) = GlobalCol
-              TmpCoast = 0
-              NRows = 0
-              TmpInt = TmpInt + 1
-           endif
+        TotX = TotX * GlobalCol / Size
+        TotY = TotY * GlobalRow / Size
+
+        TotX = TotX * 0.65
+        TotY = TotY * 0.65
+
+        i0 = 1
+        do iProc=1,Size-1
+           ii = i0
+           C = 0
+           do while(C < TotX .and. ii .lt. GlobalCol)
+
+              C = 0
+              nnx = ii-i0+1
+              TmpInt = 0
+              do k=1,grd%km
+                 call MyMax(ToBalanceX, GlobalCol, grd%km, i0, ii, k, TmpInt)
+                 C = C + TmpInt*nnx
+              end do
+              ii=ii+1
+
+           end do
+           print*, iProc, C, TotX, nnx
+           BalancedSlice(iProc, 1) = nnx
+           i0 = ii
+           nnx = 0
         end do
+        
+        C = 0
+        TmpInt = 0
+        nnx = GlobalCol - ii + 1
+        do k=1,grd%km
+           call MyMax(ToBalanceX, GlobalCol, grd%km, ii, GlobalCol, k, TmpInt)
+           C = C + TmpInt*nnx
+        end do
+              
+        print*, Size, C, TotX, GlobalCol - ii+1
+
+        BalancedSlice(Size, 1) = GlobalCol - ii +1
+
+        i0 = 1
+        do iProc=1,Size-1
+           ii = i0
+           C = 0
+           do while(C < TotY .and. ii .lt. GlobalRow)
+
+              C = 0
+              nnx = ii-i0+1
+              TmpInt = 0
+              do k=1,grd%km
+                 call MyMax(ToBalanceY, GlobalRow, grd%km, i0, ii, k, TmpInt)
+                 C = C + TmpInt*nnx
+              end do
+              ii=ii+1
+
+           end do
+
+           print*, iProc, C, TotY, nnx
+           ilcit(iProc, 1) = nnx
+           ilcjt(iProc, 1) = GlobalCol
+           i0 = ii
+           
+        end do
+
+        C = 0
+        TmpInt = 0
+        nnx = GlobalRow - ii + 1
+        do k=1,grd%km
+           call MyMax(ToBalanceY, GlobalRow, grd%km, ii, GlobalRow, k, TmpInt)
+           C = C + TmpInt*nnx
+        end do
+              
+        print*, Size, C, TotY, GlobalRow - ii+1
+
+        ilcit(Size, 1) = GlobalRow - ii +1
+        ilcjt(Size, 1) = GlobalCol
+        
+        print*, "ilcit:", ilcit(:,:)
+        print*, "ilcjt", ilcjt(:,:)
+        print*, "BS:", BalancedSlice(:,:)
+        ! call MPI_Abort(MPI_COMM_WORLD, -1, ierr)
+
+        ! TmpCoast = 0
+        ! TmpInt = 1
+        ! NCols  = 0
+        ! do j = 1, GlobalCol
+        !    TmpCoast = TmpCoast + ToBalanceX(j)
+        !    NCols = NCols + 1
+        !    if(TmpCoast .ge. NCoastX/size .or. j .eq. GlobalCol) then
+        !       print*, "Process", TmpInt-1, "has", TmpCoast, "Coast Points on X"
+        !       BalancedSlice(TmpInt, 1) = NCols
+        !       TmpCoast = 0
+        !       NCols = 0
+        !       TmpInt = TmpInt + 1
+        !    endif
+        ! end do
+
+        ! TmpCoast = 0
+        ! TmpInt = 1
+        ! NRows  = 0
+        ! do i = 1, GlobalRow
+        !    TmpCoast = TmpCoast + ToBalanceY(i)
+        !    NRows = NRows + 1
+        !    if(TmpCoast .ge. NCoastY/size .or. i .eq. GlobalRow) then
+        !       print*, "Process", TmpInt-1, "has", TmpCoast, "Coast Points on Y"
+        !       ilcit(TmpInt, 1) = NRows
+        !       ilcjt(TmpInt, 1) = GlobalCol
+        !       TmpCoast = 0
+        !       NRows = 0
+        !       TmpInt = TmpInt + 1
+        !    endif
+        ! end do
 
 
         ! do i=2,GlobalRow
@@ -722,6 +819,21 @@ subroutine DomainDecomposition
   end if ! drv%ReadDomDec .eq. 0
 
 end subroutine DomainDecomposition
+
+subroutine MyMax(arr, GlobCol, km, i0, ii, k, val)
+
+  implicit none
+
+  integer :: i0, ii, k, j, GlobCol, km
+  integer :: arr(GlobCol,km)
+  integer, intent(inout)    :: val
+
+  do j=i0,ii
+     ! print*, arr(:,:)
+     val = max(val, arr(j, k))
+  end do
+
+end subroutine MyMax
 
 subroutine MyGetDimension(ncid, name, n)
   use pnetcdf
