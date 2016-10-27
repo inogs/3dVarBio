@@ -35,7 +35,7 @@ subroutine rdeofs
   use netcdf
   use grd_str
   use filenames
-  
+
   implicit none
   
   INTEGER(i4)                    :: stat, ncid, idvar, neofs, nlevs, nregs
@@ -60,26 +60,36 @@ subroutine rdeofs
 
   write(drv%dia,*)'Eof dimensions are: ',ros%nreg, ros%kmt, neofs
   write(drv%dia,*)'Uses ',ros%neof,' eofs.'
-
+  
   if(ros%nreg .ne. nregs) then
+
      write(drv%dia,*)'Error: ros%nreg differs from nregs'
+     
      !stop
      call f_exit(22)
+     
   endif
   
   if(ros%neof .gt. neofs) then
+        
      write(drv%dia,*)'Error: Requires more Eofs than available in the input file.'
      !stop
+
      call f_exit(22)
+
   else if(ros%neof .lt. neofs) then
+     
      write(drv%dia,*)'Warning: ros%neof < neofs!'
      write(drv%dia,*)'ros%neof =', ros%neof
      write(drv%dia,*)'neofs =', neofs
      write(drv%dia,*)'continue using ros%neof'
+
   endif
   
   if(ros%kmt .ne. nlevs) then
+
      write(drv%dia,*)'Error: Vertical dimension different than in the input file.'
+
      !stop
      call f_exit(23)
   endif
@@ -100,8 +110,8 @@ subroutine rdeofs
   if (stat /= nf90_noerr) call netcdf_err(stat)
   
   ! DECOMMENT FOLLOWING TWO LINES TO MAKE FILTER TEST
-  ros%evc(:,:,:) = 1.
-  ros%eva(:,:) = 1.
+  ! ros%evc(:,:,:) = 1.
+  ! ros%eva(:,:) = 1.
   
   stat = nf90_close(ncid)  
   

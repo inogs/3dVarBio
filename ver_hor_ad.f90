@@ -40,7 +40,7 @@ subroutine ver_hor_ad
   use cns_str
   use drv_str
   use obs_str
-  
+
   implicit none
   
   INTEGER(i4)    :: i,j,k, ione, l
@@ -103,7 +103,7 @@ subroutine ver_hor_ad
         !$OMP PRIVATE(k)
         !$OMP DO
         do k=1,grd%km
-           grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:) 
+           grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:,k)  !laura
         enddo
         !$OMP END DO
         !$OMP END PARALLEL  
@@ -112,7 +112,7 @@ subroutine ver_hor_ad
      ! ---
      ! y direction
      call rcfl_y( grd%im, grd%jm, grd%km*grd%nchl, grd%jmax, grd%aey, grd%bey, grd%chl, grd%jnx, grd%jmx)
-
+     
      ! ---
      ! Scale by the scaling factor
      do l=1,grd%nchl
@@ -120,7 +120,7 @@ subroutine ver_hor_ad
         !$OMP PRIVATE(k)
         !$OMP DO
         do k=1,grd%km
-           grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:) 
+           grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:,k) !laura 
         enddo
         !$OMP END DO
         !$OMP END PARALLEL  
@@ -135,7 +135,7 @@ subroutine ver_hor_ad
      !$OMP PRIVATE(k)
      !$OMP DO
      do k=1,grd%km
-        grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:) 
+        grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:,k) !laura 
      enddo
      !$OMP END DO
      !$OMP END PARALLEL  
@@ -153,7 +153,7 @@ subroutine ver_hor_ad
      !$OMP PRIVATE(k)
      !$OMP DO
      do k=1,grd%km
-        grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:) 
+        grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:,k) !laura 
      enddo
      !$OMP END DO
      !$OMP END PARALLEL  

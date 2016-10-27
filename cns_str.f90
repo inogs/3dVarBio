@@ -39,6 +39,9 @@ public
         INTEGER(i4)          ::  ntr     ! No. of iterations (half of)
         REAL(r8)             ::  dx      ! Grid resolution (m)
         REAL(r8)             ::  L       ! Correlation radius
+!laura
+        REAL(r8),POINTER     ::  Lxyz(:,:,:)!Correlation radius from file in km
+!laura
         REAL(r8)             ::  E       ! Norm
         REAL(r8)             ::  alp     ! Filter weight
         INTEGER(i4)          ::  ntb     ! Number of points in the table
@@ -46,7 +49,9 @@ public
         REAL(r8)             ::  dsmx    ! Maximum distance 
         REAL(r8)             ::  dsl     ! Table increment
         REAL(r8), POINTER    ::  al(:)   ! Filter weights in the table
-        REAL(r8), POINTER    ::  sc(:)   ! Filter scaling factors in the table
+!laura
+        REAL(r8), POINTER    ::  sc(:,:)   ! Filter scaling factors in the table
+!laura
         REAL(r8)             ::  scl     ! Scaling factor
         REAL(r8)             ::  efc     ! Scaling factor for extended points
         INTEGER(i4)          ::  kstp    ! Step for extended points

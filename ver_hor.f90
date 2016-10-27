@@ -40,12 +40,13 @@ subroutine ver_hor
   use cns_str
   use drv_str
   use obs_str
+
   implicit none
   
   INTEGER(i4)    :: i,j,k, ione, l
   INTEGER        :: jp,nestr
   REAL(r8)          :: chlapp(8),chlsum
-  
+
   ione = 1
   
   ! ---
@@ -112,7 +113,7 @@ subroutine ver_hor
      !$OMP PRIVATE(k)
      !$OMP DO
      do k=1,grd%km
-        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:) 
+        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:,k)  !laura
      enddo
      !$OMP END DO
      !$OMP END PARALLEL
@@ -129,7 +130,7 @@ subroutine ver_hor
      !$OMP PRIVATE(k)
      !$OMP DO
      do k=1,grd%km
-        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:) 
+        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:,k) !laura
      enddo
      !$OMP END DO
      !$OMP END PARALLEL
@@ -146,7 +147,7 @@ subroutine ver_hor
         !$OMP PRIVATE(k)
         !$OMP DO
         do k=1,grd%km
-           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:) 
+           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:,k)  !laura 
         enddo
         !$OMP END DO
         !$OMP END PARALLEL
@@ -155,7 +156,7 @@ subroutine ver_hor
      ! ---
      ! y direction
      call rcfl_y_ad( grd%im, grd%jm, grd%km*grd%nchl, grd%jmax, grd%aey, grd%bey, grd%chl_ad, grd%jnx, grd%jmx)
-
+     
      ! ---
      ! Scale by the scaling factor
      do l=1,grd%nchl
@@ -163,12 +164,12 @@ subroutine ver_hor
         !$OMP PRIVATE(k)
         !$OMP DO
         do k=1,grd%km
-           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:) 
+           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:,k) !laura
         enddo
         !$OMP END DO
         !$OMP END PARALLEL
      enddo
-
+     
      ! ---
      ! x direction
      call rcfl_x_ad( grd%im, grd%jm, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, grd%chl_ad, grd%inx, grd%imx)
@@ -214,6 +215,5 @@ subroutine ver_hor
         enddo  !i
      enddo  !j
   enddo  !k
-  
 
 end subroutine ver_hor

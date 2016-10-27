@@ -62,10 +62,13 @@ subroutine def_grd
      enddo
      !         grd%msr(:,:,:) = grd%msk(:,:,:)
   else
+     
      write(drv%dia,*)'Wrong mask for horizontal covariances ',  &
           drv%mask(drv%ktr)
+     
      !stop
      call f_exit(21)
+
   endif
   
   
@@ -78,7 +81,7 @@ subroutine def_grd
   
   
   ALLOCATE (SurfaceWaterPoints(2,nSurfaceWaterPoints))
-  
+
   write(*,*) 'nSurfaceWaterPoints = ', nSurfaceWaterPoints
   
   indSupWP=0

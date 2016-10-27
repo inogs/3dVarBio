@@ -1,6 +1,5 @@
-subroutine clean_mem
-  
-  
+MODULE tao_str
+
   !---------------------------------------------------------------------------
   !                                                                          !
   !    Copyright 2006 Srdjan Dobricic, CMCC, Bologna                         !
@@ -24,79 +23,41 @@ subroutine clean_mem
   
   !-----------------------------------------------------------------------
   !                                                                      !
-  ! Save the result on the coarse grid                                   !
+  ! Cost function, control vector and optimisation arrays                !
   !                                                                      !
   ! Version 1: S.Dobricic 2006                                           !
   !-----------------------------------------------------------------------
-  
-  
-  use set_knd
-  use drv_str
-  use obs_str
-  use grd_str
-  use eof_str
-  use ctl_str
-  use cns_str
-  use rcfl
+#include "petsc/finclude/petscvecdef.h"
+ use set_knd
+ use petscvec
+ implicit none
+ 
+ public
 
-#ifdef _USE_MPI
-  use mpi_str
-  use mpi
-#endif
-  
-  implicit none
 
-#ifdef _USE_MPI
-  integer :: ierr
-#endif
-  
-  ! Deallocate everithing related to the old grid
-  DEALLOCATE ( drv%grid, drv%ratco, drv%ratio)
-  DEALLOCATE ( drv%mask, drv%dda, drv%ddi)
+! #include "tao_minimizer.h"
+ ! ---
+ ! Structure for lbfgs
 
-  ! chlorophyll structure
-  DEALLOCATE ( chl%flg)
-  DEALLOCATE ( chl%flc)
-  DEALLOCATE ( chl%inc)
-  DEALLOCATE ( chl%err)
-  DEALLOCATE ( chl%res)
-  DEALLOCATE ( chl%ib)
-  DEALLOCATE ( chl%pb)
-  DEALLOCATE ( chl%jb)
-  DEALLOCATE ( chl%qb)
-  DEALLOCATE ( chl%pq1)
-  DEALLOCATE ( chl%pq2)
-  DEALLOCATE ( chl%pq3)
-  DEALLOCATE ( chl%pq4)
-  DEALLOCATE ( chl%dzr)
+ TYPE petsc_str
+    
+    INTEGER(i4)               ::  n          ! local size of the optimisation vector
+    INTEGER(i4)               ::  n_global   ! global size of the optimization vector
+    real(r8)                 ::  f_b        ! The background cost function
+    real(r8)                 ::  f_o        ! The observational cost function
+    real(r8)                 ::  f_c, factr ! The cost function, accuracy
+    ! PetscReal                 ::  f_b        ! The background cost function
+    ! PetscReal                 ::  f_o        ! The observational cost function
+    ! PetscReal                 ::  f_c, factr ! The cost function, accuracy
 
-  ! Constants structure
-  DEALLOCATE ( rcf%al)
-  DEALLOCATE ( rcf%sc)
+    ! PetscFortranAddr                       ::  x_c        ! The control vector (background - analyses)
+    ! PetscFortranAddr                       ::  g_c        ! The gradient of f_c 
 
-#ifdef _USE_MPI
-  DEALLOCATE(SendCountX2D, SendCountX4D)
-  DEALLOCATE(SendDisplX2D, SendDisplX4D)
-  DEALLOCATE(RecCountX2D, RecCountX4D)
-  DEALLOCATE(RecDisplX2D, RecDisplX4D)
-
-  DEALLOCATE(ChlExtended)
-  DEALLOCATE(SendRight, RecLeft)
-  DEALLOCATE(SendLeft, RecRight)
-  DEALLOCATE(SendBottom, RecTop)
-  DEALLOCATE(SendTop, RecBottom)
-
-  DEALLOCATE(ChlExtended4D, ChlExtendedAD_4D)
-  DEALLOCATE(SendLeft2D, RecRight2D)
-  DEALLOCATE(SendRight2D, RecLeft2D)
-  DEALLOCATE(SendTop2D, RecBottom2D)
-  DEALLOCATE(SendBottom2D, RecTop2D)
-
-  call MPI_Comm_free(CommSliceX, ierr)
-  call MPI_Comm_free(CommSliceY, ierr)
-  if(MyRank .eq. 0) &
-#endif
-       write(*,*) ' ALL MEMORY CLEAN'
-  write(*,*) ''
-  
-end subroutine clean_mem
+    Vec                       ::  x_c        ! The control vector (background - analyses)
+    Vec                       ::  g_c        ! The gradient of f_c 
+    
+ END TYPE petsc_str
+ 
+ TYPE (petsc_str)                 :: NewCtl
+ 
+END MODULE tao_str

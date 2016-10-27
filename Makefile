@@ -59,7 +59,8 @@ OBJSTR  =  \
 	eof_str.o\
 	ctl_str.o\
 	rcfl_mod.o\
-	mpi_alloc.o
+	tao_str.o\
+	mpi_str.o
 
 PHYSOBS  =  \
 	get_obs_sla.o\
@@ -103,10 +104,13 @@ OBJS    =  \
 	routines.o\
 	def_nml.o\
 	def_grd.o\
+	parallel_def_grd.o\
 	sav_itr.o\
 	ini_itr.o\
 	rdgrds.o\
 	rdeofs.o\
+        rdrcorr.o\
+        mean_rdr.o\
 	netcdf_err.o\
 	get_obs.o\
 	get_obs_arg.o\
@@ -142,6 +146,8 @@ OBJS    =  \
 	wrt_dia.o\
 	clean_mem.o\
 	mpi_utils.o\
+	parallel_costf.o\
+	parallel_obs_chl.o\
 	tao_minimizer.o\
     oceanvar.o
 
@@ -161,8 +167,11 @@ $(EXEC) : $(LIBDEP)	$(KNDSTR) $(OBJSTR) $(OBJS) $(MAINEXE)
 $(LIB)  :       $(KNDSTR) $(OBJSTR) $(OBJS)
 	ar -r $(LIB) $(KNDSTR) $(OBJSTR) $(OBJS)
 
+tao_str.o: tao_str.f90
+	$(CPP) -I$(PETSC_INC) $*.f90 > cpp.$*.f90 ; $(F90) -I$(PETSC_INC) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
+
 tao_minimizer.o: tao_minimizer.f90
-	$(CPP) -I$(PETSC_INC) $*.f90 > cpp.$*.f90 ; $(F90) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
+	$(CPP) -I$(PETSC_INC) $*.f90 > cpp.$*.f90 ; $(F90) -I$(PETSC_INC) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
 
 .DEFAULTS:
 .f90.o :

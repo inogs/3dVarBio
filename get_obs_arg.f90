@@ -42,7 +42,7 @@ subroutine get_obs_arg
   arg%nc = 0
 
   
-  open(511,file='arg_mis.dat',form='formatted')
+  open(511,file='arg_datnew.dat',form='formatted')
   
   ! ---
   ! Allocate memory for observations   
@@ -55,9 +55,9 @@ subroutine get_obs_arg
   endif
   ALLOCATE ( arg%ino(arg%no), arg%flg(arg%no), arg%flc(arg%no), arg%par(arg%no))
   ALLOCATE ( arg%lon(arg%no), arg%lat(arg%no), arg%dpt(arg%no), arg%tim(arg%no))
-  ALLOCATE ( arg%val(arg%no), arg%bac(arg%no), arg%inc(arg%no))
-  ALLOCATE ( arg%bia(arg%no), arg%err(arg%no))
-  ALLOCATE ( arg%res(arg%no), arg%b_a(arg%no))
+  ALLOCATE ( arg%inc(arg%no))
+  ALLOCATE ( arg%err(arg%no))
+  ALLOCATE ( arg%res(arg%no))
   ALLOCATE ( arg%ib(arg%no), arg%jb(arg%no), arg%kb(arg%no))
   ALLOCATE ( arg%pb(arg%no), arg%qb(arg%no), arg%rb(arg%no))
   ALLOCATE ( arg%pq1(arg%no), arg%pq2(arg%no), arg%pq3(arg%no), arg%pq4(arg%no))
@@ -65,9 +65,8 @@ subroutine get_obs_arg
   
   
   
-  arg%bia(:) = 0.0
   do k=1,arg%no
-     read (511,'(I5,I5,F10.3,F10.3,F10.3,F10.3,F10.3,F10.3,I8)') &
+     read (511,'(I5,I5,F12.5,F12.5,F12.5,F12.5,F12.5,F12.5,I8)') &
           arg%flc(k), arg%par(k), &
           arg%lon(k), arg%lat(k), &
           arg%dpt(k), arg%tim(k), &
@@ -75,9 +74,10 @@ subroutine get_obs_arg
   end do
   close (511)
 
+
   ! DECOMMENT FOLLOWING TWO LINES TO MAKE FILTER TEST
-  arg%res(:) = 1
-  arg%err(:) = 1.d-2
+  ! arg%res(:) = 1
+  ! arg%err(:) = 1.d-2
 
   
   ! ---
@@ -111,10 +111,8 @@ subroutine get_obs_arg
      if(arg%flg(k).eq.1)then
         arg%nc = arg%nc + 1
      else
-        arg%bia(k) = 0.
         arg%res(k) = 0.
         arg%inc(k) = 0.
-        arg%b_a(k) = 0.
         arg%pq1(k) = 0.
         arg%pq2(k) = 0.
         arg%pq3(k) = 0.
@@ -125,7 +123,6 @@ subroutine get_obs_arg
         arg%pq8(k) = 0.
      endif
   enddo
-  
   arg%flc(:) = arg%flg(:)
   
 end subroutine get_obs_arg

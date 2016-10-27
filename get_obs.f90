@@ -42,6 +42,11 @@ subroutine get_obs
   
   ! ----
   ! Load observations of chlorophyll
+#ifndef _USE_MPI
   call get_obs_chl
+#else
+  ! call parallel_get_obs_chl
+  call get_obs_chl
+#endif
   
 end subroutine get_obs

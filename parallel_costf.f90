@@ -1,5 +1,4 @@
-subroutine clean_mem
-  
+subroutine parallel_costf
   
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -24,7 +23,7 @@ subroutine clean_mem
   
   !-----------------------------------------------------------------------
   !                                                                      !
-  ! Save the result on the coarse grid                                   !
+  ! Calclate the cost function and its gradient                          !
   !                                                                      !
   ! Version 1: S.Dobricic 2006                                           !
   !-----------------------------------------------------------------------
@@ -36,67 +35,80 @@ subroutine clean_mem
   use grd_str
   use eof_str
   use ctl_str
-  use cns_str
-  use rcfl
-
-#ifdef _USE_MPI
   use mpi_str
-  use mpi
-#endif
   
   implicit none
-
-#ifdef _USE_MPI
   integer :: ierr
-#endif
+  ! -------------------------------------------------------
+  ! calculate backgorund cost term
+  ! -------------------------------------------------------
+
+  ctl%f_b = 0.5 * dot_product( ctl%x_c, ctl%x_c)
+  call MPI_Allreduce(MPI_IN_PLACE, ctl%f_b, 1, MPI_REAL8, MPI_SUM, MPI_COMM_WORLD, ierr)
+  !    write(*,*) 'COSTF f_b = ', ctl%f_b
   
-  ! Deallocate everithing related to the old grid
-  DEALLOCATE ( drv%grid, drv%ratco, drv%ratio)
-  DEALLOCATE ( drv%mask, drv%dda, drv%ddi)
+  ! -------------------------------------------------------
+  ! calculate observational cost term
+  ! -------------------------------------------------------
 
-  ! chlorophyll structure
-  DEALLOCATE ( chl%flg)
-  DEALLOCATE ( chl%flc)
-  DEALLOCATE ( chl%inc)
-  DEALLOCATE ( chl%err)
-  DEALLOCATE ( chl%res)
-  DEALLOCATE ( chl%ib)
-  DEALLOCATE ( chl%pb)
-  DEALLOCATE ( chl%jb)
-  DEALLOCATE ( chl%qb)
-  DEALLOCATE ( chl%pq1)
-  DEALLOCATE ( chl%pq2)
-  DEALLOCATE ( chl%pq3)
-  DEALLOCATE ( chl%pq4)
-  DEALLOCATE ( chl%dzr)
-
-  ! Constants structure
-  DEALLOCATE ( rcf%al)
-  DEALLOCATE ( rcf%sc)
-
-#ifdef _USE_MPI
-  DEALLOCATE(SendCountX2D, SendCountX4D)
-  DEALLOCATE(SendDisplX2D, SendDisplX4D)
-  DEALLOCATE(RecCountX2D, RecCountX4D)
-  DEALLOCATE(RecDisplX2D, RecDisplX4D)
-
-  DEALLOCATE(ChlExtended)
-  DEALLOCATE(SendRight, RecLeft)
-  DEALLOCATE(SendLeft, RecRight)
-  DEALLOCATE(SendBottom, RecTop)
-  DEALLOCATE(SendTop, RecBottom)
-
-  DEALLOCATE(ChlExtended4D, ChlExtendedAD_4D)
-  DEALLOCATE(SendLeft2D, RecRight2D)
-  DEALLOCATE(SendRight2D, RecLeft2D)
-  DEALLOCATE(SendTop2D, RecBottom2D)
-  DEALLOCATE(SendBottom2D, RecTop2D)
-
-  call MPI_Comm_free(CommSliceX, ierr)
-  call MPI_Comm_free(CommSliceY, ierr)
+  ! --------
+  ! Convert the control vector to v
+  call cnv_ctv
+  
+  ! --------
+  ! Control to physical space 
+  ! call parallel_ver_hor
+  call ver_hor
+  
+  ! --------
+  ! Apply observational operators
+  call obsop
+  
+  ! --------
+  ! Calculate residuals
+  call resid
+  
+  ! --------
+  ! calculate cost
+  ctl%f_o = 0.5 * dot_product( obs%amo, obs%amo)
+  call MPI_Allreduce(MPI_IN_PLACE, ctl%f_o, 1, MPI_REAL8, MPI_SUM, MPI_COMM_WORLD, ierr)
+  
+  ! -------------------------------------------------------
+  ! Cost function
+  ! -------------------------------------------------------
+   
+  ctl%f_c = ctl%f_b + ctl%f_o
+  
   if(MyRank .eq. 0) &
-#endif
-       write(*,*) ' ALL MEMORY CLEAN'
-  write(*,*) ''
+       print*,' Cost function ',ctl%f_c, '(iter.',drv%MyCounter,')'
   
-end subroutine clean_mem
+  ! -------------------------------------------------------
+  ! calculate the cost function gradient
+  ! -------------------------------------------------------
+  
+  ! --------
+  ! Reset the increments
+  call res_inc
+  
+  ! --------
+  ! Observational operators
+  call obsop_ad
+  
+  ! --------
+  ! Control to physical space 
+  ! call parallel_ver_hor_ad
+  call ver_hor_ad
+  
+  !   write(*,*) 'COSTF sum(ro_ad) = ' , sum(grd%ro_ad)
+  ! --------
+  ! Convert the control vector 
+  call cnv_ctv_ad
+  
+  ! -------------------------------------------------------
+  ! Cost function gradient
+  ! -------------------------------------------------------
+  
+  !   write(*,*) 'COSTF sum(g_c) = ' , sum( ctl%g_c)
+  ctl%g_c(:) = ctl%x_c(:) + ctl%g_c(:) ! OMP
+  
+end subroutine parallel_costf

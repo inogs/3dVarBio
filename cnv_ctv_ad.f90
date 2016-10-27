@@ -32,7 +32,7 @@ subroutine cnv_ctv_ad
  use grd_str
  use ctl_str
  use eof_str
- use netcdf
+
  implicit none
 
  INTEGER(i4)     :: i,j,k, kk

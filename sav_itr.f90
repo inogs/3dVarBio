@@ -38,7 +38,9 @@ subroutine sav_itr
   use ctl_str
   use cns_str
   use rcfl
-  
+#ifdef _USE_MPI
+  use mpi_str
+#endif
   implicit none
   
   ! ---
@@ -88,24 +90,25 @@ subroutine sav_itr
      ! deallocate argo arrays
      DEALLOCATE ( arg%ino, arg%flg, arg%flc, arg%par)
      DEALLOCATE ( arg%lon, arg%lat, arg%dpt, arg%tim)
-     DEALLOCATE ( arg%val, arg%bac, arg%inc)
-     DEALLOCATE ( arg%bia, arg%err)
-     DEALLOCATE ( arg%res, arg%b_a)
+     DEALLOCATE ( arg%inc)
+     DEALLOCATE ( arg%err)
+     DEALLOCATE ( arg%res)
      DEALLOCATE ( arg%ib, arg%jb, arg%kb)
      DEALLOCATE ( arg%pb, arg%qb, arg%rb)
      DEALLOCATE ( arg%pq1, arg%pq2, arg%pq3, arg%pq4)
      DEALLOCATE ( arg%pq5, arg%pq6, arg%pq7, arg%pq8)
   endif
 
-  ! Control structure    
-  DEALLOCATE( ctl%nbd, ctl%iwa)
+  ! Control structure
   DEALLOCATE( ctl%x_c, ctl%g_c)
   DEALLOCATE( ctl%l_c, ctl%u_c)
-  DEALLOCATE( ctl%wa, ctl%sg, ctl%sgo, ctl%yg, ctl%ygo)
-  DEALLOCATE( ctl%ws, ctl%wy)
-  DEALLOCATE( ctl%sy, ctl%ss, ctl%yy)
+#ifndef _USE_MPI
+  DEALLOCATE( ctl%nbd, ctl%iwa)
+  DEALLOCATE( ctl%wa, ctl%ws, ctl%wy)
+  DEALLOCATE( ctl%sy, ctl%ss)
   DEALLOCATE( ctl%wt, ctl%wn, ctl%snd)
   DEALLOCATE( ctl%z_c, ctl%r_c, ctl%d_c, ctl%t_c)
+#endif
   DEALLOCATE (SurfaceWaterPoints)  
   
   DEALLOCATE ( a_rcx)
@@ -120,6 +123,9 @@ subroutine sav_itr
   DEALLOCATE ( bta_rcy)
   DEALLOCATE (Dump_chl, Dump_vip, Dump_msk)
   
-  write(*,*) ' DEALLOCATION DONE'
+#ifdef _USE_MPI
+  if(MyRank .eq. 0) &
+#endif
+       write(*,*) ' DEALLOCATION DONE'
   
 end subroutine sav_itr

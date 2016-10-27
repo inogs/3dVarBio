@@ -66,13 +66,9 @@ MODULE obs_str
      REAL(r8),    POINTER     ::  lat(:)     ! Latitude
      REAL(r8),    POINTER     ::  dpt(:)     ! Depth
      REAL(r8),    POINTER     ::  tim(:)     ! Time
-     REAL(r8),    POINTER     ::  val(:)     ! Observed value
-     REAL(r8),    POINTER     ::  bac(:)     ! Background value
      REAL(r8),    POINTER     ::  inc(:)     ! Increments
-     REAL(r8),    POINTER     ::  bia(:)     ! Bias
      REAL(r8),    POINTER     ::  err(:)     ! Observational error
      REAL(r8),    POINTER     ::  res(:)     ! residual
-     REAL(r8),    POINTER     ::  b_a(:)     ! Background - analyses
      INTEGER(i8), POINTER     ::  ib(:)      ! i index of the nearest west point
      REAL(r8)   , POINTER     ::  pb(:)      ! distance from the nearest west point
      INTEGER(i8), POINTER     ::  jb(:)      ! j index of the nearest south point
@@ -116,6 +112,9 @@ MODULE obs_str
      REAL(r8)   , POINTER     ::  dpt(:)     ! Maximum depth of surrounding points
      REAL(r8),    POINTER     ::  dzr(:,:)   ! Relative thickness
      REAL(r8)                 ::  max_val    ! Maximum value allowed to accept the observation
+
+     INTEGER(i8)              ::  nc_global  ! Number of global good observations
+
   END TYPE chl_t
   
   TYPE (chl_t)                 :: chl
