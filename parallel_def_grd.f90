@@ -1,5 +1,4 @@
-subroutine clean_mem
-  
+subroutine parallel_def_grd
   
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -21,10 +20,10 @@ subroutine clean_mem
   !    along with OceanVar.  If not, see <http://www.gnu.org/licenses/>.       !
   !                                                                          !
   !---------------------------------------------------------------------------
-  
+
   !-----------------------------------------------------------------------
   !                                                                      !
-  ! Save the result on the coarse grid                                   !
+  ! Define the grid                                                      !
   !                                                                      !
   ! Version 1: S.Dobricic 2006                                           !
   !-----------------------------------------------------------------------
@@ -32,71 +31,73 @@ subroutine clean_mem
   
   use set_knd
   use drv_str
-  use obs_str
   use grd_str
-  use eof_str
-  use ctl_str
-  use cns_str
-  use rcfl
-
-#ifdef _USE_MPI
   use mpi_str
-  use mpi
-#endif
   
   implicit none
-
-#ifdef _USE_MPI
-  integer :: ierr
-#endif
   
-  ! Deallocate everithing related to the old grid
-  DEALLOCATE ( drv%grid, drv%ratco, drv%ratio)
-  DEALLOCATE ( drv%mask, drv%dda, drv%ddi)
-
-  ! chlorophyll structure
-  DEALLOCATE ( chl%flg)
-  DEALLOCATE ( chl%flc)
-  DEALLOCATE ( chl%inc)
-  DEALLOCATE ( chl%err)
-  DEALLOCATE ( chl%res)
-  DEALLOCATE ( chl%ib)
-  DEALLOCATE ( chl%pb)
-  DEALLOCATE ( chl%jb)
-  DEALLOCATE ( chl%qb)
-  DEALLOCATE ( chl%pq1)
-  DEALLOCATE ( chl%pq2)
-  DEALLOCATE ( chl%pq3)
-  DEALLOCATE ( chl%pq4)
-  DEALLOCATE ( chl%dzr)
-
-  ! Constants structure
-  DEALLOCATE ( rcf%al)
-  DEALLOCATE ( rcf%sc)
-
-#ifdef _USE_MPI
-  DEALLOCATE(SendCountX2D, SendCountX4D)
-  DEALLOCATE(SendDisplX2D, SendDisplX4D)
-  DEALLOCATE(RecCountX2D, RecCountX4D)
-  DEALLOCATE(RecDisplX2D, RecDisplX4D)
-
-  DEALLOCATE(ChlExtended)
-  DEALLOCATE(SendRight, RecLeft)
-  DEALLOCATE(SendLeft, RecRight)
-  DEALLOCATE(SendBottom, RecTop)
-  DEALLOCATE(SendTop, RecBottom)
-
-  DEALLOCATE(ChlExtended4D, ChlExtendedAD_4D)
-  DEALLOCATE(SendLeft2D, RecRight2D)
-  DEALLOCATE(SendRight2D, RecLeft2D)
-  DEALLOCATE(SendTop2D, RecBottom2D)
-  DEALLOCATE(SendBottom2D, RecTop2D)
-
-  call MPI_Comm_free(CommSliceX, ierr)
-  call MPI_Comm_free(CommSliceY, ierr)
-  if(MyRank .eq. 0) &
-#endif
-       write(*,*) ' ALL MEMORY CLEAN'
-  write(*,*) ''
+  INTEGER(I4)    :: i, j, k
+  INTEGER :: indSupWP
+  ! ---
+  ! Define grid 
+  grd%grd_mod  = drv%grid (drv%ktr)
   
-end subroutine clean_mem
+  !Read grid definition
+  ! call parallel_rdgrd
+  call rdgrd
+  
+  ! Define grid for horizontal covariances
+  if( drv%mask(drv%ktr).eq.1)then
+     grd%msr(:,:,:) = 1.0
+  else if( drv%mask(drv%ktr).eq.2)then
+     do k=1,grd%km
+        grd%msr(:,:,k) = grd%msk(:,:,1)
+     enddo
+     
+  else if( drv%mask(drv%ktr).eq.3)then
+     do i=1,grd%im
+        do j=1,grd%jm
+           do k=1,grd%km
+              grd%msr(i,j,k) = grd%msk(i,j,k)
+           enddo
+        enddo
+     enddo
+     !         grd%msr(:,:,:) = grd%msk(:,:,:)
+  else
+     if(MyRank .eq. 0) then
+        
+        write(drv%dia,*)'Wrong mask for horizontal covariances ',  &
+             drv%mask(drv%ktr)
+        
+     !stop
+     endif
+  
+     call MPI_Abort(MPI_COMM_WORLD, -1, i)
+     
+  endif
+  
+  
+  nSurfaceWaterPoints = 0
+  do i=1,grd%im
+     do j=1,grd%jm
+        if (grd%msk(i,j,1).eq.1) nSurfaceWaterPoints = nSurfaceWaterPoints+1
+     enddo
+  enddo
+  
+  
+  ALLOCATE (SurfaceWaterPoints(2,nSurfaceWaterPoints))
+  
+  write(*,*) 'nSurfaceWaterPoints = ', nSurfaceWaterPoints, 'of Rank ', MyRank
+  
+  indSupWP=0
+  do i=1,grd%im
+     do j=1,grd%jm
+        if (grd%msk(i,j,1).eq.1) then
+           indSupWP = indSupWP+1
+           SurfaceWaterPoints(1,indSupWP) = i
+           SurfaceWaterPoints(2,indSupWP) = j
+        endif
+     enddo
+  enddo
+  
+end subroutine parallel_def_grd

@@ -34,7 +34,7 @@ subroutine def_cov
   use eof_str
   use cns_str
   use rcfl
-  
+
   implicit none
   
   INTEGER(i4)                 :: k, nspl, i, j, kk,l,m
@@ -305,7 +305,6 @@ subroutine def_cov
         enddo
      enddo
   enddo
-  
   
   ! ---
   ! Vertical EOFs

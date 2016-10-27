@@ -44,6 +44,11 @@ subroutine obsop_ad
 
   ! ---
   ! Observations of chlorophyll
+#ifdef _USE_MPI
+  ! call parallel_obs_chl_ad
   call obs_chl_ad
+#else
+  call obs_chl_ad
+#endif
   
 end subroutine obsop_ad

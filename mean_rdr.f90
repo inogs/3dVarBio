@@ -8,7 +8,7 @@
       REAL(r8),INTENT(IN):: rad_xy(grd%im,grd%jm,1)
       REAL(r8):: meanxy
      
-      print*, k
+      ! print*, k
       count=0
       meanxy=0
       do j=1,grd%jm

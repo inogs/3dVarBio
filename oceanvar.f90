@@ -39,7 +39,7 @@ subroutine oceanvar
   use drv_str
   
 #ifdef _USE_MPI
-  use myalloc_mpi
+  use mpi_str
 #endif
   
   implicit none
@@ -51,114 +51,165 @@ subroutine oceanvar
   INTEGER(i4)   ::  MyID
   
   call mynode
-  MyID = rank
+  MyID = MyRank
   
-  print*,MyID, rank, size
-  
-  ! if( MyID .eq. 0) then
-
 #endif
      
-     ! ---
-     ! Initialize diagnostics and read namelists
-     call def_nml
-     ! ---
-     ! Outer loop - multigrid
-     do ktr = 1,drv%ntr
-        drv%ktr = ktr
-        
-        ! ---
-        ! Define grid parameters
-        if( ktr.eq.1 .or. drv%ratio(ktr).ne.1.0 )then
-           call def_grd
-           
-           write(drv%dia,*) 'out of def_grd '
-        endif
-        
-        ! ---
-        ! Get observations
-        if(ktr.eq.1) call get_obs
-        write(drv%dia,*) 'out of get_obs'
-        
-        ! ---
-        ! Define interpolation parameters
-        call int_par
-        write(drv%dia,*) 'out of int_par'
-        
-        ! ---
-        ! Define observational vector
-        call obs_vec
-        write(drv%dia,*) 'out of obs_vec'
-        
-        ! ---
-        ! Define constants for background covariances
-        if( ktr.eq.1 .or. drv%ratio(ktr).ne.1.0 ) then
-           call def_cov
-           write(drv%dia,*) 'out of def_cov '
-        endif
-        
-        ! ---
-        ! Initialize cost function and its gradient
-        call ini_cfn
-        write(drv%dia,*) 'out of ini_cfn'
-        
-        ! ---
-        ! Calculate the initial norm the gradient
-        if( ktr.gt.1 ) then
-           call ini_nrm
-           write(drv%dia,*) 'out of ini_nrm '
-        endif
-        
-        ! ---
-        ! Initialise from old iterration
-        if( ktr.gt.1 .and. drv%ratio(ktr).ne.1.0 ) then
-           call ini_itr
-           write(drv%dia,*) 'out of ini_itr '
-        endif
-        
-        ! ---
-        ! Minimize the cost function (inner loop)
-#ifndef _USE_MPI
-        call min_cfn
-#else
-        call tao_minimizer
-#endif
-        write(drv%dia,*) 'out of min_cfn'
-        
-        if(ktr.eq.drv%ntr)then
-           ! ---
-           ! Convert to innovations
-           call cnv_inn
-           ! ---
-           ! Write outputs and diagnostics
-           call wrt_dia
-        endif
-        
-        ! ---
-        ! Save old iterration
-        !   if( ktr.ne.drv%ntr)then
-        !    if(drv%ratio(ktr+1).ne.1.0 ) then
-        call sav_itr
-        write(drv%dia,*) 'out of sav_itr '
-        !    endif
-        !   endif
-        
-        ! ---
-        ! End of outer loop
-           
-     enddo
-     !-----------------------------------------------------------------
-          
-  ! completely clean memory
-  call clean_mem
+  ! ---
+  ! Initialize diagnostics and read namelists
+  call def_nml
+  ! ---
+  ! Outer loop - multigrid
+  do ktr = 1,drv%ntr
+     drv%ktr = ktr
      
-  !-----------------------------------------------------------------
-  close(drv%dia)
+     ! ---
+     ! Define grid parameters
+     if( ktr.eq.1 .or. drv%ratio(ktr).ne.1.0 )then
 
 #ifdef _USE_MPI
-  !endif ! if( MyID .eq. 0)
-
-  CALL mpi_stop
+        call parallel_def_grd
+        
+        if(MyRank .eq. 0) &
+#else
+             
+             call def_grd
 #endif
+        
+        write(drv%dia,*) 'out of def_grd '           
 
+     endif
+     
+     ! ---
+     ! Get observations
+     if(ktr.eq.1) call get_obs
+     
+#ifdef _USE_MPI
+     if(MyRank .eq. 0) &
+#endif
+        write(drv%dia,*) 'out of get_obs'
+     
+     ! ---
+     ! Define interpolation parameters
+     call int_par
+     
+#ifdef _USE_MPI
+     if(MyRank .eq. 0) &
+#endif
+          write(drv%dia,*) 'out of int_par'
+             
+     ! ---
+     ! Define observational vector
+     call obs_vec
+     
+#ifdef _USE_MPI
+     if(MyRank .eq. 0) &
+#endif
+          write(drv%dia,*) 'out of obs_vec'
+             
+     ! ---
+     ! Define constants for background covariances
+     if( ktr.eq.1 .or. drv%ratio(ktr).ne.1.0 ) then
+        
+#ifdef _USE_MPI
+        ! call parallel_def_cov
+        call def_cov
+        if(MyRank .eq. 0) &
+#else
+        call def_cov
+#endif
+             write(drv%dia,*) 'out of def_cov '
+
+     endif
+     
+     ! ---
+     ! Initialize cost function and its gradient
+     call ini_cfn
+
+#ifdef _USE_MPI
+     if(MyRank .eq. 0) &
+#endif
+          write(drv%dia,*) 'out of ini_cfn'
+
+     ! ---
+     ! Calculate the initial norm the gradient
+     if( ktr.gt.1 ) then
+        call ini_nrm
+        
+#ifdef _USE_MPI
+        if(MyRank .eq. 0) &
+#endif
+             write(drv%dia,*) 'out of ini_nrm '
+     endif
+           
+     ! ---
+     ! Initialise from old iterration
+     if( ktr.gt.1 .and. drv%ratio(ktr).ne.1.0 ) then
+        call ini_itr
+        
+#ifdef _USE_MPI
+        if(MyRank .eq. 0) &
+#endif
+             write(drv%dia,*) 'out of ini_itr '
+           
+     endif
+     
+     ! ---
+     ! Minimize the cost function (inner loop)
+#ifndef _USE_MPI
+     call min_cfn
+     write(drv%dia,*) 'out of min_cfn'
+#else
+     call tao_minimizer
+     if(MyRank .eq. 0) then
+        write(drv%dia,*) 'out of tao_minimizer'
+     endif
+#endif
+        
+     if(ktr.eq.drv%ntr)then
+        ! ---
+        ! Convert to innovations
+        call cnv_inn
+        ! ---
+        ! Write outputs and diagnostics
+#ifdef _USE_MPI
+        ! call parallel_wrt_dia
+        call wrt_dia
+#else
+        call wrt_dia
+#endif
+     endif
+     
+     ! ---
+     ! Save old iterration
+     !   if( ktr.ne.drv%ntr)then
+     !    if(drv%ratio(ktr+1).ne.1.0 ) then
+     call sav_itr
+     
+#ifdef _USE_MPI
+     if(MyRank .eq. 0) &
+#endif
+          write(drv%dia,*) 'out of sav_itr '
+        
+     !    endif
+     !   endif
+     
+     ! ---
+     ! End of outer loop
+     
+  enddo
+  !-----------------------------------------------------------------
+  
+  ! completely clean memory
+  call clean_mem
+  
+  !-----------------------------------------------------------------
+#ifdef _USE_MPI
+  if(MyRank .eq. 0) close(drv%dia)
+  call mpi_stop
+
+#else
+  close(drv%dia)
+#endif
+  
 end subroutine oceanvar

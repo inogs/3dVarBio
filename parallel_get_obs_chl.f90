@@ -1,4 +1,4 @@
-subroutine get_obs_chl
+subroutine parallel_get_obs_chl
   
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -31,22 +31,25 @@ subroutine get_obs_chl
   use drv_str
   use grd_str
   use obs_str
-  use netcdf
-  use filenames
 
+  use mpi
+  use mpi_str
+  use pnetcdf
+  use filenames
+  
   implicit none
   
   INTEGER(i4)   ::  j,k, kk
   INTEGER(i4)   ::  i
   REAL(r8)      ::  zbo, zbn
   REAL(r4), ALLOCATABLE      ::  chl_mis(:,:),chl_err(:,:)
-  INTEGER(i4)   ::  stat, ncid, idvar
+  INTEGER(i4)   ::  stat, ncid, idvar, VarId
   
   chl%no = 0
   chl%nc = 0
-  
-  
-  stat = nf90_open(trim(MISFIT_FILE), NF90_NOWRITE, ncid)
+
+  stat = nf90mpi_open(MPI_COMM_WORLD, trim(MISFIT_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
+  if (stat .ne. NF90_NOERR ) call handle_err('nf90mpi_open', stat)
   
   if(stat.ne.0)then
      chl%no = 0
@@ -71,8 +74,7 @@ subroutine get_obs_chl
   
   
   ! ---
-  ! Allocate memory for observations 
-  
+  ! Allocate memory for observations   
   
   ALLOCATE ( chl_mis(grd%im,grd%jm) ) ; chl_mis = huge(chl_mis(1,1))
   ALLOCATE ( chl_err(grd%im,grd%jm) ) ; chl_err = huge(chl_err(1,1))
@@ -91,28 +93,16 @@ subroutine get_obs_chl
   ALLOCATE ( chl%pq4(chl%no)) ; chl%pq4 = huge(chl%pq4(1))
   ALLOCATE ( chl%dzr(grd%km,chl%no)) ; chl%dzr=huge(chl%dzr(1,1))
   
-  
-  
-  
-  stat = nf90_inq_varid (ncid, 'misfchl', idvar)
-  if(stat .ne. 0) then
-     call f_exit_message(10, 'var misfchl not found')
-  endif
-  
-  stat = nf90_get_var (ncid, idvar, chl_mis)
-  if(stat .ne. 0) then
-     call f_exit_message(10, 'cannot read var misfchl')
-  endif
-  
-  stat = nf90_inq_varid (ncid, 'errchl', idvar)
-  if(stat .ne. 0) then
-     call f_exit_message(10, 'var errchl not found')
-  endif
-  
-  stat = nf90_get_var (ncid, idvar, chl_err)
-  if(stat .ne. 0) then
-     call f_exit_message(10, 'cannot read var errchl')
-  endif
+
+  stat = nf90mpi_inq_varid (ncid, 'misfchl', VarId)
+  if (stat .ne. NF90_NOERR ) call handle_err('nf90mpi_inq_varid', stat)
+  stat = nfmpi_get_vara_real_all (ncid, VarId, MyStart, MyCount, chl_mis)
+  if (stat .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all', stat)
+
+  stat = nf90mpi_inq_varid (ncid, 'errchl', VarId)
+  if (stat .ne. NF90_NOERR ) call handle_err('nf90mpi_inq_varid', stat)
+  stat = nfmpi_get_vara_real_all (ncid, VarId, MyStart, MyCount, chl_err)
+  if (stat .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all', stat)
   
   do k=1,chl%no
      j = (k-1)/grd%im + 1
@@ -128,7 +118,8 @@ subroutine get_obs_chl
   DEALLOCATE( chl_mis )
   DEALLOCATE( chl_err )
   
-  stat = nf90_close (ncid)
+  stat = nf90mpi_close (ncid)
+  if (stat .ne. NF90_NOERR ) call handle_err('nf90mpi_close', stat)
   
   !   chl%err(:) =  0.3
   
@@ -157,96 +148,12 @@ subroutine get_obs_chl
         chl%flg(k) = 0
      endif
   enddo
-  
-  print*,'Good chl observations: ',chl%nc
+
+  call MPI_Allreduce(chl%nc, chl%nc_global, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD, stat)
+
+  if(MyRank .eq. 0) then
+     print*,'Good chl observations: ',chl%nc_global
+  endif
   chl%flc(:) = chl%flg(:)
 
-end subroutine get_obs_chl
-
-subroutine int_par_chl
-  
-  !-----------------------------------------------------------------------
-  !                                                                      !
-  ! Get interpolation parameters for a grid                              !
-  !                                                                      !
-  ! Version 1: S.Dobricic 2006                                           !
-  !-----------------------------------------------------------------------
-  
-  use set_knd
-  use drv_str
-  use grd_str
-  use obs_str
-
-#ifdef _USE_MPI
-  use mpi_str
-#endif
-  
-  implicit none
-  
-  integer(i4)   ::  k
-  integer(i4)   ::  i1, kk, j1
-  real(r8)      ::  p1, q1
-  real(r8)      ::  div_x, div_y
-
-#ifdef _USE_MPI
-  if(MyRank .eq. 0) &
-       write(drv%dia,*) 'Number of CHL observations:  >>>>>>>>>>>>>',chl%nc_global
-#else  
-
-  write(drv%dia,*) 'Number of CHL observations:  >>>>>>>>>>>>>',chl%nc
-
-#endif     
-
-  if(chl%nc.gt.0) then
-     
-     
-     ! ---
-     ! Interpolation parameters
-     do kk = 1,chl%no
-        j1 = (kk-1)/grd%im + 1
-        i1 = kk - (j1-1)*grd%im
-        q1 = 0.0
-        p1 = 0.0
-        chl%ib(kk) = i1
-        chl%jb(kk) = j1
-        chl%pb(kk) = p1
-        chl%qb(kk) = q1
-     enddo
-     
-     
-     ! ---
-     ! Horizontal interpolation parameters for each masked grid
-     do k = 1,chl%no
-        if(chl%flc(k) .eq. 1) then
-           
-           i1=chl%ib(k)
-           p1=chl%pb(k)
-           j1=chl%jb(k)
-           q1=chl%qb(k)
-           
-           div_y =  (1.-q1) * max(grd%msk(i1,j1  ,1),grd%msk(i1+1,j1  ,1))     &
-                +    q1  * max(grd%msk(i1,j1+1,1),grd%msk(i1+1,j1+1,1))
-           div_x =  (1.-p1) * grd%msk(i1  ,j1,1) + p1 * grd%msk(i1+1,j1,1)
-           chl%pq1(k) = grd%msk(i1,j1,1)                                      &
-                * max(grd%msk(i1,j1,1),grd%msk(i1+1,j1,1))             &
-                * (1.-p1) * (1.-q1)                                   &
-                /( div_x * div_y + 1.e-16 )
-           chl%pq2(k) = grd%msk(i1+1,j1,1)                                    &
-                * max(grd%msk(i1,j1,1),grd%msk(i1+1,j1,1))             &
-                *     p1  * (1.-q1)                                    &
-                /( div_x * div_y + 1.e-16 )
-           div_x =  (1.-p1) * grd%msk(i1  ,j1+1,1) + p1 * grd%msk(i1+1,j1+1,1)
-           chl%pq3(k) = grd%msk(i1,j1+1,1)                                    &
-                * max(grd%msk(i1,j1+1,1),grd%msk(i1+1,j1+1,1))         &
-                * (1.-p1) *     q1                                     &
-                /( div_x * div_y + 1.e-16 )
-           chl%pq4(k) = grd%msk(i1+1,j1+1,1)                                  &
-                * max(grd%msk(i1,j1+1,1),grd%msk(i1+1,j1+1,1))         &
-                *     p1  *     q1                                     &
-                /( div_x * div_y + 1.e-16 )
-           
-        endif
-     enddo    
-  endif
-  
-end subroutine int_par_chl
+end subroutine parallel_get_obs_chl
