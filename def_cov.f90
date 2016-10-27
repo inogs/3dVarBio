@@ -37,12 +37,17 @@ subroutine def_cov
   
   implicit none
   
-  INTEGER(i4)                 :: k, nspl, i, j, kk
-  REAL(r8)                    :: E, dst
+  INTEGER(i4)                 :: k, nspl, i, j, kk,l,m
+  REAL(r8)                    :: dst,E,Lmean, mean_rad
   REAL(r8)    , ALLOCATABLE   :: sfct(:), al(:), bt(:)
   INTEGER(i4) , ALLOCATABLE   :: jnxx(:)
   INTEGER nthreads, threadid
   integer :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
+  
+  !laura 
+  call rdrcorr   !laura Allocation rcf%Lxyz
+  !laura 
+
 
   nthreads = 1
   threadid = 0
@@ -70,9 +75,9 @@ subroutine def_cov
   ! KB grid problem (chl assimilation)
   rcf%ntb = 1000
   !
-  
   ALLOCATE ( rcf%al(rcf%ntb)) ; rcf%al = huge(rcf%al(1))
-  ALLOCATE ( rcf%sc(rcf%ntb)) ; rcf%sc = huge(rcf%sc(1))
+  !laura, sc added  vertical level
+  ALLOCATE ( rcf%sc(grd%km,rcf%ntb)) ; rcf%sc = huge(rcf%sc(1,1)) 
   
   rcf%dsmn =  1.e20
   rcf%dsmx = -1.e20
@@ -86,118 +91,144 @@ subroutine def_cov
   rcf%dsmx = rcf%dsmx + max(1.d0,(rcf%dsmx-rcf%dsmn)/(rcf%ntb-2.))
   
   rcf%dsl = (rcf%dsmx-rcf%dsmn) / (rcf%ntb-1.)
-  
-  do k=1,rcf%ntb
-     dst = rcf%dsmn + (k-1.) * rcf%dsl
-     E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)
-     rcf%al(k) = 1. + E - sqrt(E*(E+2.))
-     rcf%alp   = rcf%al(k)
-     sfct(:) = 0.
-     al(:) = rcf%al(k)
-     bt(:) = rcf%al(k)
-     do j=1,nspl
-        jnxx(j) = j
-     enddo
-     sfct(nspl/2+1) = 1.
-     call rcfl_y_init    ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
-     call rcfl_y_ad_init ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
-     rcf%sc(k) = sfct(nspl/2+1)
-  enddo
+
+!Laura aggiunto ciclo sui livelli
+  do k=1,grd%km 
+    Lmean=mean_rad(k,rcf%Lxyz(:,:,k)) !for each level, mean of Lxyz
+    do l=1,rcf%ntb
+       dst = rcf%dsmn + (l-1.) * rcf%dsl
+       !E = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)  
+       E = (2. * rcf%ntr) * dst**2 / (4. * Lmean**2)  !mean of radius
+       rcf%al(l) = 1. + E - sqrt(E*(E+2.))
+       rcf%alp   = rcf%al(l)
+       sfct(:) = 0.
+       al(:) = rcf%al(l)
+       bt(:) = rcf%al(l)
+       do m=1,nspl
+          jnxx(m) = m
+       enddo
+       sfct(nspl/2+1) = 1.
+       call rcfl_y_init    ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
+       call rcfl_y_ad_init ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
+       rcf%sc(k,l) = sfct(nspl/2+1)
+    enddo
+  enddo !k vertical loop
   
   DEALLOCATE ( sfct, jnxx, al, bt ) 
   
-  do j=1,grd%jm
-     do i=1,grd%im
-        dst = ( grd%dx(i,j) - rcf%dsmn )/rcf%dsl
-        k = int(dst) + 1
-        dst = dst - real(k-1)
-        grd%scx(i,j) = sqrt( 1./ (rcf%sc(k)*(1.-dst) + rcf%sc(k+1)*dst) ) 
-        dst = ( grd%dy(i,j) - rcf%dsmn )/rcf%dsl
-        k = int(dst) + 1
-        dst = dst - real(k-1)
-        grd%scy(i,j) = sqrt( 1./ (rcf%sc(k)*(1.-dst) + rcf%sc(k+1)*dst) ) 
-     enddo
-  enddo
+!  grd%scx=1.e20  !add undef values for scx and scy
+!  grd%scy=1.e20
+  do k=1,grd%km 
+    do j=1,grd%jm
+       do i=1,grd%im
+          dst = ( grd%dx(i,j) - rcf%dsmn )/rcf%dsl
+          l = int(dst) + 1
+          dst = dst - real(l-1)
+          grd%scx(i,j,k) = sqrt( 1./ (rcf%sc(k,l)*(1.-dst) + rcf%sc(k,l+1)*dst) ) 
+          dst = ( grd%dy(i,j) - rcf%dsmn )/rcf%dsl
+          l = int(dst) + 1
+          dst = dst - real(l-1)
+          grd%scy(i,j,k) = sqrt( 1./ (rcf%sc(k,l)*(1.-dst) + rcf%sc(k,l+1)*dst) ) 
+       enddo
+    enddo
+  enddo !k vertical loop
+
+
+! modificato fin qui
+
+
+  do k=1,grd%km !laura add vertical component
+    do j=1,grd%jm
+       do i=2,grd%im
+          dst = (grd%dx(i-1,j) + grd%dx(i,j)) * 0.5 
+          E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i,j,k)**2)  !laura
+          grd%alx(i,j,k) = 1. + E - sqrt(E*(E+2.))
+       enddo
+       do i=1,grd%im-1
+          dst = (grd%dx(i,j) + grd%dx(i+1,j)) * 0.5 
+          E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i,j,k)**2)  !laura
+          grd%btx(i,j,k) = 1. + E - sqrt(E*(E+2.)) 
+       enddo
+    enddo
   
-  do j=1,grd%jm
-     do i=2,grd%im
-        dst = (grd%dx(i-1,j) + grd%dx(i,j)) * 0.5 
-        E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)
-        grd%alx(i,j) = 1. + E - sqrt(E*(E+2.))
-     enddo
-     do i=1,grd%im-1
-        dst = (grd%dx(i,j) + grd%dx(i+1,j)) * 0.5 
-        E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)
-        grd%btx(i,j) = 1. + E - sqrt(E*(E+2.))
-     enddo
-  enddo
+    do j=2,grd%jm
+       do i=1,grd%im
+          dst = (grd%dy(i,j-1) + grd%dy(i,j)) * 0.5 
+          E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i,j,k)**2)  !laura
+          grd%aly(i,j,k) = 1. + E - sqrt(E*(E+2.))
+       enddo
+    enddo
+    do j=1,grd%jm-1
+       do i=1,grd%im
+          dst = (grd%dy(i,j) + grd%dy(i,j+1)) * 0.5 
+          E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i,j,k)**2)  !laura
+          grd%bty(i,j,k) = 1. + E - sqrt(E*(E+2.))
+       enddo
+    enddo
   
-  do j=2,grd%jm
-     do i=1,grd%im
-        dst = (grd%dy(i,j-1) + grd%dy(i,j)) * 0.5 
-        E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)
-        grd%aly(i,j) = 1. + E - sqrt(E*(E+2.))
-     enddo
-  enddo
-  do j=1,grd%jm-1
-     do i=1,grd%im
-        dst = (grd%dy(i,j) + grd%dy(i,j+1)) * 0.5 
-        E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)
-        grd%bty(i,j) = 1. + E - sqrt(E*(E+2.))
-     enddo
-  enddo
+    grd%alx(     1,:,k) = grd%alx(       2,:,k)
+    grd%btx(grd%im,:,k) = grd%btx(grd%im-1,:,k)
+    grd%aly(:,     1,k) = grd%aly(:,       2,k)
+    grd%bty(:,grd%jm,k) = grd%bty(:,grd%jm-1,k)
   
-  grd%alx(     1,:) = grd%alx(       2,:)
-  grd%btx(grd%im,:) = grd%btx(grd%im-1,:)
-  grd%aly(:,     1) = grd%aly(:,       2)
-  grd%bty(:,grd%jm) = grd%bty(:,grd%jm-1)
+    !---
+    ! Define extended grids
   
-  !---
-  ! Define extended grids
-  
-  grd%istp = int( rcf%L * rcf%efc / grd%dx(:,:) )+1
-  grd%jstp = int( rcf%L * rcf%efc / grd%dy(:,:) )+1
+    !grd%istp = int( rcf%L * rcf%efc / grd%dx(:,:) )+1
+    !grd%jstp = int( rcf%L * rcf%efc / grd%dy(:,:) )+1
+    grd%istp(:,:,k) = int( rcf%Lxyz(:,:,k) * rcf%efc / grd%dx(:,:) )+1  !laura
+    grd%jstp(:,:,k) = int( rcf%Lxyz(:,:,k) * rcf%efc / grd%dy(:,:) )+1
+  enddo ! k vertical component
+
+
   grd%imax   = 0
   grd%jmax   = 0
-  
   
   do k = 1, grd%km
      
      grd%imx(k) = 0
      do j = 1, grd%jm
-        kk = grd%istp(1,j)
+        !kk = grd%istp(1,j)
+        kk = grd%istp(1,j,k)  !laura aggiunta la verticale
         if( grd%msr(1,j,k).eq.1. ) kk = kk + 1
         grd%inx(1,j,k) = kk
         do i = 2, grd%im
            if( grd%msr(i,j,k).eq.0. .and. grd%msr(i-1,j,k).eq.1. ) then
-              kk = kk + grd%istp(i,j)
+              !kk = kk + grd%istp(i,j)
+              kk = kk + grd%istp(i,j,k) !laura
            else if( grd%msr(i,j,k).eq.1. .and. grd%msr(i-1,j,k).eq.0. ) then
-              kk = kk + grd%istp(i,j) + 1
+              !kk = kk + grd%istp(i,j) + 1
+              kk = kk + grd%istp(i,j,k) + 1 !laura
            else if( grd%msr(i,j,k).eq.1. ) then
               kk = kk + 1
            endif
            grd%inx(i,j,k) = kk
         enddo
-        grd%imx(k) = max( grd%imx(k), kk+grd%istp(grd%im,j))
+        !grd%imx(k) = max( grd%imx(k), kk+grd%istp(grd%im,j))
+        grd%imx(k) = max( grd%imx(k), kk+grd%istp(grd%im,j,k)) !laura
      enddo
      grd%imax   = max( grd%imax, grd%imx(k))
      
      grd%jmx(k) = 0
      do i = 1, grd%im
-        kk = grd%jstp(i,1)
+        !kk = grd%jstp(i,1)
+        kk = grd%jstp(i,1,k) !laura
         if( grd%msr(i,1,k).eq.1. ) kk = kk + 1
         grd%jnx(i,1,k) = kk
         do j = 2, grd%jm
            if( grd%msr(i,j,k).eq.0. .and. grd%msr(i,j-1,k).eq.1. ) then
-              kk = kk + grd%jstp(i,j)
+              !kk = kk + grd%jstp(i,j)
+              kk = kk + grd%jstp(i,j,k) !laura
            else if( grd%msr(i,j,k).eq.1. .and. grd%msr(i,j-1,k).eq.0. ) then
-              kk = kk + grd%jstp(i,j) + 1
+              !kk = kk + grd%jstp(i,j) + 1 
+              kk = kk + grd%jstp(i,j,k) + 1 !laura
            else if( grd%msr(i,j,k).eq.1. ) then
               kk = kk + 1
            endif
            grd%jnx(i,j,k) = kk
         enddo
-        grd%jmx(k) = max( grd%jmx(k), kk+grd%jstp(i,grd%jm))
+        !grd%jmx(k) = max( grd%jmx(k), kk+grd%jstp(i,grd%jm))
+        grd%jmx(k) = max( grd%jmx(k), kk+grd%jstp(i,grd%jm,k)) !laura
      enddo
      grd%jmax   = max( grd%jmax, grd%jmx(k))
      
@@ -213,48 +244,49 @@ subroutine def_cov
   do k = 1, grd%km
         
      do j = 1, grd%jm
-        kk = grd%istp(1,j)
+        !kk = grd%istp(1,j)
+        kk = grd%istp(1,j,k) !laura
         if( grd%msr(1,j,k).eq.1. ) then
            kk = kk + 1
-           grd%aex(j,1:kk,k) = grd%alx(1,j)
-           grd%bex(j,1:kk,k) = grd%btx(1,j)
+           grd%aex(j,1:kk,k) = grd%alx(1,j,k)
+           grd%bex(j,1:kk,k) = grd%btx(1,j,k)
         endif
         do i = 2, grd%im
            if( grd%msr(i,j,k).eq.0. .and. grd%msr(i-1,j,k).eq.1. ) then
-              grd%aex(j,kk+1:kk+grd%istp(i,j),k) = grd%alx(i,j)
-              grd%bex(j,kk+1:kk+grd%istp(i,j),k) = grd%btx(i,j)
-              kk = kk + grd%istp(i,j)
+              grd%aex(j,kk+1:kk+grd%istp(i,j,k),k) = grd%alx(i,j,k)
+              grd%bex(j,kk+1:kk+grd%istp(i,j,k),k) = grd%btx(i,j,k)
+              kk = kk + grd%istp(i,j,k)
            else if( grd%msr(i,j,k).eq.1. .and. grd%msr(i-1,j,k).eq.0. ) then
-              grd%aex(j,kk+1:kk+grd%istp(i,j)+1,k) = grd%alx(i,j)
-              grd%bex(j,kk+1:kk+grd%istp(i,j)+1,k) = grd%btx(i,j)
-              kk = kk + grd%istp(i,j) + 1
+              grd%aex(j,kk+1:kk+grd%istp(i,j,k)+1,k) = grd%alx(i,j,k)
+              grd%bex(j,kk+1:kk+grd%istp(i,j,k)+1,k) = grd%btx(i,j,k)
+              kk = kk + grd%istp(i,j,k) + 1
            else if( grd%msr(i,j,k).eq.1. ) then
-              grd%aex(j,kk+1,k) = grd%alx(i,j)
-              grd%bex(j,kk+1,k) = grd%btx(i,j)
+              grd%aex(j,kk+1,k) = grd%alx(i,j,k)
+              grd%bex(j,kk+1,k) = grd%btx(i,j,k)
               kk = kk + 1
            endif
         enddo
      enddo
      
      do i = 1, grd%im
-        kk = grd%jstp(i,1)
+        kk = grd%jstp(i,1,k)
         if( grd%msr(i,1,k).eq.1. ) then
            kk = kk + 1
-           grd%aey(i,1:kk,k) = grd%aly(i,1)
-           grd%bey(i,1:kk,k) = grd%bty(i,1)
+           grd%aey(i,1:kk,k) = grd%aly(i,1,k)
+           grd%bey(i,1:kk,k) = grd%bty(i,1,k)
         endif
         do j = 2, grd%jm
            if( grd%msr(i,j,k).eq.0. .and. grd%msr(i,j-1,k).eq.1. ) then
-              grd%aey(i,kk+1:kk+grd%jstp(i,j),k) = grd%aly(i,j)
-              grd%bey(i,kk+1:kk+grd%jstp(i,j),k) = grd%bty(i,j)
-              kk = kk + grd%jstp(i,j)
+              grd%aey(i,kk+1:kk+grd%jstp(i,j,k),k) = grd%aly(i,j,k)
+              grd%bey(i,kk+1:kk+grd%jstp(i,j,k),k) = grd%bty(i,j,k)
+              kk = kk + grd%jstp(i,j,k)
            else if( grd%msr(i,j,k).eq.1. .and. grd%msr(i,j-1,k).eq.0. ) then
-              grd%aey(i,kk+1:kk+grd%jstp(i,j)+1,k) = grd%aly(i,j)
-              grd%bey(i,kk+1:kk+grd%jstp(i,j)+1,k) = grd%bty(i,j)
-              kk = kk + grd%jstp(i,j) + 1
+              grd%aey(i,kk+1:kk+grd%jstp(i,j,k)+1,k) = grd%aly(i,j,k)
+              grd%bey(i,kk+1:kk+grd%jstp(i,j,k)+1,k) = grd%bty(i,j,k)
+              kk = kk + grd%jstp(i,j,k) + 1
            else if( grd%msr(i,j,k).eq.1. ) then
-              grd%aey(i,kk+1,k) = grd%aly(i,j)
-              grd%bey(i,kk+1,k) = grd%bty(i,j)
+              grd%aey(i,kk+1,k) = grd%aly(i,j,k)
+              grd%bey(i,kk+1,k) = grd%bty(i,j,k)
               kk = kk + 1
            endif
         enddo

@@ -8,6 +8,8 @@ character (LEN=1024) :: CORR_FILE   != 'corr.nc'
 character (LEN=1024) :: EIV_FILE    != 'eiv.nc'
 character (LEN=1024) :: OBS_FILE    != 'obs_1.dat'
 character (LEN=1024) :: GRID_FILE   != 'grid1.nc'
+!laura
+character (LEN=1024) :: RCORR_FILE  != 'chl_rad_corr.nc'
 
 
 
@@ -24,6 +26,8 @@ MISFIT_FILE = 'chl_mis.nc'
    EIV_FILE = 'eiv.nc'
    OBS_FILE = 'obs_1.dat' ! 'obs_'//fgrd//'.dat'
   GRID_FILE = 'grid1.nc'! 'grid'//cgrd//'.nc'
+!laura
+ RCORR_FILE = 'chl_rad_corr.nc'
 
 END SUBROUTINE SETFILENAMES
 

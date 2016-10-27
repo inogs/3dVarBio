@@ -62,7 +62,7 @@ subroutine rcfl_y_init( im, jm, km, jmax, al, bt, fld, jnx, jmx)
          bta(:,:) = bt(:,:,k)
 
 
-       do ktr = 1,rcf%ntr
+       do ktr = 1,rcf%ntr  !numero di cicli del filtro
 
 ! positive direction
          if( ktr.eq.1 )then

@@ -106,6 +106,8 @@ OBJS    =  \
 	ini_itr.o\
 	rdgrds.o\
 	rdeofs.o\
+        rdrcorr.o\
+        mean_rdr.o\
 	netcdf_err.o\
 	get_obs.o\
 	get_obs_arg.o\
