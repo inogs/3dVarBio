@@ -97,7 +97,7 @@ subroutine def_cov
     Lmean=mean_rad(k,rcf%Lxyz(:,:,k)) !for each level, mean of Lxyz
     do l=1,rcf%ntb
        dst = rcf%dsmn + (l-1.) * rcf%dsl
-       !E = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)  
+       !E = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)  !da capire bene
        E = (2. * rcf%ntr) * dst**2 / (4. * Lmean**2)  !mean of radius
        rcf%al(l) = 1. + E - sqrt(E*(E+2.))
        rcf%alp   = rcf%al(l)

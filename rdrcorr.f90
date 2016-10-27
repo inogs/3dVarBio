@@ -61,6 +61,7 @@ subroutine rdrcorr
 
 
 !  Allocate rcorr arrays
+     print*,"dimensioni Lxyz",grd%im,grd%jm,kmr,grd%km
      ALLOCATE ( rcf%Lxyz(grd%im,grd%jm,kmr))
 
        stat = nf90_inq_varid (ncid, 'radius', idvar)

@@ -67,13 +67,14 @@ subroutine tao_minimizer
   CHKERRQ(ierr)
   call TaoSetObjectiveAndGradientRoutine(tao, MyFuncAndGradient, PETSC_NULL_OBJECT, ierr)
   CHKERRQ(ierr)
-  
+
+  call TaoSetMaximumIterations(tao, 10, ierr)
   ! Set MyTolerance and ConvergenceTest
-  MyTolerance = 2.0d-2
-  call TaoSetTolerances(tao, MyTolerance, PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr)
-  CHKERRQ(ierr)
-  call TaoSetConvergenceTest(tao, MyConvTest, PETSC_NULL_OBJECT, ierr)
-  CHKERRQ(ierr)
+  ! MyTolerance = 2.0d-2
+  ! call TaoSetTolerances(tao, MyTolerance, PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr)
+  ! CHKERRQ(ierr)
+  ! call TaoSetConvergenceTest(tao, MyConvTest, PETSC_NULL_OBJECT, ierr)
+  ! CHKERRQ(ierr)
 
   ! Perform minimization
   call TaoSolve(tao, ierr)

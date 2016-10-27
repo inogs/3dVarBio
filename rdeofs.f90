@@ -100,6 +100,7 @@ subroutine rdeofs
   if (stat /= nf90_noerr) call netcdf_err(stat)
   
   ! DECOMMENT FOLLOWING TWO LINES TO MAKE FILTER TEST
+
   ! ros%evc(:,:,:) = 1.
   ! ros%eva(:,:) = 1.
   
