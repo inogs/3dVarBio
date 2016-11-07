@@ -107,14 +107,19 @@ subroutine rcfl_x( im, jm, km, imax, al, bt, fld, inx, imx)
      ! This way fills land points with some values.
      ! We prefer not investigate at the mooment and use only the water points
 #ifdef _USE_MPI
-     do j=1,localCol
-        do i=1,GlobalRow
-           ! if(grd%global_msk(i,j + MyRank*localCol,1).eq.1) then
-           if(grd%global_msk(i,j + GlobalColOffset,1).eq.1) then
-              fld(i,j,k) = a_rcx(j,inx(i,j,k),tid)
-           end if
-        end do
-     end do
+!     do j=1,localCol
+!        do i=1,GlobalRow
+!           ! if(grd%global_msk(i,j + MyRank*localCol,1).eq.1) then
+!           if(grd%global_msk(i,j + GlobalColOffset,1).eq.1) then
+!              fld(i,j,k) = a_rcx(j,inx(i,j,k),tid)
+!           end if
+!        end do
+!     end do
+     do indSupWP=1,nSurfaceWaterPoints
+        i = SurfaceWaterPoints(1,indSupWP)
+        j = SurfaceWaterPoints(2,indSupWP)
+        fld(i,j,k) = a_rcx(j,inx(i,j,k),tid)
+     enddo
 #else
      do indSupWP=1,nSurfaceWaterPoints
         i = SurfaceWaterPoints(1,indSupWP)
