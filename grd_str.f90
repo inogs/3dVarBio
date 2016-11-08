@@ -20,45 +20,45 @@ MODULE grd_str
   !    along with OceanVar.  If not, see <http://www.gnu.org/licenses/>.       !
   !                                                                          !
   !---------------------------------------------------------------------------
-  
+
   !-----------------------------------------------------------------------
   !                                                                      !
   ! Structure of the grid                                                !
   !                                                                      !
   ! Version 1: S.Dobricic 2006                                           !
   !-----------------------------------------------------------------------
-  
+
   use set_knd
-  
+
   implicit none
-  
+
   public
-  
+
   TYPE grid_t
-     
+
      INTEGER(i4)              ::  grd_mod      ! Grid model
-     
+
      INTEGER(i4)              ::  im           ! No. points in x direction
      INTEGER(i4)              ::  jm           ! No. points in y direction
      INTEGER(i4)              ::  km           ! No. points in z direction
-     
+
      REAL(r8),    POINTER     ::  ro(:,:,:)    ! Reduced order control vector
      INTEGER(i4), POINTER     ::  reg(:,:)     ! Mask for EOF regions
      REAL(r8),    POINTER     ::  msk(:,:,:)   ! Sea-Land mask for scalar points
      REAL(r8),    POINTER     ::    f(:,:)     ! Coriolis term
-     
+
      REAL(r8),    POINTER     ::  ro_ad(:,:,:)    ! Reduced order control vector adjoint
-     
+
      INTEGER(i4)              ::  nchl            ! No. of phytoplankton species
      REAL(r8),    POINTER     ::  chl(:,:,:,:)    ! chlorophyll
      REAL(r8),    POINTER     ::  chl_ad(:,:,:,:) ! chlorophyll adjoint variable
-     
+
      REAL(r8),    POINTER     ::  dep(:)       ! Depth
-     
+
      REAL(r8),    POINTER     ::  dx(:,:)      ! dx
      REAL(r8),    POINTER     ::  dy(:,:)      ! dy
-     
-     
+
+
      REAL(r8),    POINTER     ::  alx(:,:)     ! Coefficient for the positive direction of the recursive filter
      REAL(r8),    POINTER     ::  aly(:,:)     ! Coefficient for the positive direction of the recursive filter
      REAL(r8),    POINTER     ::  btx(:,:)     ! Coefficient for the negative direction of the recursive filter
@@ -79,13 +79,13 @@ MODULE grd_str
      REAL(r8),    POINTER     ::  aey(:,:,:)   ! Alpha y direction on extended grid
      REAL(r8),    POINTER     ::  bex(:,:,:)   ! Beta x direction on extended grid
      REAL(r8),    POINTER     ::  bey(:,:,:)   ! Beta y direction on extended grid
-     
+
      REAL(r8),    POINTER     ::  lon(:,:)       ! Longitude
      REAL(r8),    POINTER     ::  lat(:,:)       ! Latitude
      REAL(r8),    POINTER     ::  global_msk(:,:,:)   ! Global Sea-land mask
-     
+
   END TYPE grid_t
-  
+
   TYPE (grid_t)                 :: grd
   INTEGER(i4), ALLOCATABLE, DIMENSION(:,:) :: SurfaceWaterPoints
   INTEGER(i4) :: nSurfaceWaterPoints

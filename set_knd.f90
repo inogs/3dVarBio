@@ -33,12 +33,18 @@ implicit none
 
 public
 
-   INTEGER, PARAMETER ::                &  
+   INTEGER, PARAMETER ::                &
       r4 = SELECTED_REAL_KIND( 6, 37),  &  ! real*4
       r8 = SELECTED_REAL_KIND(12,307)      ! real*8
 
-   INTEGER, PARAMETER ::                &  
+   INTEGER, PARAMETER ::                &
       i4 = SELECTED_INT_KIND(9) ,       &  ! integer*4
       i8 = i4! ELECTED_INT_KIND(14)           ! integer*8
+
+  type DoubleGrid
+    sequence
+    real(r8) chl
+    real(r8) chl_ad
+  end type DoubleGrid
 
 END MODULE set_knd

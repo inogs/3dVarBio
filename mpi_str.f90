@@ -1,11 +1,11 @@
 MODULE mpi_str
   use set_knd
   use mpi
-  
+
   IMPLICIT NONE
   public
-  
-  
+
+
   !-------------------------------------------------------!
   !     MPI vaiables
   !
@@ -29,7 +29,7 @@ MODULE mpi_str
   !     GlobalColOffset : offset needed to read grd%global_msk
   !
   !-------------------------------------------------------!
-  
+
   integer  :: size, MyRank, MyPosI, MyPosJ
   integer  :: MyColRank, MyRowRank
   integer  :: ProcLeft, ProcRight, ProcBottom, ProcTop
@@ -37,7 +37,8 @@ MODULE mpi_str
   integer  :: GlobalRow, GlobalCol
   integer  :: localRow, localCol
   integer  :: GlobalRowOffset, GlobalColOffset
-  
+  integer  :: MyPair
+
   integer  :: CommSliceY, CommSliceX
   integer(KIND=MPI_OFFSET_KIND) :: MyStart(3), MyCount(3)
 
@@ -59,6 +60,6 @@ MODULE mpi_str
   REAL(r8), POINTER, DIMENSION(:,:)      ::  SendRight2D, RecLeft2D
   REAL(r8), POINTER, DIMENSION(:,:)      ::  SendTop2D, RecBottom2D
   REAL(r8), POINTER, DIMENSION(:,:)      ::  SendBottom2D, RecTop2D
-  
+
 
 END MODULE mpi_str

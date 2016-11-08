@@ -70,11 +70,7 @@ subroutine tao_minimizer
   end do
 
   ! Setting only local values (since each process can access at all entries of MyState)
-  do j=1, ctl%n
-     call VecSetValues(MyState, 1, loc(j), MyValues(j), INSERT_VALUES, ierr)
-  end do
-
-  ! call VecSetValues(MyState, ctl%n, loc, MyValues, INSERT_VALUES, ierr)
+  call VecSetValues(MyState, ctl%n, loc, MyValues, INSERT_VALUES, ierr)
   call VecAssemblyBegin(MyState, ierr)
   call VecAssemblyEnd(MyState, ierr)
 
@@ -112,9 +108,6 @@ subroutine tao_minimizer
 
   call TaoSetTolerances(tao, MyTolerance, 1.0d-4, ctl%pgper, ierr) !PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr) !
   CHKERRQ(ierr)
-
-  ! call TaoSetConvergenceTest(tao, MyConvTest, PETSC_NULL_OBJECT, ierr)
-  ! CHKERRQ(ierr)
 
   ! Perform minimization
   call TaoSolve(tao, ierr)
@@ -230,123 +223,3 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   ierr = 0
 
 end subroutine MyFuncAndGradient
-
-!-------------------------------------------------!
-! Subroutine that sets upper and lower            !
-! bounds of the solution state array              !
-! This routine is called only one time at the     !
-! beginning of the iteration                      !
-!-------------------------------------------------!
-
-subroutine MyBounds(tao, lb, ub, dummy, ierr)
-#include "petsc/finclude/petscvecdef.h"
-
-  use ctl_str
-  use tao_str
-  use petscvec
-  use tao_str
-
-  implicit none
-
-#include "petsc/finclude/petsctao.h"
-
-  Tao        :: tao
-  Vec        :: lb, ub
-  integer    :: dummy, ierr, j
-
-  PetscInt, allocatable, dimension(:)       :: loc
-  PetscScalar, allocatable, dimension(:)    :: lbound, ubound
-  PetscInt                                  :: GlobalStart, MyEnd
-
-  ALLOCATE(loc(ctl%n), lbound(ctl%n), ubound(ctl%n))
-  call VecGetOwnershipRange(lb, GlobalStart, MyEnd, ierr)
-  do j = 1, ctl%n
-     loc(j) = GlobalStart + j - 1
-     lbound(j) = ctl%l_c(j)
-     ubound(j) = ctl%u_c(j)
-  end do
-
-  call VecSetValues(lb, ctl%n, loc, lbound, INSERT_VALUES, ierr)
-  CHKERRQ(ierr)
-  call VecAssemblyBegin(lb, ierr)
-  CHKERRQ(ierr)
-  call VecAssemblyEnd(lb, ierr)
-  CHKERRQ(ierr)
-
-  call VecSetValues(ub, ctl%n, loc, ubound, INSERT_VALUES, ierr)
-  CHKERRQ(ierr)
-  call VecAssemblyBegin(ub, ierr)
-  CHKERRQ(ierr)
-  call VecAssemblyEnd(ub, ierr)
-  CHKERRQ(ierr)
-
-  DEALLOCATE(loc, lbound, ubound)
-
-end subroutine MyBounds
-
-
-!-------------------------------------------------!
-! subroutine that performs the computation of     !
-! the infinity norm of the gradient. If that norm !
-! is less than the provided tolerance             !
-! the solution is convergent                      !
-!-------------------------------------------------!
-
-subroutine MyConvTest(tao, dummy, ierr)
-
-#include "petsc/finclude/petscvecdef.h"
-
-  use ctl_str
-  use tao_str
-  use petscvec
-  use mpi
-
-  implicit none
-
-#include "petsc/finclude/petsctao.h"
-
-  Tao                  :: tao
-  integer              :: dummy, ierr, j, n, M, CheckVal, TmpVal
-  Vec                  :: TmpGrad
-  PetscScalar, pointer :: ReadGrad(:)
-  PetscScalar          :: MyTol, grtol, gttol
-
-  ! set useful variables
-  n = ctl%n
-  M = ctl%n_global
-  CheckVal = 0
-
-  ! taking tolerance value (skipping useless values)
-  call TaoGetTolerances(tao, MyTol, PETSC_NULL_REAL, PETSC_NULL_REAL, ierr)
-  CHKERRQ(ierr)
-
-  call TaoGetGradientVector(tao, TmpGrad, ierr)
-  CHKERRQ(ierr)
-
-  call VecGetArrayReadF90(TmpGrad, ReadGrad, ierr)
-  CHKERRQ(ierr)
-
-  ! check with infinity norm of gradient...
-  do j=1, ctl%n
-     if( ReadGrad(j) .gt. MyTol ) then
-        CheckVal = 1
-        EXIT
-     end if
-  end do
-
-  call VecRestoreArrayReadF90(TmpGrad, ReadGrad, ierr)
-  CHKERRQ(ierr)
-
-  ! Do I really need this?
-  TmpVal = CheckVal
-  call MPI_Allreduce(TmpVal, CheckVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD, ierr)
-
-  if( CheckVal .gt. 0) then
-     call TaoSetConvergedReason(tao, TAO_CONTINUE_ITERATING, ierr)
-     CHKERRQ(ierr)
-  else
-     call TaoSetConvergedReason(tao, TAO_CONVERGED_USER, ierr)
-     CHKERRQ(ierr)
-  end if
-
-end subroutine MyConvTest
