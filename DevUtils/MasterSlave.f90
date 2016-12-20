@@ -5,12 +5,14 @@ program CommunicationTime
   implicit none
 
   integer :: ierr, MyRank, size, i, j, k
-  integer :: im, jm, km, nlev
-  real(8), pointer, dimension(:,:,:) :: ToSend !, ToRec
+  integer :: im, jm, km, nlev, NRep, Counter
+  real(8), pointer, dimension(:,:,:) :: ToSend
 
   call MPI_Init(ierr)
   call MPI_Comm_rank(MPI_COMM_WORLD, MyRank, ierr)
   call MPI_Comm_size(MPI_COMM_WORLD, size, ierr) 
+
+  NRep = 1000
 
   im = 722
   jm = 255
@@ -21,27 +23,34 @@ program CommunicationTime
   ! jm = 10
   ! km = 10
   ! nlev = 1
-  
   if(MyRank .eq. 0) then
      ALLOCATE(ToSend(im,jm,km))
-     
      do k=1,km
         do j=1,jm
            do i=1,im
-              ToSend(i,j,k) = 0. !dble(i + (j-1)*jm + (k-1)*km)
+              ToSend(i,j,k) = dble(i + (j-1)*jm + (k-1)*km)
            end do
         end do
      end do
-
-     call Master(ToSend, im, jm, km, nlev, size)
+        
      
-  else
-     call Slave(im, jm, km, nlev, MyRank)
   end if
+  
+  ! Master-Slave execution
+  do Counter=1, NRep
 
-  ! print*, "process ", MyRank, " ending"
-  call MPI_Barrier(MPI_COMM_WORLD, ierr)
+     if(MyRank .eq. 0) then     
+        call Master(ToSend, im, jm, km, nlev, size)
+     else
+        call Slave(im, jm, km, nlev, MyRank)
+     end if
 
+     ! print*, "process ", MyRank, " ending"
+     call MPI_Barrier(MPI_COMM_WORLD, ierr)
+
+  end do
+
+  ! Printing (if needed)
   ! if(MyRank .eq. 0) then
   !    do k=1,km
   !       print*, "Printing level", k
@@ -154,21 +163,24 @@ subroutine Slave(im, jm, km, nlev, MyRank)
      MyLevel = MyStatus(MPI_TAG)
 
      if(MyLevel .le. km) then
+
         !
         ! OPERATIONS TO PERFORM
         !
         ! print*, "MyRank slave", MyRank
-        do j=1, jm
-           do i=1,im
-              MyArr(i,j,nlev) = real(MyRank, 8)
-           end do
-        end do
-        
+        ! do j=1, jm
+        !    do i=1,im
+        !       MyArr(i,j,nlev) = real(MyRank, 8)
+        !    end do
+        ! end do        
         call MPI_Send(MyArr, im*jm*nlev, MPI_REAL8, 0, MyLevel, MPI_COMM_WORLD, ierr)
 
      else
+
         exit
+
      end if
+
   end do
 
   DEALLOCATE(MyArr)
