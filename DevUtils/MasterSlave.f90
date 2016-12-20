@@ -12,15 +12,15 @@ program CommunicationTime
   call MPI_Comm_rank(MPI_COMM_WORLD, MyRank, ierr)
   call MPI_Comm_size(MPI_COMM_WORLD, size, ierr) 
 
-  ! im = 722
-  ! jm = 255
-  ! km = 26
-  ! nlev = 1
-
-  im = 10
-  jm = 10
-  km = 10
+  im = 722
+  jm = 255
+  km = 26
   nlev = 1
+
+  ! im = 10
+  ! jm = 10
+  ! km = 10
+  ! nlev = 1
   
   if(MyRank .eq. 0) then
      ALLOCATE(ToSend(im,jm,km))
@@ -39,19 +39,19 @@ program CommunicationTime
      call Slave(im, jm, km, nlev, MyRank)
   end if
 
-  print*, "process ", MyRank, " ending"
+  ! print*, "process ", MyRank, " ending"
   call MPI_Barrier(MPI_COMM_WORLD, ierr)
 
-  if(MyRank .eq. 0) then
-     do k=1,km
-        print*, "Printing level", k
-        ! do j=1,jm
-           ! do i=1,im
-           print*, ToSend(:,:,k)
-           ! end do
-        ! end do
-     end do
-  end if
+  ! if(MyRank .eq. 0) then
+  !    do k=1,km
+  !       print*, "Printing level", k
+  !       ! do j=1,jm
+  !          ! do i=1,im
+  !          print*, ToSend(:,:,k)
+  !          ! end do
+  !       ! end do
+  !    end do
+  ! end if
 
   call MPI_Finalize(ierr)
 
@@ -67,11 +67,9 @@ subroutine ReadySlave(WhoIs, Res, ComputedLevel, im, jm, nlev)
   integer :: MyStatus(MPI_STATUS_SIZE)
   real(8), dimension(im, jm, nlev) :: Res
 
-  ! print*, "Rank 0 within ReadySlave"
   call MPI_Recv(Res, im*jm*nlev, MPI_REAL8, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, MyStatus, ierr)
   WhoIs = MyStatus(MPI_SOURCE)
   ComputedLevel = MyStatus(MPI_TAG)
-  ! print*, "Rank 0 received from ", WhoIs, "with tag ", ComputedLevel
 
 end subroutine ReadySlave
 
@@ -93,7 +91,6 @@ subroutine Master(ToSend, im, jm, km, nlev, size)
   nlev_tmp = nlev
   RealCounter = 1
 
-  ! do while(k .le. km)
   do while(RealCounter .le. km)
      call ReadySlave(ReadyProc, RecArr, ComputedLevel, im, jm, nlev_tmp)
 
@@ -115,7 +112,6 @@ subroutine Master(ToSend, im, jm, km, nlev, size)
            end do
         end do
         
-        ! print*, "Rank 0 sending level ", k, " to rank", ReadyProc
         print*, "Sending level ", k, "to process", ReadyProc
         call MPI_Send(TmpBuf, im*jm*nlev, MPI_REAL8, ReadyProc, k, MPI_COMM_WORLD, ierr)
         k = k + nlev
@@ -127,7 +123,7 @@ subroutine Master(ToSend, im, jm, km, nlev, size)
   end do
 
   do i=1,size-1
-     print*, "killing process ", i
+     ! print*, "killing process ", i
      call MPI_Send(ToSend(:,:,1:nlev), im*jm*nlev, MPI_REAL8, i, km+1, MPI_COMM_WORLD, ierr)
   end do
 
