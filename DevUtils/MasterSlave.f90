@@ -40,6 +40,7 @@ program CommunicationTime
   do Counter=1, NRep
 
      if(MyRank .eq. 0) then     
+        ! print*, "Repetition", Counter
         call Master(ToSend, im, jm, km, nlev, size)
      else
         call Slave(im, jm, km, nlev, MyRank)
@@ -121,7 +122,7 @@ subroutine Master(ToSend, im, jm, km, nlev, size)
            end do
         end do
         
-        print*, "Sending level ", k, "to process", ReadyProc
+        ! print*, "Sending level ", k, "to process", ReadyProc
         call MPI_Send(TmpBuf, im*jm*nlev, MPI_REAL8, ReadyProc, k, MPI_COMM_WORLD, ierr)
         k = k + nlev
      endif
