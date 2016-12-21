@@ -24,3 +24,5 @@ var_3d
 a.out
 allv
 mytest
+single_node_req
+std_qsub_req
