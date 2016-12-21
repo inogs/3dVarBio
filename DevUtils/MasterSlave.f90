@@ -147,14 +147,22 @@ subroutine Slave(im, jm, km, nlev, MyRank)
 
   implicit none
 
-  integer :: i, j
+  integer :: i, j, k
   integer :: im, jm, km, nlev, MyRank
   integer :: MyLevel, ierr
   integer :: MyStatus(MPI_STATUS_SIZE)
   real(8), allocatable, dimension(:,:,:) :: MyArr
+  real(8), allocatable, dimension(:,:)   :: Vector
 
   ALLOCATE(MyArr(im, jm, nlev))
+  ALLOCATE(Vector(im, jm))
   MyLevel = 0
+
+  do j=1,jm
+     do i=1,im
+        Vector(i, j) = real(jm, 8)*0.5-real(j, 8) + 10.*(real(im, 8)*0.5-real(i, 8))
+     end do
+  end do
 
   call MPI_Send(MyArr, im*jm*nlev, MPI_REAL8, 0, MyLevel, MPI_COMM_WORLD, ierr)
   
@@ -173,7 +181,13 @@ subroutine Slave(im, jm, km, nlev, MyRank)
         !    do i=1,im
         !       MyArr(i,j,nlev) = real(MyRank, 8)
         !    end do
-        ! end do        
+        ! end do
+        do i=1,4
+           do k=1, nlev
+              MyArr(:,:,k) = matmul(MyArr(:,:,k), Vector)
+           end do
+        end do
+
         call MPI_Send(MyArr, im*jm*nlev, MPI_REAL8, 0, MyLevel, MPI_COMM_WORLD, ierr)
 
      else
@@ -184,6 +198,6 @@ subroutine Slave(im, jm, km, nlev, MyRank)
 
   end do
 
-  DEALLOCATE(MyArr)
+  DEALLOCATE(MyArr, Vector)
 
 end subroutine Slave
