@@ -47,7 +47,7 @@ program CommunicationTime
      end if
 
      ! print*, "process ", MyRank, " ending"
-     call MPI_Barrier(MPI_COMM_WORLD, ierr)
+     ! call MPI_Barrier(MPI_COMM_WORLD, ierr)
 
   end do
 
