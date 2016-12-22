@@ -12,7 +12,7 @@ program CommunicationTime
   call MPI_Comm_rank(MPI_COMM_WORLD, MyRank, ierr)
   call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
 
-  NRep = 1000
+  NRep = 20 ! 1000
 
   im = 722
   jm = 255
@@ -22,7 +22,8 @@ program CommunicationTime
   im = 1000
   jm = 1000
   km = 20
-  ! nlev = 1
+  nlev = 1
+
   if(MyRank .eq. 0) then
      ALLOCATE(ToSend(im,jm,km))
      do k=1,km
@@ -47,7 +48,7 @@ program CommunicationTime
      end if
 
      ! print*, "process ", MyRank, " ending"
-     ! call MPI_Barrier(MPI_COMM_WORLD, ierr)
+     call MPI_Barrier(MPI_COMM_WORLD, ierr)
 
   end do
 
@@ -91,23 +92,37 @@ subroutine Master(ToSend, im, jm, km, nlev, size)
   implicit none
 
   integer :: im, jm, km, nlev, size
-  integer :: i, j, k, ReadyProc, ierr, nlev_tmp
-  integer :: ComputedLevel, tmpk, RealCounter
+  integer :: i, j, SendCounter, ReadyProc, ierr, nlev_tmp
+  integer :: ComputedLevel, tmpk, RecCounter
   real(8), dimension(im, jm, km) :: ToSend
   real(8), allocatable, dimension(:,:,:) :: RecArr, TmpBuf
 
   ALLOCATE(RecArr(im, jm, nlev))
   ALLOCATE(TmpBuf(im, jm, nlev))
 
-  k = 1
+  SendCounter = 1
   nlev_tmp = nlev
-  RealCounter = 1
+  RecCounter = 1
   
-  do while(RealCounter .le. km)
+  do while(RecCounter .le. km)
      call ReadySlave(ReadyProc, RecArr, ComputedLevel, im, jm, nlev_tmp)
+     
+     if(SendCounter .le. km) then
+        do j=1,jm
+           do i=1,im
+              TmpBuf(i,j,1) = ToSend(i,j,SendCounter) !:k+nlev)
+           end do
+        end do
+
+        ! print*, "Sending level ", SendCounter, "to process", ReadyProc
+        call MPI_Send(TmpBuf, im*jm*nlev, MPI_REAL8, ReadyProc, SendCounter, MPI_COMM_WORLD, ierr)
+        k = k + nlev
+      else
+        call MPI_Send(ToSend(:,:,1:nlev), im*jm*nlev, MPI_REAL8, ReadyProc, km+1, MPI_COMM_WORLD, ierr)
+     endif
 
      if(ComputedLevel .gt. 0) then
-        RealCounter = RealCounter + 1
+        RecCounter = RecCounter + 1
         do tmpk = ComputedLevel, ComputedLevel+nlev_tmp-1
            do j=1,jm
               do i=1,im
@@ -115,20 +130,6 @@ subroutine Master(ToSend, im, jm, km, nlev, size)
               end do
            end do
         end do
-     endif
-     
-     if(k .le. km) then
-        do j=1,jm
-           do i=1,im
-              TmpBuf(i,j,1) = ToSend(i,j,k) !:k+nlev)
-           end do
-        end do
-
-        ! print*, "Sending level ", k, "to process", ReadyProc
-        call MPI_Send(TmpBuf, im*jm*nlev, MPI_REAL8, ReadyProc, k, MPI_COMM_WORLD, ierr)
-        k = k + nlev
-      else
-        call MPI_Send(ToSend(:,:,1:nlev), im*jm*nlev, MPI_REAL8, ReadyProc, km+1, MPI_COMM_WORLD, ierr)
      endif
 
      ! if(k + nlev .ge. km) then
