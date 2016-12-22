@@ -6,7 +6,7 @@ program CommunicationTime
 
   integer :: ierr, MyRank, size, i, j, k
   integer :: im, jm, km, nlev, NRep, Counter
-  real(8), pointer, dimension(:,:,:) :: ToSend
+  real(8), allocatable, dimension(:,:,:) :: ToSend
 
   call MPI_Init(ierr)
   call MPI_Comm_rank(MPI_COMM_WORLD, MyRank, ierr)
@@ -19,9 +19,9 @@ program CommunicationTime
   km = 26
   nlev = 1
 
-  ! im = 10
-  ! jm = 10
-  ! km = 10
+  im = 1000
+  jm = 1000
+  km = 20
   ! nlev = 1
   if(MyRank .eq. 0) then
      ALLOCATE(ToSend(im,jm,km))
@@ -40,7 +40,7 @@ program CommunicationTime
   do Counter=1, NRep
 
      if(MyRank .eq. 0) then
-        ! print*, "Repetition", Counter
+        print*, "Repetition", Counter
         call Master(ToSend, im, jm, km, nlev, size)
      else
         call Slave(im, jm, km, nlev, MyRank)
@@ -62,6 +62,8 @@ program CommunicationTime
   !       ! end do
   !    end do
   ! end if
+  if(MyRank .eq. 0) &
+       DEALLOCATE(ToSend)
 
   call MPI_Finalize(ierr)
 
@@ -100,10 +102,21 @@ subroutine Master(ToSend, im, jm, km, nlev, size)
   k = 1
   nlev_tmp = nlev
   RealCounter = 1
-
+  
   do while(RealCounter .le. km)
      call ReadySlave(ReadyProc, RecArr, ComputedLevel, im, jm, nlev_tmp)
 
+     if(ComputedLevel .gt. 0) then
+        RealCounter = RealCounter + 1
+        do tmpk = ComputedLevel, ComputedLevel+nlev_tmp-1
+           do j=1,jm
+              do i=1,im
+                 ToSend(i,j,tmpk) = RecArr(i,j,1)
+              end do
+           end do
+        end do
+     endif
+     
      if(k .le. km) then
         do j=1,jm
            do i=1,im
@@ -117,18 +130,6 @@ subroutine Master(ToSend, im, jm, km, nlev, size)
       else
         call MPI_Send(ToSend(:,:,1:nlev), im*jm*nlev, MPI_REAL8, ReadyProc, km+1, MPI_COMM_WORLD, ierr)
      endif
-
-     if(ComputedLevel .gt. 0) then
-        RealCounter = RealCounter + 1
-        do tmpk = ComputedLevel, ComputedLevel+nlev_tmp-1
-           do j=1,jm
-              do i=1,im
-                 ToSend(i,j,tmpk) = RecArr(i,j,1)
-              end do
-           end do
-        end do
-     endif
-
 
      ! if(k + nlev .ge. km) then
      !    nlev_tmp = km-k
