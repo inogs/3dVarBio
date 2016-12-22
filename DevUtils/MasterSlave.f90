@@ -1,5 +1,5 @@
 program CommunicationTime
-  
+
   use mpi
 
   implicit none
@@ -10,7 +10,7 @@ program CommunicationTime
 
   call MPI_Init(ierr)
   call MPI_Comm_rank(MPI_COMM_WORLD, MyRank, ierr)
-  call MPI_Comm_size(MPI_COMM_WORLD, size, ierr) 
+  call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
 
   NRep = 1000
 
@@ -32,14 +32,14 @@ program CommunicationTime
            end do
         end do
      end do
-        
-     
+
+
   end if
-  
+
   ! Master-Slave execution
   do Counter=1, NRep
 
-     if(MyRank .eq. 0) then     
+     if(MyRank .eq. 0) then
         ! print*, "Repetition", Counter
         call Master(ToSend, im, jm, km, nlev, size)
      else
@@ -87,7 +87,7 @@ subroutine Master(ToSend, im, jm, km, nlev, size)
 
   use mpi
   implicit none
-  
+
   integer :: im, jm, km, nlev, size
   integer :: i, j, k, ReadyProc, ierr, nlev_tmp
   integer :: ComputedLevel, tmpk, RealCounter
@@ -114,35 +114,37 @@ subroutine Master(ToSend, im, jm, km, nlev, size)
            end do
         end do
      endif
-     
+
      if(k .le. km) then
         do j=1,jm
            do i=1,im
               TmpBuf(i,j,1) = ToSend(i,j,k) !:k+nlev)
            end do
         end do
-        
+
         ! print*, "Sending level ", k, "to process", ReadyProc
         call MPI_Send(TmpBuf, im*jm*nlev, MPI_REAL8, ReadyProc, k, MPI_COMM_WORLD, ierr)
         k = k + nlev
+      else
+        call MPI_Send(ToSend(:,:,1:nlev), im*jm*nlev, MPI_REAL8, ReadyProc, km+1, MPI_COMM_WORLD, ierr)
      endif
 
      ! if(k + nlev .ge. km) then
      !    nlev_tmp = km-k
-     ! else        
+     ! else
   end do
 
-  do i=1,size-1
-     ! print*, "killing process ", i
-     call MPI_Send(ToSend(:,:,1:nlev), im*jm*nlev, MPI_REAL8, i, km+1, MPI_COMM_WORLD, ierr)
-  end do
+  ! do i=1,size-1
+  !    ! print*, "killing process ", i
+  !    call MPI_Send(ToSend(:,:,1:nlev), im*jm*nlev, MPI_REAL8, i, km+1, MPI_COMM_WORLD, ierr)
+  ! end do
 
   DEALLOCATE(RecArr, TmpBuf)
 
 end subroutine Master
 
 subroutine Slave(im, jm, km, nlev, MyRank)
-  
+
   use mpi
 
   implicit none
@@ -165,10 +167,10 @@ subroutine Slave(im, jm, km, nlev, MyRank)
   end do
 
   call MPI_Send(MyArr, im*jm*nlev, MPI_REAL8, 0, MyLevel, MPI_COMM_WORLD, ierr)
-  
+
   do while(.true.)
      call MPI_Recv(MyArr, im*jm*nlev, MPI_REAL8, 0, MPI_ANY_TAG, MPI_COMM_WORLD, MyStatus, ierr)
-     
+
      MyLevel = MyStatus(MPI_TAG)
 
      if(MyLevel .le. km) then

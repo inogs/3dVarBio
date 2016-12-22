@@ -1,5 +1,5 @@
 subroutine parallel_def_grd
-  
+
   !---------------------------------------------------------------------------
   !                                                                          !
   !    Copyright 2006 Srdjan Dobricic, CMCC, Bologna                         !
@@ -27,24 +27,24 @@ subroutine parallel_def_grd
   !                                                                      !
   ! Version 1: S.Dobricic 2006                                           !
   !-----------------------------------------------------------------------
-  
-  
+
+
   use set_knd
   use drv_str
   use grd_str
   use mpi_str
-  
+
   implicit none
-  
+
   INTEGER(I4)    :: i, j, k
   INTEGER :: indSupWP
   ! ---
-  ! Define grid 
+  ! Define grid
   grd%grd_mod  = drv%grid (drv%ktr)
-  
+
   !Read grid definition
   call parallel_rdgrd
-  
+
   ! Define grid for horizontal covariances
   if( drv%mask(drv%ktr).eq.1)then
      grd%msr(:,:,:) = 1.0
@@ -52,7 +52,7 @@ subroutine parallel_def_grd
      do k=1,grd%km
         grd%msr(:,:,k) = grd%msk(:,:,1)
      enddo
-     
+
   else if( drv%mask(drv%ktr).eq.3)then
      do i=1,grd%im
         do j=1,grd%jm
@@ -64,30 +64,30 @@ subroutine parallel_def_grd
      !         grd%msr(:,:,:) = grd%msk(:,:,:)
   else
      if(MyRank .eq. 0) then
-        
+
         write(drv%dia,*)'Wrong mask for horizontal covariances ',  &
              drv%mask(drv%ktr)
-        
+
      !stop
      endif
-  
+
      call MPI_Abort(MPI_COMM_WORLD, -1, i)
-     
+
   endif
-  
-  
+
+
   nSurfaceWaterPoints = 0
   do i=1,grd%im
      do j=1,grd%jm
         if (grd%msk(i,j,1).eq.1) nSurfaceWaterPoints = nSurfaceWaterPoints+1
      enddo
   enddo
-  
-  
+
+
   ALLOCATE (SurfaceWaterPoints(2,nSurfaceWaterPoints))
-  
+
   write(*,*) 'nSurfaceWaterPoints = ', nSurfaceWaterPoints, 'of Rank ', MyRank
-  
+
   indSupWP=0
   do i=1,grd%im
      do j=1,grd%jm
@@ -98,5 +98,5 @@ subroutine parallel_def_grd
         endif
      enddo
   enddo
-  
+
 end subroutine parallel_def_grd
