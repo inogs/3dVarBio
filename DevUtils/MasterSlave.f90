@@ -104,17 +104,6 @@ subroutine Master(ToSend, im, jm, km, nlev, size)
   do while(RealCounter .le. km)
      call ReadySlave(ReadyProc, RecArr, ComputedLevel, im, jm, nlev_tmp)
 
-     if(ComputedLevel .gt. 0) then
-        RealCounter = RealCounter + 1
-        do tmpk = ComputedLevel, ComputedLevel+nlev_tmp-1
-           do j=1,jm
-              do i=1,im
-                 ToSend(i,j,tmpk) = RecArr(i,j,1)
-              end do
-           end do
-        end do
-     endif
-
      if(k .le. km) then
         do j=1,jm
            do i=1,im
@@ -128,6 +117,18 @@ subroutine Master(ToSend, im, jm, km, nlev, size)
       else
         call MPI_Send(ToSend(:,:,1:nlev), im*jm*nlev, MPI_REAL8, ReadyProc, km+1, MPI_COMM_WORLD, ierr)
      endif
+
+     if(ComputedLevel .gt. 0) then
+        RealCounter = RealCounter + 1
+        do tmpk = ComputedLevel, ComputedLevel+nlev_tmp-1
+           do j=1,jm
+              do i=1,im
+                 ToSend(i,j,tmpk) = RecArr(i,j,1)
+              end do
+           end do
+        end do
+     endif
+
 
      ! if(k + nlev .ge. km) then
      !    nlev_tmp = km-k
