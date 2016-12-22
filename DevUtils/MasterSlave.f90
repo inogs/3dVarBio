@@ -116,7 +116,7 @@ subroutine Master(ToSend, im, jm, km, nlev, size)
 
         ! print*, "Sending level ", SendCounter, "to process", ReadyProc
         call MPI_Send(TmpBuf, im*jm*nlev, MPI_REAL8, ReadyProc, SendCounter, MPI_COMM_WORLD, ierr)
-        k = k + nlev
+        SendCounter = SendCounter + nlev
       else
         call MPI_Send(ToSend(:,:,1:nlev), im*jm*nlev, MPI_REAL8, ReadyProc, km+1, MPI_COMM_WORLD, ierr)
      endif
