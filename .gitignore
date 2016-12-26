@@ -18,6 +18,7 @@ cpp.*
 compiler.inc
 libfexit/test_f_exit
 libfexit/test_f_exit_message
+.vscode
 
 # executable
 var_3d
