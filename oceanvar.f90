@@ -37,23 +37,13 @@ subroutine oceanvar
   
   use set_knd
   use drv_str
-  
-#ifdef _USE_MPI
   use mpi_str
-#endif
   
   implicit none
   
   INTEGER(i4)   ::  ktr
   
-#ifdef _USE_MPI
-
-  INTEGER(i4)   ::  MyID
-  
   call mynode
-  MyID = MyRank
-  
-#endif
      
   ! ---
   ! Initialize diagnostics and read namelists
@@ -67,77 +57,54 @@ subroutine oceanvar
      ! Define grid parameters
      if( ktr.eq.1 .or. drv%ratio(ktr).ne.1.0 )then
 
-#ifdef _USE_MPI
-        call parallel_def_grd
-        
+        call parallel_def_grd        
         if(MyRank .eq. 0) &
-#else
-             
-             call def_grd
-#endif
-        
         write(drv%dia,*) 'out of def_grd '           
 
      endif
      
      ! ---
      ! Get observations
-     if(ktr.eq.1) call get_obs
+     if(ktr.eq.1 .and. MyRank .eq. 0) then
      
-#ifdef _USE_MPI
-     if(MyRank .eq. 0) &
-#endif
+        call get_obs
         write(drv%dia,*) 'out of get_obs'
      
-     ! ---
-     ! Define interpolation parameters
-     call int_par
+        ! ---
+        ! Define interpolation parameters
+        call int_par
+        write(drv%dia,*) 'out of int_par'
+
+        ! ---
+        ! Define observational vector
+        call obs_vec
+        write(drv%dia,*) 'out of obs_vec'
+
+     endif
      
-#ifdef _USE_MPI
-     if(MyRank .eq. 0) &
-#endif
-          write(drv%dia,*) 'out of int_par'
-             
-     ! ---
-     ! Define observational vector
-     call obs_vec
-     
-#ifdef _USE_MPI
-     if(MyRank .eq. 0) &
-#endif
-          write(drv%dia,*) 'out of obs_vec'
-             
      ! ---
      ! Define constants for background covariances
      if( ktr.eq.1 .or. drv%ratio(ktr).ne.1.0 ) then
         
-#ifdef _USE_MPI
-        call parallel_def_cov
-        if(MyRank .eq. 0) &
-#else
         call def_cov
-#endif
-             write(drv%dia,*) 'out of def_cov '
+        if(MyRank .eq. 0) &
+                write(drv%dia,*) 'out of def_cov '
 
      endif
      
      ! ---
      ! Initialize cost function and its gradient
-     call ini_cfn
-
-#ifdef _USE_MPI
-     if(MyRank .eq. 0) &
-#endif
-          write(drv%dia,*) 'out of ini_cfn'
-
+     if(MyRank .eq. 0) then
+        call ini_cfn
+        write(drv%dia,*) 'out of ini_cfn'
+     endif
+     
      ! ---
      ! Calculate the initial norm the gradient
      if( ktr.gt.1 ) then
         call ini_nrm
         
-#ifdef _USE_MPI
         if(MyRank .eq. 0) &
-#endif
              write(drv%dia,*) 'out of ini_nrm '
      endif
            
@@ -146,36 +113,27 @@ subroutine oceanvar
      if( ktr.gt.1 .and. drv%ratio(ktr).ne.1.0 ) then
         call ini_itr
         
-#ifdef _USE_MPI
         if(MyRank .eq. 0) &
-#endif
              write(drv%dia,*) 'out of ini_itr '
            
      endif
      
      ! ---
      ! Minimize the cost function (inner loop)
-#ifndef _USE_MPI
-     call min_cfn
-     write(drv%dia,*) 'out of min_cfn'
-#else
+
      call tao_minimizer
      if(MyRank .eq. 0) then
         write(drv%dia,*) 'out of tao_minimizer'
      endif
-#endif
         
      if(ktr.eq.drv%ntr)then
         ! ---
         ! Convert to innovations
+        if(MyRank .eq. 0) &
         call cnv_inn
         ! ---
         ! Write outputs and diagnostics
-#ifdef _USE_MPI
         call parallel_wrt_dia
-#else
-        call wrt_dia
-#endif
      endif
      
      ! ---
@@ -184,9 +142,7 @@ subroutine oceanvar
      !    if(drv%ratio(ktr+1).ne.1.0 ) then
      call sav_itr
      
-#ifdef _USE_MPI
      if(MyRank .eq. 0) &
-#endif
           write(drv%dia,*) 'out of sav_itr '
         
      !    endif
@@ -202,12 +158,7 @@ subroutine oceanvar
   call clean_mem
   
   !-----------------------------------------------------------------
-#ifdef _USE_MPI
   if(MyRank .eq. 0) close(drv%dia)
   call mpi_stop
-
-#else
-  close(drv%dia)
-#endif
   
 end subroutine oceanvar

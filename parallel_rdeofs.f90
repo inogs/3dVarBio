@@ -43,7 +43,7 @@ subroutine parallel_rdeofs
   
   INTEGER(i4)                    :: stat, ncid, idvar
   integer(8)                     :: neofs, nlevs, nregs
-  integer(KIND=MPI_OFFSET_KIND)  :: GlobalStart(3), GlobalCount(3)
+  integer(KIND=MPI_OFFSET_KIND)  :: MyStart(3), MyCount(3)
   real(4), allocatable           :: x3(:,:,:), x2(:,:)
   
   ! stat = nf90_open(trim(EOF_FILE), NF90_NOWRITE, ncid)
@@ -106,24 +106,24 @@ subroutine parallel_rdeofs
   ALLOCATE ( ros%eva( ros%nreg, ros%neof) )           ; ros%eva = huge(ros%eva(1,1))
   ALLOCATE ( x3( ros%nreg, ros%kmt, ros%neof) )
   ALLOCATE ( x2( ros%nreg, ros%neof) )
-  GlobalStart(:) = 1
-  GlobalCount(1) = ros%nreg
-  GlobalCount(2) = ros%kmt
-  GlobalCount(3) = ros%neof
+  MyStart(:) = 1
+  MyCount(1) = ros%nreg
+  MyCount(2) = ros%kmt
+  MyCount(3) = ros%neof
   
   stat = nf90mpi_inq_varid(ncid, 'evc', idvar)
   if (stat /= nf90_noerr) call handle_err("nf90mpi_inq_varid evc", stat)
-  stat = nfmpi_get_vara_real_all(ncid,idvar,GlobalStart, GlobalCount, x3)
+  stat = nfmpi_get_vara_real_all(ncid,idvar,MyStart, MyCount, x3)
   if (stat /= nf90_noerr) call handle_err("nfmpi_get_vara_real_all eva", stat)
 
   ros%evc(:,:,:) = x3(:,:,:)
   
-  GlobalCount(1) = ros%nreg
-  GlobalCount(2) = ros%neof
+  MyCount(1) = ros%nreg
+  MyCount(2) = ros%neof
 
   stat = nf90mpi_inq_varid(ncid, 'eva', idvar)
   if (stat /= nf90_noerr) call handle_err("nf90mpi_inq_varid eva", stat)
-  stat = nfmpi_get_vara_real_all(ncid,idvar,GlobalStart(1:2), GlobalCount(1:2), x2)
+  stat = nfmpi_get_vara_real_all(ncid,idvar,MyStart(1:2), MyCount(1:2), x2)
   if (stat /= nf90_noerr) call handle_err("nfmpi_get_vara_real_all", stat)
   ros%eva(:,:) = x2(:,:)
   

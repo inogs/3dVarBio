@@ -33,10 +33,7 @@ subroutine obs_vec
   use set_knd
   use drv_str
   use obs_str
-
-#ifdef _USE_MPI
   use mpi_str
-#endif
   
   implicit none
   
@@ -47,10 +44,7 @@ subroutine obs_vec
   
   obs%no = chl%nc + arg%no
 
-#ifdef _USE_MPI
-  if(MyRank .eq. 0) &
-#endif
-       write(drv%dia,*) ' Total number of observations: ', obs%no
+  write(drv%dia,*) ' Total number of observations: ', obs%no
 
   ALLOCATE ( obs%inc(obs%no)) ; obs%inc = huge(obs%inc(1))
   ALLOCATE ( obs%amo(obs%no)) ; obs%amo = huge(obs%amo(1))

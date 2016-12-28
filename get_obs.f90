@@ -20,32 +20,28 @@ subroutine get_obs
   !    along with OceanVar.  If not, see <http://www.gnu.org/licenses/>.       !
   !                                                                          !
   !---------------------------------------------------------------------------
-  
+
   !-----------------------------------------------------------------------
   !                                                                      !
   ! Load observations                                                    !
   !                                                                      !
   ! Version 1: S.Dobricic 2006                                           !
   !-----------------------------------------------------------------------
-  
-  
+
+
   use set_knd
   use obs_str
   use drv_str
-  
+
   implicit none
-  
+
   ! ----
   ! Load ARGO observations
   if (drv%argo .eq. 1) &
        call get_obs_arg
-  
+
   ! ----
   ! Load observations of chlorophyll
-#ifndef _USE_MPI
   call get_obs_chl
-#else
-  call parallel_get_obs_chl
-#endif
-  
+
 end subroutine get_obs

@@ -15,7 +15,7 @@ subroutine tao_minimizer
   PetscErrorCode  ::   ierr
   Tao             ::   tao
   Vec             ::   MyState    ! array that stores the (temporary) state
-  PetscInt        ::   n, M, GlobalStart, MyEnd
+  PetscInt        ::   n, M, MyStart, MyEnd
   PetscScalar     ::   MyTolerance
   integer(i4)     ::   j
   real(8)         ::   MaxGrad
@@ -48,16 +48,16 @@ subroutine tao_minimizer
 
   ! Create MyState array and fill it
   call VecCreateMPI(MPI_COMM_WORLD, n, M, MyState, ierr)
-  call VecGetOwnershipRange(MyState, GlobalStart, MyEnd, ierr)
+  call VecGetOwnershipRange(MyState, MyStart, MyEnd, ierr)
 
-  print*, "MyState initialization by MyRank ", MyRank, "with indices: ", GlobalStart, MyEnd
+  print*, "MyState initialization by MyRank ", MyRank, "with indices: ", MyStart, MyEnd
 
-  if( ctl%n .ne. MyEnd - GlobalStart ) then
+  if( ctl%n .ne. MyEnd - MyStart ) then
      print*, ""
      print*, "WARNING!!"
-     print*, "ctl%n .ne. GlobalStart - MyEnd"
+     print*, "ctl%n .ne. MyStart - MyEnd"
      print*, "ctl%n = ", ctl%n
-     print*, "GlobalStart = ", GlobalStart
+     print*, "MyStart = ", MyStart
      print*, "MyEnd = ", MyEnd
      print*, ""
   endif
@@ -65,7 +65,7 @@ subroutine tao_minimizer
   ! Take values from ctl%x_c in order to initialize
   ! the solution array for Tao solver
   do j = 1, ctl%n
-     loc(j) = GlobalStart + j - 1
+     loc(j) = MyStart + j - 1
      MyValues(j) = 0.
   end do
 

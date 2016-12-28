@@ -44,9 +44,15 @@ subroutine parallel_get_obs_chl
   REAL(r8)      ::  zbo, zbn
   REAL(r4), ALLOCATABLE      ::  chl_mis(:,:),chl_err(:,:)
   INTEGER(i4)   ::  stat, ncid, idvar, VarId
-  
+  integer(8) :: MyStart(3), MyCount(3)
+
   chl%no = 0
   chl%nc = 0
+
+  MyStart(:) = 1
+  MyCount(1) = grd%im
+  MyCount(2) = grd%jm
+  MyCount(3) = grd%km
 
   stat = nf90mpi_open(MPI_COMM_WORLD, trim(MISFIT_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
   if (stat .ne. NF90_NOERR ) call handle_err('nf90mpi_open', stat)
@@ -149,7 +155,7 @@ subroutine parallel_get_obs_chl
      endif
   enddo
 
-  call MPI_Allreduce(chl%nc, chl%nc_global, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD, stat)
+  ! call MPI_Allreduce(chl%nc, chl%nc_global, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD, stat)
 
   if(MyRank .eq. 0) then
      print*,'Good chl observations: ',chl%nc_global

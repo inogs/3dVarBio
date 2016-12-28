@@ -113,8 +113,6 @@ MODULE obs_str
      REAL(r8),    POINTER     ::  dzr(:,:)   ! Relative thickness
      REAL(r8)                 ::  max_val    ! Maximum value allowed to accept the observation
 
-     INTEGER(i8)              ::  nc_global  ! Number of global good observations
-
   END TYPE chl_t
   
   TYPE (chl_t)                 :: chl

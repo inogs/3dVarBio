@@ -34,6 +34,7 @@ subroutine def_cov
   use eof_str
   use cns_str
   use rcfl
+  use mpi_str
 
   implicit none
   
@@ -49,8 +50,10 @@ subroutine def_cov
   !$OMP PARALLEL
   !$ nthreads = OMP_GET_NUM_THREADS()
   !$ threadid = OMP_GET_THREAD_NUM()
-  if(threadid.eq.0) then
-     write(*,*) "OMP version with threads = ", nthreads
+  if(MyRank .eq. 0) then
+    if(threadid.eq.0) then
+       write(*,*) "OMP version with threads = ", nthreads
+    endif
   endif
   !$OMP END PARALLEL
   ! ---
@@ -279,13 +282,15 @@ subroutine def_cov
            
   ros%kmt = grd%km * grd%nchl 
   
-  call rdeofs
-  
+  call parallel_rdeofs
+
   ALLOCATE ( grd%ro(    grd%im, grd%jm, ros%neof))   ; grd%ro    = 0.0
   ALLOCATE ( grd%ro_ad( grd%im, grd%jm, ros%neof))   ; grd%ro_ad = 0.0
   ALLOCATE ( Dump_vip ( grd%im, grd%jm, ros%neof))   ; Dump_vip  = 0.0
   
-  write(*,*) 'rcfl allocation :', grd%jm, grd%imax, nthreads
+  if(MyRank .eq. 0) &
+    write(*,*) 'rcfl allocation :', grd%jm, grd%imax, nthreads
+  
   ALLOCATE ( a_rcx(grd%jm,grd%imax,nthreads)) ; a_rcx = huge(a_rcx(1,1,1))
   ALLOCATE ( b_rcx(grd%jm,grd%imax,nthreads)) ; b_rcx = huge(b_rcx(1,1,1))
   ALLOCATE ( c_rcx(grd%jm,grd%imax,nthreads)) ; c_rcx = huge(c_rcx(1,1,1))
