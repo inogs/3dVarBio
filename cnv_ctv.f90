@@ -38,18 +38,6 @@ subroutine cnv_ctv
 
  INTEGER(i4)   :: i,j,k, kk
  INTEGER(i4)   :: jumpInd, indSupWP
-! INTEGER(i4) mycounter
-!       kk = 0
-!   do k=1,ros%neof
-!    do j=1,grd%jm
-!     do i=1,grd%im
-!       kk = kk+1
-!       grd%ro(i,j,k) = ctl%x_c(kk)
-!     enddo
-!    enddo
-!   enddo
-!mycounter = 0
-
 
    do k=1,ros%neof
    jumpInd =  (k -1 )*nSurfaceWaterPoints
@@ -60,8 +48,5 @@ subroutine cnv_ctv
            grd%ro(i,j,k) = ctl%x_c(kk)
        enddo
    enddo
-
-
-
 
 end subroutine cnv_ctv

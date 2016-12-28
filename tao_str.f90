@@ -58,6 +58,6 @@ MODULE tao_str
     
  END TYPE petsc_str
  
- TYPE (petsc_str)                 :: NewCtl
+ ! TYPE (petsc_str)                 :: NewCtl
  
 END MODULE tao_str

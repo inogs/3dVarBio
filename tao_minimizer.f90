@@ -32,7 +32,7 @@ subroutine tao_minimizer
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
   CHKERRQ(ierr)
 
-  print*, 'PetscInitialize(...) done by MyRank ', MyRank, ctl%n, ctl%n_global
+  print*, 'PetscInitialize(...) done by MyRank ', MyRank, ctl%n
 
   if(MyRank .eq. 0) then
      write(drv%dia,*) ''
@@ -41,8 +41,7 @@ subroutine tao_minimizer
 
   ! Allocate working arrays
   n = ctl%n
-  M = ctl%n_global
-  NewCtl%n_global = ctl%n_global
+  M = ctl%n_glob
 
   ALLOCATE(loc(n), MyValues(n))
 
@@ -99,7 +98,8 @@ subroutine tao_minimizer
      MaxGrad = max(MaxGrad, abs(ctl%g_c(j)))
   end do
 
-  call MPI_Allreduce(MPI_IN_PLACE, MaxGrad, 1, MPI_REAL8, MPI_MAX, MPI_COMM_WORLD, ierr)
+  ! call MPI_Allreduce(MPI_IN_PLACE, MaxGrad, 1, MPI_REAL8, MPI_MAX, MPI_COMM_WORLD, ierr)
+  call MPI_Bcast(MaxGrad, 1, MPI_REAL8, 0, MPI_COMM_WORLD, ierr)
   MyTolerance = ctl%pgper * MaxGrad
   if(MyRank .eq. 0) then
      print*, "Setting MyTolerance", MyTolerance
@@ -206,6 +206,7 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   call parallel_costf
 
   ! assign the Cost Function value computed by costf to CostFunc
+  call MPI_Bcast(ctl%f_c, 1, MPI_REAL8, 0, MPI_COMM_WORLD, ierr)
   CostFunc = ctl%f_c
 
   call VecGetArrayF90(Grad, my_grad, ierr)

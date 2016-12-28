@@ -40,10 +40,11 @@ MODULE ctl_str
   TYPE lbfgs_t
      
      INTEGER(i4)               ::  n          ! size of the optimisation vector
+     INTEGER(i4)               ::  n_glob     ! global size of the optimisation vector
 
      REAL(r8)                  ::  f_b        ! The background cost function
      REAL(r8)                  ::  f_o        ! The observational cost function
-     real(r8)          ::  f_c, factr ! The cost function, accuracy
+     real(r8)          ::  f_c ! The cost function
      real(r8)          ::  pgtol, pgper ! Stopping criteria, percentage of initial gradient
 
      real(r8),  &

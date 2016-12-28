@@ -125,7 +125,7 @@ subroutine def_nml
 
   endif
 
-  ctl%m     = ctl_m
+  ! ctl%m     = ctl_m
   ctl%pgtol = ctl_tol
   ctl%pgper = ctl_per
 

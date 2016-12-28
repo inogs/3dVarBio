@@ -57,17 +57,17 @@ subroutine veof
      egm(:,:) = 0.0
      
      ! egm
-     do l=1,n   
-        do j=1,grd%jm
-           do i=1,grd%im
-#ifdef opt_huge_memory
-              !     egm(i,j) = egm(i,j) + ros%cor( i, j, l, n) * grd%ro(i,j,l)
-#else
-              !     egm(i,j) = egm(i,j) + ros%cor(grd%reg(i,j), l, n) * grd%ro(i,j,l)
-#endif
-           enddo
-        enddo
-     enddo
+!      do l=1,n   
+!         do j=1,grd%jm
+!            do i=1,grd%im
+! #ifdef opt_huge_memory
+!               !     egm(i,j) = egm(i,j) + ros%cor( i, j, l, n) * grd%ro(i,j,l)
+! #else
+!               !     egm(i,j) = egm(i,j) + ros%cor(grd%reg(i,j), l, n) * grd%ro(i,j,l)
+! #endif
+!            enddo
+!         enddo
+!      enddo
      
      
      do j=1,grd%jm

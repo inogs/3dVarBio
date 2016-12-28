@@ -94,8 +94,8 @@ subroutine oceanvar
      
      ! ---
      ! Initialize cost function and its gradient
+     call ini_cfn
      if(MyRank .eq. 0) then
-        call ini_cfn
         write(drv%dia,*) 'out of ini_cfn'
      endif
      
@@ -129,11 +129,12 @@ subroutine oceanvar
      if(ktr.eq.drv%ntr)then
         ! ---
         ! Convert to innovations
-        if(MyRank .eq. 0) &
-        call cnv_inn
-        ! ---
-        ! Write outputs and diagnostics
-        call parallel_wrt_dia
+        if(MyRank .eq. 0) then
+          call cnv_inn
+          ! ---
+          ! Write outputs and diagnostics
+          call wrt_dia
+        endif
      endif
      
      ! ---

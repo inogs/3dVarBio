@@ -41,24 +41,30 @@ subroutine ini_cfn
   
   INTEGER(i4)  :: i
   INTEGER(i4)  :: ierr
-
-  ctl%factr=1.0d+7
     
   if( drv%ktr.eq.1 .or. drv%ratio(drv%ktr).ne.1.0 ) then
-     
-     ! ---
-     ! Allocate memory for optimization arrays
-     
-     ctl%n = nSurfaceWaterPoints * ros%neof
-  
-     write(drv%dia,*) 'Size of the control vector: ',ctl%n
 
-     ALLOCATE( ctl%x_c(ctl%n)) ; ctl%x_c = huge(ctl%x_c(1))
-     ALLOCATE( ctl%g_c(ctl%n)) ; ctl%g_c = huge(ctl%g_c(1))
-      
-     do i=1,ctl%n
-        ctl%x_c(i)= 0.0d0
-     enddo
+     
+    ! ---
+    ! Allocate memory for optimization arrays
+
+    if(MyRank .eq. 0) then
+      ctl%n = nSurfaceWaterPoints * ros%neof
+      ctl%n_glob = ctl%n
+      write(drv%dia,*) 'Size of the control vector: ',ctl%n
+
+      ALLOCATE( ctl%x_c(ctl%n)) ; ctl%x_c = huge(ctl%x_c(1))
+      ALLOCATE( ctl%g_c(ctl%n)) ; ctl%g_c = huge(ctl%g_c(1))
+
+    else
+      ctl%n = 0
+    endif
+    
+    call MPI_Bcast(ctl%n_glob, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
+
+    do i=1,ctl%n
+       ctl%x_c(i)= 0.0d0
+    enddo
      
   endif
   

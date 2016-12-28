@@ -105,7 +105,6 @@ OBJS    =  \
 	def_nml.o\
 	def_grd.o\
 	parallel_def_grd.o\
-	parallel_def_cov.o\
 	sav_itr.o\
 	ini_itr.o\
 	rdgrds.o\
@@ -120,7 +119,6 @@ OBJS    =  \
 	def_cov.o\
 	ini_cfn.o\
 	ini_nrm.o\
-	min_cfn.o\
 	costf.o\
 	cnv_ctv.o\
 	ver_hor.o\
@@ -149,8 +147,6 @@ OBJS    =  \
 	parallel_costf.o\
 	parallel_rdgrds.o\
 	parallel_rdeofs.o\
-	parallel_wrt_dia.o\
-	parallel_obs_chl.o\
 	parallel_ver_hor.o\
 	tao_minimizer.o\
     oceanvar.o

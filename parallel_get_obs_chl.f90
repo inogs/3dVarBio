@@ -158,7 +158,7 @@ subroutine parallel_get_obs_chl
   ! call MPI_Allreduce(chl%nc, chl%nc_global, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD, stat)
 
   if(MyRank .eq. 0) then
-     print*,'Good chl observations: ',chl%nc_global
+     print*,'Good chl observations: ',chl%nc
   endif
   chl%flc(:) = chl%flg(:)
 
