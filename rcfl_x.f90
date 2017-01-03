@@ -48,89 +48,133 @@ subroutine rcfl_x( im, jm, km, imax, al, bt, fld, inx, imx)
   INTEGER nthreads, tid
   integer :: OMP_GET_NUM_THREADS, OMP_GET_THREAD_NUM
   
+  integer :: MyStatus(MPI_STATUS_SIZE)
+  integer :: SendCounter, RecCounter, MyLevel, ReadyProc, ComputedLevel, ierr
+  real(8), allocatable, dimension(:,:) :: RecArr, ToSend
+
   tid=1
   !$OMP PARALLEL &
   !$OMP PRIVATE(k,j,i,ktr,indSupWP,tid)
   !$ tid      = OMP_GET_THREAD_NUM()+1
   !$OMP DO
   
-  do k=1,km
-     
-     a_rcx(:,:,tid) = 0.0
-     b_rcx(:,:,tid) = 0.0
-     c_rcx(:,:,tid) = 0.0
-     
-     do j=1,jm
-        do i=1,im
-           a_rcx(j,inx(i,j,k),tid) = fld(i,j,k)
-        enddo
-     enddo
-     alp_rcx(:,:,tid) = al(:,:,k)
-     bta_rcx(:,:,tid) = bt(:,:,k)
-     
-     do ktr = 1,rcf%ntr
-        
-        ! positive direction
-        if( ktr.eq.1 )then
-           b_rcx(:,1,tid) = (1.-alp_rcx(:,1,tid)) * a_rcx(:,1,tid)
-        elseif( ktr.eq.2 )then
-           b_rcx(:,1,tid) = a_rcx(:,1,tid) / (1.+alp_rcx(:,1,tid))
-        else
-           b_rcx(:,1,tid) = (1.-alp_rcx(:,1,tid)) * (a_rcx(:,1,tid)-alp_rcx(:,1,tid)**3 * a_rcx(:,2,tid)) / (1.-alp_rcx(:,1,tid)**2)**2
-        endif
-        
-        do j=2,imx(k)
-           b_rcx(:,j,tid) = alp_rcx(:,j,tid)*b_rcx(:,j-1,tid) + (1.-alp_rcx(:,j,tid))*a_rcx(:,j,tid)
-        enddo
-        
-        ! negative direction
-        if( ktr.eq.1 )then
-           c_rcx(:,imx(k),tid) = b_rcx(:,imx(k),tid) / (1.+bta_rcx(:,imx(k),tid))
-        else
-           c_rcx(:,imx(k),tid) = (1.-bta_rcx(:,imx(k),tid)) * &
-                (b_rcx(:,imx(k),tid)-bta_rcx(:,imx(k),tid)**3 * b_rcx(:,imx(k)-1,tid)) / (1.-bta_rcx(:,imx(k),tid)**2)**2
-        endif
-        
-        do j=imx(k)-1,1,-1
-           c_rcx(:,j,tid) = bta_rcx(:,j,tid)*c_rcx(:,j+1,tid) + (1.-bta_rcx(:,j,tid))*b_rcx(:,j,tid)
-        enddo
-        
-        a_rcx(:,:,tid) = c_rcx(:,:,tid)
-        
-     enddo
-     
-     !        do j=1,jm
-     !        do i=1,im
-     !         fld(i,j,k) = a_rcx(j,inx(i,j,k))
-     !        enddo
-     !        enddo
-     ! This way fills land points with some values.
-     ! We prefer not investigate at the mooment and use only the water points
+  if(MyRank .eq. 0) then
 
-! #ifdef _USE_MPI
-!      do j=1,localCol
-!         do i=1,GlobalRow
-!            ! if(grd%global_msk(i,j + MyRank*localCol,1).eq.1) then
-!            if(grd%global_msk(i,j + GlobalColOffset,1).eq.1) then
-!               fld(i,j,k) = a_rcx(j,inx(i,j,k),tid)
-!            end if
-!         end do
-!      end do
-! #else
+    ALLOCATE(ToSend(im,jm))
+    ALLOCATE(RecArr(im,jm))
+    SendCounter = 1
+    RecCounter  = 1
+    do while(RecCounter .le. km)  ! k=1,km
+      
+      call MPI_Recv(RecArr, im*jm, MPI_REAL8, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, MyStatus, ierr)
+      ReadyProc = MyStatus(MPI_SOURCE)
+      ComputedLevel = MyStatus(MPI_TAG)
 
-     do indSupWP=1,nSurfaceWaterPoints
-        i = SurfaceWaterPoints(1,indSupWP)
-        j = SurfaceWaterPoints(2,indSupWP)
-        fld(i,j,k) = a_rcx(j,inx(i,j,k),tid)
-     enddo
+      if(SendCounter .le. km) then
+        do j=1,jm
+          do i=1,im
+            ToSend(i,j) = fld(i,j,SendCounter)
+          enddo
+        enddo
 
-! #endif
+        call MPI_Send(ToSend, im*jm, MPI_REAL8, ReadyProc, SendCounter, MPI_COMM_WORLD, ierr)
+        SendCounter = SendCounter + 1
+      else
+        call MPI_Send(ToSend, im*jm, MPI_REAL8, ReadyProc, km+1, MPI_COMM_WORLD, ierr)
+      endif
+
+     if(ComputedLevel .gt. 0) then
+
+        RecCounter = RecCounter + 1
+        do j=1,jm
+           do i=1,im
+              fld(i,j,ComputedLevel) = RecArr(i,j)
+           end do
+        end do
+
+     endif
+
+    enddo
+
+    DEALLOCATE(ToSend, RecArr)
+
+  else
+    
+    MyLevel = 0;
+    ALLOCATE(RecArr(im,jm))
+    call MPI_Send(RecArr, im*jm, MPI_REAL8, 0, MyLevel, MPI_COMM_WORLD, ierr)
+
+    do while(.true.)
+      call MPI_Recv(RecArr, im*jm, MPI_REAL8, 0, MPI_ANY_TAG, MPI_COMM_WORLD, MyStatus, ierr)
+
+      MyLevel = MyStatus(MPI_TAG)
+
+      if(MyLevel .le. km) then
+    
+        k = MyLevel
+
+        a_rcx(:,:,tid) = 0.0
+        b_rcx(:,:,tid) = 0.0
+        c_rcx(:,:,tid) = 0.0
      
-  enddo
+        do j=1,jm
+          do i=1,im
+             a_rcx(j,inx(i,j,k),tid) = RecArr(i,j) !fld(i,j,k)
+          enddo
+        enddo
+        alp_rcx(:,:,tid) = al(:,:,k)
+        bta_rcx(:,:,tid) = bt(:,:,k)
+     
+        do ktr = 1,rcf%ntr
+        
+          ! positive direction
+          if( ktr.eq.1 )then
+            b_rcx(:,1,tid) = (1.-alp_rcx(:,1,tid)) * a_rcx(:,1,tid)
+          elseif( ktr.eq.2 )then
+            b_rcx(:,1,tid) = a_rcx(:,1,tid) / (1.+alp_rcx(:,1,tid))
+          else
+            b_rcx(:,1,tid) = (1.-alp_rcx(:,1,tid)) * (a_rcx(:,1,tid)-alp_rcx(:,1,tid)**3 * a_rcx(:,2,tid)) / (1.-alp_rcx(:,1,tid)**2)**2
+          endif
+          
+          do j=2,imx(k)
+            b_rcx(:,j,tid) = alp_rcx(:,j,tid)*b_rcx(:,j-1,tid) + (1.-alp_rcx(:,j,tid))*a_rcx(:,j,tid)
+          enddo
+        
+          ! negative direction
+          if( ktr.eq.1 )then
+            c_rcx(:,imx(k),tid) = b_rcx(:,imx(k),tid) / (1.+bta_rcx(:,imx(k),tid))
+          else
+            c_rcx(:,imx(k),tid) = (1.-bta_rcx(:,imx(k),tid)) * &
+                  (b_rcx(:,imx(k),tid)-bta_rcx(:,imx(k),tid)**3 * b_rcx(:,imx(k)-1,tid)) / (1.-bta_rcx(:,imx(k),tid)**2)**2
+          endif
+          
+          do j=imx(k)-1,1,-1
+            c_rcx(:,j,tid) = bta_rcx(:,j,tid)*c_rcx(:,j+1,tid) + (1.-bta_rcx(:,j,tid))*b_rcx(:,j,tid)
+          enddo
+        
+          a_rcx(:,:,tid) = c_rcx(:,:,tid)
+
+        enddo
+     
+        do indSupWP=1,nSurfaceWaterPoints
+          i = SurfaceWaterPoints(1,indSupWP)
+          j = SurfaceWaterPoints(2,indSupWP)
+          ! fld(i,j,k) = a_rcx(j,inx(i,j,k),tid)
+          RecArr(i,j) = a_rcx(j,inx(i,j,k),tid)
+        enddo
+
+        call MPI_Send(RecArr, im*jm, MPI_REAL8, 0, MyLevel, MPI_COMM_WORLD, ierr)
+
+      else
+        exit
+      endif
+    enddo
+
+    DEALLOCATE(RecArr)
   !$OMP END DO
   !$OMP END PARALLEL
   
-  
+  endif
   
 
 end subroutine rcfl_x

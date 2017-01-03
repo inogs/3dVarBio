@@ -77,8 +77,11 @@ subroutine sav_itr
   DEALLOCATE ( grd%chl)
   DEALLOCATE ( grd%chl_ad)
   ! Observational vector
-  DEALLOCATE ( obs%inc, obs%amo, obs%res)
-  DEALLOCATE ( obs%err, obs%gra)
+  if(MyRank .eq. 0) then
+    DEALLOCATE ( obs%inc, obs%amo, obs%res)
+    DEALLOCATE ( obs%err, obs%gra)
+  endif
+  
   ! Covariances structure
   DEALLOCATE ( grd%ro)
   DEALLOCATE ( grd%ro_ad)
@@ -99,7 +102,10 @@ subroutine sav_itr
   endif
 
   ! Control structure
-  DEALLOCATE( ctl%x_c, ctl%g_c)
+  if(MyRank .eq. 0) then
+    DEALLOCATE( ctl%x_c, ctl%g_c)
+  endif
+  
   DEALLOCATE (SurfaceWaterPoints)  
   
   DEALLOCATE ( a_rcx)
@@ -114,9 +120,8 @@ subroutine sav_itr
   DEALLOCATE ( bta_rcy)
   DEALLOCATE (Dump_chl, Dump_vip, Dump_msk)
   
-#ifdef _USE_MPI
+
   if(MyRank .eq. 0) &
-#endif
        write(*,*) ' DEALLOCATION DONE'
   
 end subroutine sav_itr

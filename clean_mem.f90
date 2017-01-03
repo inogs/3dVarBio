@@ -38,43 +38,39 @@ subroutine clean_mem
   use ctl_str
   use cns_str
   use rcfl
-
-#ifdef _USE_MPI
   use mpi_str
   use mpi
-#endif
   
   implicit none
 
-#ifdef _USE_MPI
   integer :: ierr
-#endif
   
   ! Deallocate everithing related to the old grid
   DEALLOCATE ( drv%grid, drv%ratco, drv%ratio)
   DEALLOCATE ( drv%mask, drv%dda, drv%ddi)
 
-  ! chlorophyll structure
-  DEALLOCATE ( chl%flg)
-  DEALLOCATE ( chl%flc)
-  DEALLOCATE ( chl%inc)
-  DEALLOCATE ( chl%err)
-  DEALLOCATE ( chl%res)
-  DEALLOCATE ( chl%ib)
-  DEALLOCATE ( chl%pb)
-  DEALLOCATE ( chl%jb)
-  DEALLOCATE ( chl%qb)
-  DEALLOCATE ( chl%pq1)
-  DEALLOCATE ( chl%pq2)
-  DEALLOCATE ( chl%pq3)
-  DEALLOCATE ( chl%pq4)
-  DEALLOCATE ( chl%dzr)
-
-  ! Constants structure
   DEALLOCATE ( rcf%al)
   DEALLOCATE ( rcf%sc)
 
-  if(MyRank .eq. 0) &
-       write(*,*) ' ALL MEMORY CLEAN'
+  ! chlorophyll structure
+  if(MyRank .eq. 0) then
+    DEALLOCATE ( chl%flg)
+    DEALLOCATE ( chl%flc)
+    DEALLOCATE ( chl%inc)
+    DEALLOCATE ( chl%err)
+    DEALLOCATE ( chl%res)
+    DEALLOCATE ( chl%ib)
+    DEALLOCATE ( chl%pb)
+    DEALLOCATE ( chl%jb)
+    DEALLOCATE ( chl%qb)
+    DEALLOCATE ( chl%pq1)
+    DEALLOCATE ( chl%pq2)
+    DEALLOCATE ( chl%pq3)
+    DEALLOCATE ( chl%pq4)
+    DEALLOCATE ( chl%dzr)
+
+    ! Constants structure
+    write(*,*) ' ALL MEMORY CLEAN'
+  endif
   
 end subroutine clean_mem
