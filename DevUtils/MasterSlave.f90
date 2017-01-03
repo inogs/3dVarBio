@@ -14,15 +14,15 @@ program CommunicationTime
 
   NRep = 20 ! 1000
 
-  im = 722
-  jm = 255
-  km = 26
+  im = 622
+  jm = 655
+  km = 900
   nlev = 1
 
-  im = 1000
-  jm = 1000
-  km = 20
-  nlev = 1
+  ! im = 1000
+  ! jm = 1000
+  ! km = 20
+  ! nlev = 1
 
   if(MyRank .eq. 0) then
      ALLOCATE(ToSend(im,jm,km))
@@ -169,9 +169,10 @@ subroutine Slave(im, jm, km, nlev, MyRank)
      end do
   end do
 
-  call MPI_Send(MyArr, im*jm*nlev, MPI_REAL8, 0, MyLevel, MPI_COMM_WORLD, ierr)
+  ! call MPI_Send(MyArr, im*jm*nlev, MPI_REAL8, 0, MyLevel, MPI_COMM_WORLD, ierr)
 
   do while(.true.)
+     call MPI_Send(MyArr, im*jm*nlev, MPI_REAL8, 0, MyLevel, MPI_COMM_WORLD, ierr)
      call MPI_Recv(MyArr, im*jm*nlev, MPI_REAL8, 0, MPI_ANY_TAG, MPI_COMM_WORLD, MyStatus, ierr)
 
      MyLevel = MyStatus(MPI_TAG)
@@ -192,8 +193,6 @@ subroutine Slave(im, jm, km, nlev, MyRank)
               MyArr(:,:,k) = matmul(MyArr(:,:,k), Vector)
            end do
         end do
-
-        call MPI_Send(MyArr, im*jm*nlev, MPI_REAL8, 0, MyLevel, MPI_COMM_WORLD, ierr)
 
      else
 
