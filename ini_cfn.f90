@@ -56,15 +56,15 @@ subroutine ini_cfn
       ALLOCATE( ctl%x_c(ctl%n)) ; ctl%x_c = huge(ctl%x_c(1))
       ALLOCATE( ctl%g_c(ctl%n)) ; ctl%g_c = huge(ctl%g_c(1))
 
+      do i=1,ctl%n
+         ctl%x_c(i)= 0.0d0
+      enddo
+
     else
       ctl%n = 0
     endif
     
     call MPI_Bcast(ctl%n_glob, 1, MPI_INT, 0, MPI_COMM_WORLD, ierr)
-
-    do i=1,ctl%n
-       ctl%x_c(i)= 0.0d0
-    enddo
      
   endif
   

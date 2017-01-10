@@ -93,10 +93,13 @@ subroutine tao_minimizer
 
   ! Set MyTolerance and ConvergenceTest
   call parallel_costf
-  MaxGrad = 0
-  do j=1,ctl%n
-     MaxGrad = max(MaxGrad, abs(ctl%g_c(j)))
-  end do
+
+  if(MyRank .eq. 0) then
+     MaxGrad = 0
+     do j=1,ctl%n
+        MaxGrad = max(MaxGrad, abs(ctl%g_c(j)))
+     end do
+  endif
 
   ! call MPI_Allreduce(MPI_IN_PLACE, MaxGrad, 1, MPI_REAL8, MPI_MAX, MPI_COMM_WORLD, ierr)
   call MPI_Bcast(MaxGrad, 1, MPI_REAL8, 0, MPI_COMM_WORLD, ierr)
