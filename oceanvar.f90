@@ -129,12 +129,12 @@ subroutine oceanvar
      if(ktr.eq.drv%ntr)then
         ! ---
         ! Convert to innovations
-        if(MyRank .eq. 0) then
           call cnv_inn
           ! ---
           ! Write outputs and diagnostics
-          call wrt_dia
-        endif
+        if(MyRank .eq. 0) & 
+             call wrt_dia
+
      endif
      
      ! ---

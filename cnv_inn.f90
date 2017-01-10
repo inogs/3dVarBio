@@ -35,6 +35,7 @@ subroutine cnv_inn
   use eof_str
   use ctl_str
   use drv_str
+  use mpi_str
   
   implicit none
   
@@ -42,11 +43,9 @@ subroutine cnv_inn
   
   ! --------
   ! Convert the control vector to v
-  call cnv_ctv
-#ifdef _USE_MPI
+  if(MyRank .eq. 0) &
+       call cnv_ctv
+
   call parallel_ver_hor
-#else
-  call ver_hor
-#endif
   
 end subroutine cnv_inn

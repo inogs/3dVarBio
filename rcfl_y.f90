@@ -186,5 +186,6 @@ subroutine rcfl_y( im, jm, km, jmax, al, bt, fld, jnx, jmx)
   !$OMP END PARALLEL
   
   endif  
+  call  MPI_Barrier(MPI_COMM_WORLD, ierr)
   
 end subroutine rcfl_y

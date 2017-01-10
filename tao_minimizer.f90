@@ -129,10 +129,12 @@ subroutine tao_minimizer
   CHKERRQ(ierr)
   call VecGetArrayReadF90(MyState, xtmp, ierr)
   CHKERRQ(ierr)
-
-  do j = 1, ctl%n
-     ctl%x_c(j) = xtmp(j)
-  end do
+  
+  if(MyRank .eq. 0) then
+     do j = 1, ctl%n
+        ctl%x_c(j) = xtmp(j)
+     end do
+  end if
 
   call VecRestoreArrayReadF90(MyState, xtmp, ierr)
   CHKERRQ(ierr)

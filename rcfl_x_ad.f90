@@ -120,7 +120,7 @@ subroutine rcfl_x_ad( im, jm, km, imax, al, bt, fld, inx, imx)
      
         do j=1,jm
           do i=1,im
-             a_rcx(j,inx(i,j,k),tid) = RecArr(i,j) !fld(i,j,k)
+             c_rcx(j,inx(i,j,k),tid) = RecArr(i,j) !fld(i,j,k)
           enddo
         enddo
         alp_rcx(:,:,tid) = al(:,:,k)
@@ -188,5 +188,6 @@ subroutine rcfl_x_ad( im, jm, km, imax, al, bt, fld, inx, imx)
   
   endif  
   
+  call  MPI_Barrier(MPI_COMM_WORLD, ierr)
   
 end subroutine rcfl_x_ad

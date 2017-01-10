@@ -121,7 +121,7 @@ subroutine rcfl_y_ad( im, jm, km, jmax, al, bt, fld, jnx, jmx)
      
         do j=1,jm
           do i=1,im
-           a_rcy(i,jnx(i,j,k),tid) = RecArr(i,j) ! fld(i,j,k)
+           c_rcy(i,jnx(i,j,k),tid) = RecArr(i,j) ! fld(i,j,k)
           enddo
         enddo
         alp_rcy(:,:,tid) = al(:,:,k)
@@ -188,5 +188,7 @@ subroutine rcfl_y_ad( im, jm, km, jmax, al, bt, fld, jnx, jmx)
   !$OMP END PARALLEL
   
   endif  
+
+  call  MPI_Barrier(MPI_COMM_WORLD, ierr)
   
 end subroutine rcfl_y_ad
