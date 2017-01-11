@@ -32,9 +32,8 @@ subroutine rcfl_x_ad( im, jm, km, imax, al, bt, fld, inx, imx)
   use cns_str
   use rcfl
   use grd_str
-#ifdef _USE_MPI
   use mpi_str
-#endif
+
   implicit none
   
   INTEGER(i4)    :: im, jm, km, imax

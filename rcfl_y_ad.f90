@@ -32,9 +32,8 @@ subroutine rcfl_y_ad( im, jm, km, jmax, al, bt, fld, jnx, jmx)
   use cns_str
   use rcfl
   use grd_str
-#ifdef _USE_MPI
   use mpi_str
-#endif
+
   implicit none
   
   INTEGER(i4)    :: im, jm, km, jmax
