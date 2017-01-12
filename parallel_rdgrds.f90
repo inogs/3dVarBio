@@ -65,6 +65,24 @@ subroutine parallel_rdgrd
   MyCount(2) = grd%jm
   MyCount(3) = grd%km
  
+  LevSize = 2
+  NLevels = grd%km / LevSize
+  LevRest = mod(grd%km, LevSize)
+
+  if(MyRank .eq. 0) then
+    print*,"grd%km", grd%km, "LevSize = ", LevSize, " NLevels = ", NLevels, " LevRest =", LevRest
+    ! print*, "NLevels < NProcesses ... Aborting (temporary solution)... "
+  endif
+  
+  if(NLevels .lt. Size) then
+    if(MyRank .eq. 0) then
+      ! print*,"grd%km", grd%km, "LevSize = ", LevSize, " NLevels = ", NLevels, " LevRest =", LevRest
+      print*, "NLevels < NProcesses ... Aborting (temporary solution)... "
+    endif
+    call MPI_Barrier(MPI_COMM_WORLD, ierr)
+    call MPI_Abort(MPI_COMM_WORLD, -1, ierr)
+  endif
+
 
   ALLOCATE ( grd%reg(grd%im,grd%jm))        ; grd%reg = huge(grd%reg(1,1))
   ALLOCATE ( grd%msk(grd%im,grd%jm,grd%km)) ; grd%msk = huge(grd%msk(1,1,1))

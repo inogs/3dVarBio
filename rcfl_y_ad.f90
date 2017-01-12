@@ -32,9 +32,8 @@ subroutine rcfl_y_ad( im, jm, km, jmax, al, bt, fld, jnx, jmx)
   use cns_str
   use rcfl
   use grd_str
-#ifdef _USE_MPI
   use mpi_str
-#endif
+
   implicit none
   
   INTEGER(i4)    :: im, jm, km, jmax
@@ -51,7 +50,8 @@ subroutine rcfl_y_ad( im, jm, km, jmax, al, bt, fld, jnx, jmx)
   
   integer :: MyStatus(MPI_STATUS_SIZE)
   integer :: SendCounter, RecCounter, MyLevel, ReadyProc, ComputedLevel, ierr
-  real(8), allocatable, dimension(:,:) :: RecArr, ToSend
+  integer :: EndIndex, UpdateIndex
+  real(8), allocatable, dimension(:,:,:) :: RecArr, ToSend
   
   tid=1
   !$OMP PARALLEL  &
@@ -62,37 +62,41 @@ subroutine rcfl_y_ad( im, jm, km, jmax, al, bt, fld, jnx, jmx)
 
    if(MyRank .eq. 0) then
 
-    ALLOCATE(ToSend(im,jm))
-    ALLOCATE(RecArr(im,jm))
+    ALLOCATE(ToSend(im,jm,LevSize))
+    ALLOCATE(RecArr(im,jm,LevSize))
     SendCounter = 1
     RecCounter  = 1
     do while(RecCounter .le. km)  ! k=1,km
       
-      call MPI_Recv(RecArr, im*jm, MPI_REAL8, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, MyStatus, ierr)
+      call MPI_Recv(RecArr, im*jm*LevSize, MPI_REAL8, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, MyStatus, ierr)
       ReadyProc = MyStatus(MPI_SOURCE)
       ComputedLevel = MyStatus(MPI_TAG)
 
       if(SendCounter .le. km) then
-        do j=1,jm
-          do i=1,im
-            ToSend(i,j) = fld(i,j,SendCounter)
+        do k=1,LevSize
+          do j=1,jm
+            do i=1,im
+              ToSend(i,j,k) = fld(i,j,SendCounter+k-1)
+            enddo
           enddo
         enddo
 
-        call MPI_Send(ToSend, im*jm, MPI_REAL8, ReadyProc, SendCounter, MPI_COMM_WORLD, ierr)
-        SendCounter = SendCounter + 1
+        call MPI_Send(ToSend, im*jm*LevSize, MPI_REAL8, ReadyProc, SendCounter, MPI_COMM_WORLD, ierr)
+        SendCounter = SendCounter + LevSize
       else
-        call MPI_Send(ToSend, im*jm, MPI_REAL8, ReadyProc, km+1, MPI_COMM_WORLD, ierr)
+        call MPI_Send(ToSend, im*jm*LevSize, MPI_REAL8, ReadyProc, km+1, MPI_COMM_WORLD, ierr)
       endif
 
      if(ComputedLevel .gt. 0) then
 
-        RecCounter = RecCounter + 1
-        do j=1,jm
-           do i=1,im
-              fld(i,j,ComputedLevel) = RecArr(i,j)
-           end do
-        end do
+        RecCounter = RecCounter + LevSize
+        do k=1,LevSize
+          do j=1,jm
+            do i=1,im
+                fld(i,j,ComputedLevel+k-1) = RecArr(i,j,k)
+            end do
+          end do
+        enddo
 
      endif
 
@@ -103,80 +107,82 @@ subroutine rcfl_y_ad( im, jm, km, jmax, al, bt, fld, jnx, jmx)
   else
     
     MyLevel = 0;
-    ALLOCATE(RecArr(im,jm))
-    call MPI_Send(RecArr, im*jm, MPI_REAL8, 0, MyLevel, MPI_COMM_WORLD, ierr)
+    ALLOCATE(RecArr(im,jm,LevSize))
+    call MPI_Send(RecArr, im*jm*LevSize, MPI_REAL8, 0, MyLevel, MPI_COMM_WORLD, ierr)
 
     do while(.true.)
-      call MPI_Recv(RecArr, im*jm, MPI_REAL8, 0, MPI_ANY_TAG, MPI_COMM_WORLD, MyStatus, ierr)
+      call MPI_Recv(RecArr, im*jm*LevSize, MPI_REAL8, 0, MPI_ANY_TAG, MPI_COMM_WORLD, MyStatus, ierr)
 
       MyLevel = MyStatus(MPI_TAG)
 
       if(MyLevel .le. km) then
-    
-        k = MyLevel
-     
-        a_rcy(:,:,tid) = 0.0
-        b_rcy(:,:,tid) = 0.0
-        c_rcy(:,:,tid) = 0.0
-     
-        do j=1,jm
-          do i=1,im
-           c_rcy(i,jnx(i,j,k),tid) = RecArr(i,j) ! fld(i,j,k)
-          enddo
-        enddo
-        alp_rcy(:,:,tid) = al(:,:,k)
-        bta_rcy(:,:,tid) = bt(:,:,k)
-     
-        do ktr = 1,rcf%ntr
-        
-          ! negative direction 
-          b_rcy(:,:,tid) = 0.0
-        
-          do j=1,jmx(k)-1
-            c_rcy(:,j+1,tid) = c_rcy(:,j+1,tid) + bta_rcy(:,j,tid)*c_rcy(:,j,tid)
-            b_rcy(:,j,tid)   = (1.-bta_rcy(:,j,tid))*c_rcy(:,j,tid)
-          enddo
-        
-        
-          if( ktr.eq.1 )then
-              b_rcy(:,jmx(k),tid) = b_rcy(:,jmx(k),tid) + c_rcy(:,jmx(k),tid) / (1.+bta_rcy(:,jmx(k),tid))
-          else
-              b_rcy(:,jmx(k),tid  ) = b_rcy(:,jmx(k),tid  ) + (1.-bta_rcy(:,jmx(k),tid)) * c_rcy(:,jmx(k),tid) / (1.-bta_rcy(:,jmx(k),tid)**2)**2
-              b_rcy(:,jmx(k)-1,tid) = b_rcy(:,jmx(k)-1,tid) - (1.-bta_rcy(:,jmx(k),tid)) * &
-                bta_rcy(:,jmx(k),tid)**3 * c_rcy(:,jmx(k),tid) / (1.-bta_rcy(:,jmx(k),tid)**2)**2
-          endif
-        
-          ! positive direction 
+        EndIndex = MyLevel+LevSize-1
+
+        do k=MyLevel,EndIndex
+          UpdateIndex = k-MyLevel+1
+
           a_rcy(:,:,tid) = 0.0
-        
-          do j=jmx(k),2,-1
-              b_rcy(:,j-1,tid) = b_rcy(:,j-1,tid) + alp_rcy(:,j,tid)*b_rcy(:,j,tid)
-              a_rcy(:,j,tid) = a_rcy(:,j,tid) + (1.-alp_rcy(:,j,tid))*b_rcy(:,j,tid)
+          b_rcy(:,:,tid) = 0.0
+          c_rcy(:,:,tid) = 0.0
+      
+          do j=1,jm
+            do i=1,im
+            c_rcy(i,jnx(i,j,k),tid) = RecArr(i,j,UpdateIndex) ! fld(i,j,k)
+            enddo
           enddo
-        
-        
-          if( ktr.eq.1 )then
-              a_rcy(:,1,tid) = a_rcy(:,1,tid) + (1.-alp_rcy(:,1,tid)) * b_rcy(:,1,tid)
-          elseif( ktr.eq.2 )then
-              a_rcy(:,1,tid) = a_rcy(:,1,tid) + b_rcy(:,1,tid) / (1.+alp_rcy(:,1,tid))
-          else
-              a_rcy(:,1,tid) = a_rcy(:,1,tid) + (1.-alp_rcy(:,1,tid)) * b_rcy(:,1,tid) / (1.-alp_rcy(:,1,tid)**2)**2
-              a_rcy(:,2,tid) = a_rcy(:,2,tid) - (1.-alp_rcy(:,1,tid)) * alp_rcy(:,1,tid)**3 * b_rcy(:,1,tid) / (1.-alp_rcy(:,1,tid)**2)**2
-          endif
-        
-        
-          c_rcy(:,:,tid) = a_rcy(:,:,tid)
-        
-        enddo
-     
-        do indSupWP=1,nSurfaceWaterPoints
-          i = SurfaceWaterPoints(1,indSupWP)
-          j = SurfaceWaterPoints(2,indSupWP)
-          RecArr(i,j) = c_rcy(i,jnx(i,j,k),tid)
+          alp_rcy(:,:,tid) = al(:,:,k)
+          bta_rcy(:,:,tid) = bt(:,:,k)
+      
+          do ktr = 1,rcf%ntr
+          
+            ! negative direction 
+            b_rcy(:,:,tid) = 0.0
+          
+            do j=1,jmx(k)-1
+              c_rcy(:,j+1,tid) = c_rcy(:,j+1,tid) + bta_rcy(:,j,tid)*c_rcy(:,j,tid)
+              b_rcy(:,j,tid)   = (1.-bta_rcy(:,j,tid))*c_rcy(:,j,tid)
+            enddo
+          
+          
+            if( ktr.eq.1 )then
+                b_rcy(:,jmx(k),tid) = b_rcy(:,jmx(k),tid) + c_rcy(:,jmx(k),tid) / (1.+bta_rcy(:,jmx(k),tid))
+            else
+                b_rcy(:,jmx(k),tid  ) = b_rcy(:,jmx(k),tid  ) + (1.-bta_rcy(:,jmx(k),tid)) * c_rcy(:,jmx(k),tid) / (1.-bta_rcy(:,jmx(k),tid)**2)**2
+                b_rcy(:,jmx(k)-1,tid) = b_rcy(:,jmx(k)-1,tid) - (1.-bta_rcy(:,jmx(k),tid)) * &
+                  bta_rcy(:,jmx(k),tid)**3 * c_rcy(:,jmx(k),tid) / (1.-bta_rcy(:,jmx(k),tid)**2)**2
+            endif
+          
+            ! positive direction 
+            a_rcy(:,:,tid) = 0.0
+          
+            do j=jmx(k),2,-1
+                b_rcy(:,j-1,tid) = b_rcy(:,j-1,tid) + alp_rcy(:,j,tid)*b_rcy(:,j,tid)
+                a_rcy(:,j,tid) = a_rcy(:,j,tid) + (1.-alp_rcy(:,j,tid))*b_rcy(:,j,tid)
+            enddo
+          
+          
+            if( ktr.eq.1 )then
+                a_rcy(:,1,tid) = a_rcy(:,1,tid) + (1.-alp_rcy(:,1,tid)) * b_rcy(:,1,tid)
+            elseif( ktr.eq.2 )then
+                a_rcy(:,1,tid) = a_rcy(:,1,tid) + b_rcy(:,1,tid) / (1.+alp_rcy(:,1,tid))
+            else
+                a_rcy(:,1,tid) = a_rcy(:,1,tid) + (1.-alp_rcy(:,1,tid)) * b_rcy(:,1,tid) / (1.-alp_rcy(:,1,tid)**2)**2
+                a_rcy(:,2,tid) = a_rcy(:,2,tid) - (1.-alp_rcy(:,1,tid)) * alp_rcy(:,1,tid)**3 * b_rcy(:,1,tid) / (1.-alp_rcy(:,1,tid)**2)**2
+            endif
+          
+          
+            c_rcy(:,:,tid) = a_rcy(:,:,tid)
+          
+          enddo
+      
+          do indSupWP=1,nSurfaceWaterPoints
+            i = SurfaceWaterPoints(1,indSupWP)
+            j = SurfaceWaterPoints(2,indSupWP)
+            RecArr(i,j,UpdateIndex) = c_rcy(i,jnx(i,j,k),tid)
+          enddo
         enddo
 
-
-        call MPI_Send(RecArr, im*jm, MPI_REAL8, 0, MyLevel, MPI_COMM_WORLD, ierr)
+        call MPI_Send(RecArr, im*jm*LevSize, MPI_REAL8, 0, MyLevel, MPI_COMM_WORLD, ierr)
 
       else
         exit
