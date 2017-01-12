@@ -65,7 +65,7 @@ subroutine parallel_rdgrd
   MyCount(2) = grd%jm
   MyCount(3) = grd%km
  
-  LevSize = 2
+  LevSize = 3
   NLevels = grd%km / LevSize
   LevRest = mod(grd%km, LevSize)
 
@@ -73,7 +73,7 @@ subroutine parallel_rdgrd
     print*,"grd%km", grd%km, "LevSize = ", LevSize, " NLevels = ", NLevels, " LevRest =", LevRest
     ! print*, "NLevels < NProcesses ... Aborting (temporary solution)... "
   endif
-  
+
   if(NLevels .lt. Size) then
     if(MyRank .eq. 0) then
       ! print*,"grd%km", grd%km, "LevSize = ", LevSize, " NLevels = ", NLevels, " LevRest =", LevRest

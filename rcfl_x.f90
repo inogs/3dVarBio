@@ -65,14 +65,25 @@ subroutine rcfl_x( im, jm, km, imax, al, bt, fld, inx, imx)
     ALLOCATE(RecArr(im,jm,LevSize))
     SendCounter = 1
     RecCounter  = 1
-    do while(RecCounter .le. km)  ! k=1,km
+    do while(RecCounter .le. km)
       
       call MPI_Recv(RecArr, im*jm*LevSize, MPI_REAL8, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, MyStatus, ierr)
       ReadyProc = MyStatus(MPI_SOURCE)
       ComputedLevel = MyStatus(MPI_TAG)
 
-      if(SendCounter .le. km) then
+      if(SendCounter .le. NLevels*LevSize) then
         do k=1,LevSize 
+          do j=1,jm
+            do i=1,im
+              ToSend(i,j,k) = fld(i,j,SendCounter+k-1)
+            enddo
+          enddo
+        enddo
+        call MPI_Send(ToSend, im*jm*LevSize, MPI_REAL8, ReadyProc, SendCounter, MPI_COMM_WORLD, ierr)
+        SendCounter = SendCounter + LevSize
+
+      else if(SendCounter .lt. km) then ! case of Rest != 0
+        do k=1,LevRest
           do j=1,jm
             do i=1,im
               ToSend(i,j,k) = fld(i,j,SendCounter+k-1)
@@ -81,22 +92,33 @@ subroutine rcfl_x( im, jm, km, imax, al, bt, fld, inx, imx)
         enddo
 
         call MPI_Send(ToSend, im*jm*LevSize, MPI_REAL8, ReadyProc, SendCounter, MPI_COMM_WORLD, ierr)
-        SendCounter = SendCounter + LevSize
+        SendCounter = km
+
       else
+        ! Killing ReadyProc
         call MPI_Send(ToSend, im*jm*LevSize, MPI_REAL8, ReadyProc, km+1, MPI_COMM_WORLD, ierr)
       endif
 
      if(ComputedLevel .gt. 0) then
-
-        RecCounter = RecCounter + LevSize
-        do k=1,LevSize
-          do j=1,jm
-            do i=1,im
-                fld(i,j,ComputedLevel+k-1) = RecArr(i,j,k)
+        if(ComputedLevel .le. NLevels*LevSize) then
+          RecCounter = RecCounter + LevSize
+          do k=1,LevSize
+            do j=1,jm
+              do i=1,im
+                  fld(i,j,ComputedLevel+k-1) = RecArr(i,j,k)
+              enddo
             enddo
           enddo
-        enddo
-
+        else if (ComputedLevel .lt. km) then
+          RecCounter = RecCounter + LevRest
+          do k=1,LevRest
+            do j=1,jm
+              do i=1,im
+                  fld(i,j,ComputedLevel+k-1) = RecArr(i,j,k)
+              enddo
+            enddo
+          enddo
+        endif
      endif
 
     enddo
@@ -115,7 +137,11 @@ subroutine rcfl_x( im, jm, km, imax, al, bt, fld, inx, imx)
       MyLevel = MyStatus(MPI_TAG)
 
       if(MyLevel .le. km) then
-        EndIndex = MyLevel + LevSize - 1
+        if(MyLevel .le. NLevels*LevSize) then
+          EndIndex = MyLevel + LevSize - 1
+        else
+          EndIndex = MyLevel + LevRest - 1
+        endif
 
         do k=MyLevel,EndIndex
 
@@ -127,7 +153,7 @@ subroutine rcfl_x( im, jm, km, imax, al, bt, fld, inx, imx)
       
           do j=1,jm
             do i=1,im
-              a_rcx(j,inx(i,j,k),tid) = RecArr(i,j,UpdateIndex) !fld(i,j,k)
+              a_rcx(j,inx(i,j,k),tid) = RecArr(i,j,UpdateIndex)
             enddo
           enddo
           alp_rcx(:,:,tid) = al(:,:,k)
@@ -167,7 +193,6 @@ subroutine rcfl_x( im, jm, km, imax, al, bt, fld, inx, imx)
           do indSupWP=1,nSurfaceWaterPoints
             i = SurfaceWaterPoints(1,indSupWP)
             j = SurfaceWaterPoints(2,indSupWP)
-            ! fld(i,j,k) = a_rcx(j,inx(i,j,k),tid)
             RecArr(i,j,UpdateIndex) = a_rcx(j,inx(i,j,k),tid)
           enddo
 
