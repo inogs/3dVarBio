@@ -198,6 +198,12 @@ subroutine rcfl_y( im, jm, km, jmax, al, bt, fld, jnx, jmx)
           enddo
         enddo
 
+        do k=MyLevel,EndIndex
+          UpdateIndex = k-MyLevel+1
+          RecArr(:,:,UpdateIndex) = RecArr(:,:,UpdateIndex) * grd%scy(:,:)
+        enddo
+
+
         call MPI_Send(RecArr, im*jm*LevSize, MPI_REAL8, 0, MyLevel, MPI_COMM_WORLD, ierr)
 
       else

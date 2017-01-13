@@ -80,16 +80,17 @@ subroutine parallel_ver_hor
   
     ! ---
     ! Scale by the scaling factor
-    do l=1,grd%nchl
-      !$OMP PARALLEL  &
-      !$OMP PRIVATE(k)
-      !$OMP DO
-      do k=1,grd%km
-          grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:)
-      enddo
-      !$OMP END DO
-      !$OMP END PARALLEL
-    enddo
+  !   do l=1,grd%nchl
+  !     !$OMP PARALLEL  &
+  !     !$OMP PRIVATE(k)
+  !     !$OMP DO
+  !     do k=1,grd%km
+  !         grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:)
+  !     enddo
+  !     !$OMP END DO
+  !     !$OMP END PARALLEL
+  !   enddo
+
   endif
   
   ! Apply recursive filter in y direction
@@ -98,20 +99,20 @@ subroutine parallel_ver_hor
   ! ---
   ! x direction
 
-  if(MyRank .eq. 0) then 
-     ! ---
-     ! Scale by the scaling factor
-     do l=1,grd%nchl
-        !$OMP PARALLEL  &
-        !$OMP PRIVATE(k)
-        !$OMP DO
-        do k=1,grd%km
-           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:)
-        enddo
-        !$OMP END DO
-        !$OMP END PARALLEL
-     enddo
-  endif
+  ! if(MyRank .eq. 0) then 
+  !    ! ---
+  !    ! Scale by the scaling factor
+  !    do l=1,grd%nchl
+  !       !$OMP PARALLEL  &
+  !       !$OMP PRIVATE(k)
+  !       !$OMP DO
+  !       do k=1,grd%km
+  !          grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:)
+  !       enddo
+  !       !$OMP END DO
+  !       !$OMP END PARALLEL
+  !    enddo
+  ! endif
   
   call rcfl_x_ad( grd%im, grd%jm, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, grd%chl_ad, grd%inx, grd%imx)
      
@@ -121,19 +122,19 @@ subroutine parallel_ver_hor
   ! x direction
   call rcfl_x( grd%im, grd%jm, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, grd%chl, grd%inx, grd%imx)
 
-  if(MyRank .eq. 0) then     
-     do l=1,grd%nchl
-        !$OMP PARALLEL  &
-        !$OMP PRIVATE(k)
-        !$OMP DO
-        do k=1,grd%km
-           grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:)
-        enddo
-        !$OMP END DO
-        !$OMP END PARALLEL
-     enddo
+  ! if(MyRank .eq. 0) then     
+  !    do l=1,grd%nchl
+  !       !$OMP PARALLEL  &
+  !       !$OMP PRIVATE(k)
+  !       !$OMP DO
+  !       do k=1,grd%km
+  !          grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:)
+  !       enddo
+  !       !$OMP END DO
+  !       !$OMP END PARALLEL
+  !    enddo
      
-  endif
+  ! endif
   
   ! ---
   ! y direction
@@ -144,16 +145,16 @@ subroutine parallel_ver_hor
   ! Scale by the scaling factor
   if(MyRank .eq. 0) then
     
-    do l=1,grd%nchl
-      !$OMP PARALLEL  &
-      !$OMP PRIVATE(k)
-      !$OMP DO
-      do k=1,grd%km
-        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:)
-      enddo
-      !$OMP END DO
-      !$OMP END PARALLEL
-    enddo
+    ! do l=1,grd%nchl
+    !   !$OMP PARALLEL  &
+    !   !$OMP PRIVATE(k)
+    !   !$OMP DO
+    !   do k=1,grd%km
+    !     grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:)
+    !   enddo
+    !   !$OMP END DO
+    !   !$OMP END PARALLEL
+    ! enddo
   
     ! ---
     ! Average
@@ -279,16 +280,16 @@ subroutine parallel_ver_hor_ad
     ! y direction
     ! ---
     ! Scale by the scaling factor
-    do l=1,grd%nchl
-      !$OMP PARALLEL  &
-      !$OMP PRIVATE(k)
-      !$OMP DO
-      do k=1,grd%km
-          grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:)
-      enddo
-      !$OMP END DO
-      !$OMP END PARALLEL
-    enddo
+    ! do l=1,grd%nchl
+    !   !$OMP PARALLEL  &
+    !   !$OMP PRIVATE(k)
+    !   !$OMP DO
+    !   do k=1,grd%km
+    !       grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:)
+    !   enddo
+    !   !$OMP END DO
+    !   !$OMP END PARALLEL
+    ! enddo
   
   endif
 
@@ -297,21 +298,21 @@ subroutine parallel_ver_hor_ad
   
   ! ---
   ! x direction
-  if(MyRank .eq. 0) then
-     ! ---
-     ! Scale by the scaling factor
-     do l=1,grd%nchl
-        !$OMP PARALLEL  &
-        !$OMP PRIVATE(k)
-        !$OMP DO
-        do k=1,grd%km
-           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:)
-        enddo
-        !$OMP END DO
-        !$OMP END PARALLEL
-     enddo
+  ! if(MyRank .eq. 0) then
+  !    ! ---
+  !    ! Scale by the scaling factor
+  !    do l=1,grd%nchl
+  !       !$OMP PARALLEL  &
+  !       !$OMP PRIVATE(k)
+  !       !$OMP DO
+  !       do k=1,grd%km
+  !          grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:)
+  !       enddo
+  !       !$OMP END DO
+  !       !$OMP END PARALLEL
+  !    enddo
      
-  endif
+  ! endif
     
   call rcfl_x_ad( grd%im, grd%jm, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, grd%chl_ad, grd%inx, grd%imx)
 
@@ -322,18 +323,18 @@ subroutine parallel_ver_hor_ad
      
   ! ---
   ! Scale by the scaling factor
-  if(MyRank .eq. 0) then
-     do l=1,grd%nchl
-        !$OMP PARALLEL  &
-        !$OMP PRIVATE(k)
-        !$OMP DO
-        do k=1,grd%km
-           grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:)
-        enddo
-        !$OMP END DO
-        !$OMP END PARALLEL
-     enddo
-  end if
+  ! if(MyRank .eq. 0) then
+  !    do l=1,grd%nchl
+  !       !$OMP PARALLEL  &
+  !       !$OMP PRIVATE(k)
+  !       !$OMP DO
+  !       do k=1,grd%km
+  !          grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:)
+  !       enddo
+  !       !$OMP END DO
+  !       !$OMP END PARALLEL
+  !    enddo
+  ! end if
   
   
   ! ! ---
@@ -344,16 +345,16 @@ subroutine parallel_ver_hor_ad
   ! ---
   ! Scale by the scaling factor
   if(MyRank .eq. 0) then
-    do l=1,grd%nchl
-      !$OMP PARALLEL  &
-      !$OMP PRIVATE(k)
-      !$OMP DO
-      do k=1,grd%km
-          grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:)
-      enddo
-      !$OMP END DO
-      !$OMP END PARALLEL
-    enddo
+  !   do l=1,grd%nchl
+  !     !$OMP PARALLEL  &
+  !     !$OMP PRIVATE(k)
+  !     !$OMP DO
+  !     do k=1,grd%km
+  !         grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:)
+  !     enddo
+  !     !$OMP END DO
+  !     !$OMP END PARALLEL
+  !   enddo
   
   
     ! ---

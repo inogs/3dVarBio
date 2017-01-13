@@ -144,6 +144,12 @@ subroutine rcfl_x_ad( im, jm, km, imax, al, bt, fld, inx, imx)
         endif
 
         do k=MyLevel,EndIndex
+          UpdateIndex = k-MyLevel+1
+          RecArr(:,:,UpdateIndex) = RecArr(:,:,UpdateIndex) * grd%scx(:,:)
+        enddo
+        
+
+        do k=MyLevel,EndIndex
 
           UpdateIndex = k-MyLevel+1
 

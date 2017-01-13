@@ -149,6 +149,11 @@ subroutine rcfl_y_ad( im, jm, km, jmax, al, bt, fld, jnx, jmx)
 
         do k=MyLevel,EndIndex
           UpdateIndex = k-MyLevel+1
+          RecArr(:,:,UpdateIndex) = RecArr(:,:,UpdateIndex) * grd%scy(:,:)
+        enddo
+
+        do k=MyLevel,EndIndex
+          UpdateIndex = k-MyLevel+1
 
           a_rcy(:,:,tid) = 0.0
           b_rcy(:,:,tid) = 0.0
