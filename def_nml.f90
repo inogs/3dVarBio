@@ -46,7 +46,7 @@ subroutine def_nml
   INTEGER(i4)   :: ctl_m
   INTEGER(i4)   :: obs_chl
   INTEGER(i4)   :: obs_vdr, bmd_ncnt
-  INTEGER(i4)   :: biol, bphy, nchl
+  INTEGER(i4)   :: biol, bphy, nchl, lsize
   REAL(r8)      :: rcf_L, ctl_tol, ctl_per, bmd_fc1, bmd_fc2, rcf_efc, chl_dep
   INTEGER(i4)   :: grid (ngrids)
   REAL(r8)      :: ratio(ngrids)
@@ -60,7 +60,7 @@ subroutine def_nml
   NAMELIST /grdlst/ ntr, grid, read_grd, ratio, mask, barmd, divda, divdi
   NAMELIST /ctllst/ ctl_m, ctl_tol, ctl_per
   NAMELIST /covlst/ neof, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
-  NAMELIST /biolst/ biol, bphy, nchl, chl_dep
+  NAMELIST /biolst/ biol, bphy, nchl, chl_dep, lsize
 
 
 ! -------------------------------------------------------------------
@@ -178,5 +178,7 @@ subroutine def_nml
   chl%dep  = chl_dep
   drv%argo = 0 !1
   drv%ReadDomDec = 0
+  LevSize = lsize
+
 
 end subroutine def_nml

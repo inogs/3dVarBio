@@ -65,7 +65,7 @@ subroutine parallel_rdgrd
   MyCount(2) = grd%jm
   MyCount(3) = grd%km
  
-  LevSize = 3
+  ! LevSize = 4
   NLevels = grd%km / LevSize
   LevRest = mod(grd%km, LevSize)
 
