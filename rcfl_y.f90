@@ -82,7 +82,7 @@ subroutine rcfl_y( im, jm, km, jmax, al, bt, fld, jnx, jmx)
         call MPI_Send(ToSend, im*jm*LevSize, MPI_REAL8, ReadyProc, SendCounter, MPI_COMM_WORLD, ierr)
         SendCounter = SendCounter + LevSize
 
-      else if(SendCounter .lt. km) then ! case of Rest != 0
+      else if(SendCounter .le. km) then ! case of Rest != 0
         do k=1,LevRest
           do j=1,jm
             do i=1,im
@@ -92,7 +92,7 @@ subroutine rcfl_y( im, jm, km, jmax, al, bt, fld, jnx, jmx)
         enddo
 
         call MPI_Send(ToSend, im*jm*LevSize, MPI_REAL8, ReadyProc, SendCounter, MPI_COMM_WORLD, ierr)
-        SendCounter = km
+        SendCounter = km+1
 
       else
 
@@ -109,7 +109,7 @@ subroutine rcfl_y( im, jm, km, jmax, al, bt, fld, jnx, jmx)
               enddo
             enddo
           enddo
-        else if (ComputedLevel .lt. km) then
+        else if (ComputedLevel .le. km) then
           RecCounter = RecCounter + LevRest
           do k=1,LevRest
             do j=1,jm

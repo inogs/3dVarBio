@@ -71,6 +71,7 @@ subroutine rcfl_y_ad( im, jm, km, jmax, al, bt, fld, jnx, jmx)
       call MPI_Recv(RecArr, im*jm*LevSize, MPI_REAL8, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, MyStatus, ierr)
       ReadyProc = MyStatus(MPI_SOURCE)
       ComputedLevel = MyStatus(MPI_TAG)
+      ! print*,"Sending level", SendCounter, "to", ReadyProc
 
       if(SendCounter .le. NLevels*LevSize) then
         do k=1,LevSize 
@@ -83,7 +84,7 @@ subroutine rcfl_y_ad( im, jm, km, jmax, al, bt, fld, jnx, jmx)
         call MPI_Send(ToSend, im*jm*LevSize, MPI_REAL8, ReadyProc, SendCounter, MPI_COMM_WORLD, ierr)
         SendCounter = SendCounter + LevSize
 
-      else if(SendCounter .lt. km) then ! case of Rest != 0
+      else if(SendCounter .le. km) then ! case of Rest != 0
         do k=1,LevRest
           do j=1,jm
             do i=1,im
@@ -93,14 +94,16 @@ subroutine rcfl_y_ad( im, jm, km, jmax, al, bt, fld, jnx, jmx)
         enddo
 
         call MPI_Send(ToSend, im*jm*LevSize, MPI_REAL8, ReadyProc, SendCounter, MPI_COMM_WORLD, ierr)
-        SendCounter = km
+        SendCounter = km+1
 
       else
         ! Killing ReadyProc
+        ! print*,"Killing", ReadyProc
         call MPI_Send(ToSend, im*jm*LevSize, MPI_REAL8, ReadyProc, km+1, MPI_COMM_WORLD, ierr)
       endif
 
      if(ComputedLevel .gt. 0) then
+        ! print*,"Since level", ComputedLevel, "has been computed from", ReadyProc
         if(ComputedLevel .le. NLevels*LevSize) then
           RecCounter = RecCounter + LevSize
           do k=1,LevSize
@@ -110,7 +113,7 @@ subroutine rcfl_y_ad( im, jm, km, jmax, al, bt, fld, jnx, jmx)
               enddo
             enddo
           enddo
-        else if (ComputedLevel .lt. km) then
+        else if (ComputedLevel .le. km) then
           RecCounter = RecCounter + LevRest
           do k=1,LevRest
             do j=1,jm
