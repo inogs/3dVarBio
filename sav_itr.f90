@@ -38,9 +38,8 @@ subroutine sav_itr
   use ctl_str
   use cns_str
   use rcfl
-#ifdef _USE_MPI
   use mpi_str
-#endif
+
   implicit none
   
   ! ---
@@ -101,14 +100,7 @@ subroutine sav_itr
 
   ! Control structure
   DEALLOCATE( ctl%x_c, ctl%g_c)
-  DEALLOCATE( ctl%l_c, ctl%u_c)
-#ifndef _USE_MPI
-  DEALLOCATE( ctl%nbd, ctl%iwa)
-  DEALLOCATE( ctl%wa, ctl%ws, ctl%wy)
-  DEALLOCATE( ctl%sy, ctl%ss)
-  DEALLOCATE( ctl%wt, ctl%wn, ctl%snd)
-  DEALLOCATE( ctl%z_c, ctl%r_c, ctl%d_c, ctl%t_c)
-#endif
+
   DEALLOCATE (SurfaceWaterPoints)  
   
   DEALLOCATE ( a_rcx)
@@ -123,9 +115,6 @@ subroutine sav_itr
   DEALLOCATE ( bta_rcy)
   DEALLOCATE (Dump_chl, Dump_vip, Dump_msk)
   
-#ifdef _USE_MPI
-  if(MyRank .eq. 0) &
-#endif
-       write(*,*) ' DEALLOCATION DONE'
+  if(MyRank .eq. 0) write(*,*) ' DEALLOCATION DONE'
   
 end subroutine sav_itr

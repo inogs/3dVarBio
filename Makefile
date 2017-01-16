@@ -120,7 +120,6 @@ OBJS    =  \
 	def_cov.o\
 	ini_cfn.o\
 	ini_nrm.o\
-	min_cfn.o\
 	costf.o\
 	cnv_ctv.o\
 	ver_hor.o\
