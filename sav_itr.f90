@@ -68,7 +68,6 @@ subroutine sav_itr
   DEALLOCATE ( grd%imx, grd%jmx)
   DEALLOCATE ( grd%istp, grd%jstp)
   DEALLOCATE ( grd%inx, grd%jnx)
-  DEALLOCATE ( grd%fct)
   DEALLOCATE ( grd%aex)
   DEALLOCATE ( grd%aey)
   DEALLOCATE ( grd%bex)

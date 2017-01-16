@@ -392,19 +392,6 @@ subroutine parallel_def_cov
      
   enddo
   
-  do k=1,grd%km
-     do j=1,grd%jm
-        do i=1,grd%im
-           !!!!!!!! *** WARNING HERE *** msr and msk MUST to be equal !!!!!!!!
-           if(grd%msk(i,j,k).eq.1.0)then
-              grd%fct(i,j,k) = 1.0  
-           else
-              grd%fct(i,j,k) = 0.0
-           endif
-        enddo
-     enddo
-  enddo
-
   ! ---
   ! Vertical EOFs
            

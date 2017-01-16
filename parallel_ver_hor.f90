@@ -176,7 +176,7 @@ subroutine parallel_ver_hor
       !$OMP PRIVATE(k)
       !$OMP DO
       do k=1,grd%km
-          grd%chl(:,:,k,l)   = grd%chl(:,:,k,l) * grd%fct(:,:,k)
+         grd%chl(:,:,k,l)   = grd%chl(:,:,k,l) * grd%msk(:,:,k)
       enddo
       !$OMP END DO
       !$OMP END PARALLEL
@@ -185,15 +185,17 @@ subroutine parallel_ver_hor
   
     !103 continue
     ! Correction is zero out of mask (for correction near the coast)
-    do k=1,grd%km
-      do j=1,grd%jm
-          do i=1,grd%im
-            if (grd%msk(i,j,k).eq.0) then
-                grd%chl(i,j,k,:) = 0.
-            endif
-          enddo  !i
-      enddo  !j
-    enddo  !k
+    ! THE FOLLOWING CYCLE IS REPLACED WITH THE PREVIOUS ONE 
+    ! (BY MEANS OF THE PRODUCT WITH THE GRID MASK)
+    ! do k=1,grd%km
+    !   do j=1,grd%jm
+    !       do i=1,grd%im
+    !         if (grd%msk(i,j,k).eq.0) then
+    !             grd%chl(i,j,k,:) = 0.
+    !         endif
+    !       enddo  !i
+    !   enddo  !j
+    ! enddo  !k
   
   endif ! MyRank .eq. 0
 
@@ -235,15 +237,17 @@ subroutine parallel_ver_hor_ad
   if(MyRank .eq. 0) then
     ! ---
     ! Correction is zero out of mask (for correction near the coast)
-    do k=1,grd%km
-      do j=1,grd%jm
-          do i=1,grd%im
-            if (grd%msk(i,j,k).eq.0) then
-                grd%chl_ad(i,j,k,:) = 0.
-            endif
-          enddo  !i
-      enddo  !j
-    enddo  !k
+    ! THE FOLLOWING CYCLE IS REPLACED WITH THE PREVIOUS ONE 
+    ! (BY MEANS OF THE PRODUCT WITH THE GRID MASK)
+    ! do k=1,grd%km
+    !   do j=1,grd%jm
+    !       do i=1,grd%im
+    !         if (grd%msk(i,j,k).eq.0) then
+    !             grd%chl_ad(i,j,k,:) = 0.
+    !         endif
+    !       enddo  !i
+    !   enddo  !j
+    ! enddo  !k
   
   
     !goto 103 ! No Vh
@@ -256,7 +260,7 @@ subroutine parallel_ver_hor_ad
       !$OMP PRIVATE(k)
       !$OMP DO
       do k=1,grd%km
-          grd%chl_ad(:,:,k,l)   = grd%chl_ad(:,:,k,l) * grd%fct(:,:,k)
+         grd%chl_ad(:,:,k,l)   = grd%chl_ad(:,:,k,l) * grd%msk(:,:,k)
       enddo
       !$OMP END DO
       !$OMP END PARALLEL
