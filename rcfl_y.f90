@@ -32,9 +32,8 @@ subroutine rcfl_y( im, jm, km, jmax, al, bt, fld, jnx, jmx)
   use cns_str
   use rcfl
   use grd_str
-#ifdef _USE_MPI
   use mpi_str
-#endif
+
   implicit none 
   
   INTEGER(i4)    :: im, jm, km, jmax
@@ -108,7 +107,7 @@ subroutine rcfl_y( im, jm, km, jmax, al, bt, fld, jnx, jmx)
      
      ! This way fills land points with some values.
      ! We prefer not investigate at the mooment and use only the water points
-#ifdef _USE_MPI
+
      do j=1,GlobalCol
         do i=1,localRow
            if(grd%global_msk(i + GlobalRowOffset,j,1).eq.1) then
@@ -116,14 +115,7 @@ subroutine rcfl_y( im, jm, km, jmax, al, bt, fld, jnx, jmx)
            end if
         end do
      end do
-#else
-     do indSupWP=1,nSurfaceWaterPoints
-        i = SurfaceWaterPoints(1,indSupWP)
-        j = SurfaceWaterPoints(2,indSupWP)
-        fld(i,j,k) = a_rcy(i,jnx(i,j,k),tid)
-     enddo
-#endif
-     
+
      
   enddo
   !$OMP END DO
