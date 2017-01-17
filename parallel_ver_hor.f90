@@ -109,7 +109,6 @@ subroutine parallel_ver_hor
            do j=1,grd%jm
               do i=1,grd%im
                  SendBuf4D(l,k,i,j)%chl = grd%chl(i,j,k,l)
-                 ! SendBuf4D(l,k,i,j)%chl_ad = grd%chl_ad(i,j,k,l)
               end do
            end do
         end do
@@ -118,7 +117,6 @@ subroutine parallel_ver_hor
         do k=1,grd%km
            do j=1,grd%jm
               do i=1,grd%im
-                 ! SendBuf4D(l,k,i,j)%chl = grd%chl(i,j,k,l)
                  SendBuf4D(l,k,i,j)%chl_ad = grd%chl_ad(i,j,k,l)
               end do
            end do
@@ -135,8 +133,6 @@ subroutine parallel_ver_hor
               do k=1,grd%km
                  DefBufChl(i + RecDisplX4D(iProc+1)/SurfaceIndex,j,k,1) = &
                       RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX4D(iProc+1)/localCol + RecDisplX4D(iProc+1))%chl
-                 ! DefBufChlAd(i + RecDisplX4D(iProc+1)/(localCol*grd%km),j,k,1) = &
-                 !      RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX4D(iProc+1)/localCol + RecDisplX4D(iProc+1))%chl_ad
               end do
            end do
         end do
@@ -145,8 +141,6 @@ subroutine parallel_ver_hor
         do iProc=0, NumProcI-1
            do i=1,RecCountX4D(iProc+1)/SurfaceIndex
               do k=1,grd%km
-                 ! DefBufChl(i + RecDisplX4D(iProc+1)/SurfaceIndex,j,k,1) = &
-                 !      RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX4D(iProc+1)/localCol + RecDisplX4D(iProc+1))%chl
                  DefBufChlAd(i + RecDisplX4D(iProc+1)/(localCol*grd%km),j,k,1) = &
                       RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX4D(iProc+1)/localCol + RecDisplX4D(iProc+1))%chl_ad
               end do
@@ -215,14 +209,12 @@ subroutine parallel_ver_hor
         do j=1,localCol
            do i=1,GlobalRow
               SendBuf4D(1,k,j,i)%chl = DefBufChl(i,j,k,1)
-              ! SendBuf4D(1,k,j,i)%chl_ad = DefBufChlAd(i,j,k,1)
            end do
         end do
      end do
      do k=1,grd%km
         do j=1,localCol
            do i=1,GlobalRow
-              ! SendBuf4D(1,k,j,i)%chl = DefBufChl(i,j,k,1)
               SendBuf4D(1,k,j,i)%chl_ad = DefBufChlAd(i,j,k,1)
            end do
         end do
@@ -238,8 +230,6 @@ subroutine parallel_ver_hor
               do k=1,grd%km
                  grd%chl(i, j + SendDisplX4D(iProc+1)/SurfaceIndex,k,1) = &
                       RecBuf1D(k + (j-1)*grd%km +(i-1)*SendCountX4D(iProc+1)/grd%im + SendDisplX4D(iProc+1))%chl
-                 ! grd%chl_ad(i, j + SendDisplX4D(iProc+1)/SurfaceIndex,k,1) = &
-                 !      RecBuf1D(k + (j-1)*grd%km +(i-1)*SendCountX4D(iProc+1)/grd%im + SendDisplX4D(iProc+1))%chl_ad
               end do
            end do
         end do
@@ -248,8 +238,6 @@ subroutine parallel_ver_hor
         do iProc=0, NumProcI-1
            do j=1,SendCountX4D(iProc+1)/SurfaceIndex
               do k=1,grd%km
-                 ! grd%chl(i, j + SendDisplX4D(iProc+1)/SurfaceIndex,k,1) = &
-                 !      RecBuf1D(k + (j-1)*grd%km +(i-1)*SendCountX4D(iProc+1)/grd%im + SendDisplX4D(iProc+1))%chl
                  grd%chl_ad(i, j + SendDisplX4D(iProc+1)/SurfaceIndex,k,1) = &
                       RecBuf1D(k + (j-1)*grd%km +(i-1)*SendCountX4D(iProc+1)/grd%im + SendDisplX4D(iProc+1))%chl_ad
               end do
@@ -442,7 +430,6 @@ subroutine parallel_ver_hor_ad
            do j=1,grd%jm
               do i=1,grd%im
                  SendBuf4D(l,k,i,j)%chl = grd%chl(i,j,k,l)
-                 ! SendBuf4D(l,k,i,j)%chl_ad = grd%chl_ad(i,j,k,l)
               end do
            end do
         end do
@@ -451,7 +438,6 @@ subroutine parallel_ver_hor_ad
         do k=1,grd%km
            do j=1,grd%jm
               do i=1,grd%im
-                 ! SendBuf4D(l,k,i,j)%chl = grd%chl(i,j,k,l)
                  SendBuf4D(l,k,i,j)%chl_ad = grd%chl_ad(i,j,k,l)
               end do
            end do
@@ -468,8 +454,6 @@ subroutine parallel_ver_hor_ad
               do k=1,grd%km
                  DefBufChl(i + RecDisplX4D(iProc+1)/SurfaceIndex,j,k,1) = &
                       RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX4D(iProc+1)/localCol + RecDisplX4D(iProc+1))%chl
-                 ! DefBufChlAd(i + RecDisplX4D(iProc+1)/SurfaceIndex,j,k,1) = &
-                 !      RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX4D(iProc+1)/localCol + RecDisplX4D(iProc+1))%chl_ad
               end do
            end do
         end do
@@ -478,8 +462,6 @@ subroutine parallel_ver_hor_ad
         do iProc=0, NumProcI-1
            do i=1,RecCountX4D(iProc+1)/SurfaceIndex
               do k=1,grd%km
-                 ! DefBufChl(i + RecDisplX4D(iProc+1)/SurfaceIndex,j,k,1) = &
-                 !      RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX4D(iProc+1)/localCol + RecDisplX4D(iProc+1))%chl
                  DefBufChlAd(i + RecDisplX4D(iProc+1)/SurfaceIndex,j,k,1) = &
                       RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX4D(iProc+1)/localCol + RecDisplX4D(iProc+1))%chl_ad
               end do
@@ -548,14 +530,12 @@ subroutine parallel_ver_hor_ad
         do j=1,localCol
            do i=1,GlobalRow
               SendBuf4D(1,k,j,i)%chl = DefBufChl(i,j,k,1)
-              ! SendBuf4D(1,k,j,i)%chl_ad = DefBufChlAd(i,j,k,1)
            end do
         end do
      end do
      do k=1,grd%km
         do j=1,localCol
            do i=1,GlobalRow
-              ! SendBuf4D(1,k,j,i)%chl = DefBufChl(i,j,k,1)
               SendBuf4D(1,k,j,i)%chl_ad = DefBufChlAd(i,j,k,1)
            end do
         end do
@@ -571,8 +551,6 @@ subroutine parallel_ver_hor_ad
               do k=1,grd%km
                  grd%chl(i, j + SendDisplX4D(iProc+1)/SurfaceIndex,k,1) = &
                       RecBuf1D(k + (j-1)*grd%km +(i-1)*SendCountX4D(iProc+1)/grd%im + SendDisplX4D(iProc+1))%chl
-                 ! grd%chl_ad(i, j + SendDisplX4D(iProc+1)/SurfaceIndex,k,1) = &
-                 !      RecBuf1D(k + (j-1)*grd%km +(i-1)*SendCountX4D(iProc+1)/grd%im + SendDisplX4D(iProc+1))%chl_ad
               end do
            end do
         end do
@@ -581,8 +559,6 @@ subroutine parallel_ver_hor_ad
         do iProc=0, NumProcI-1
            do j=1,SendCountX4D(iProc+1)/(grd%im*grd%km)
               do k=1,grd%km
-                 ! grd%chl(i, j + SendDisplX4D(iProc+1)/SurfaceIndex,k,1) = &
-                 !      RecBuf1D(k + (j-1)*grd%km +(i-1)*SendCountX4D(iProc+1)/grd%im + SendDisplX4D(iProc+1))%chl
                  grd%chl_ad(i, j + SendDisplX4D(iProc+1)/SurfaceIndex,k,1) = &
                       RecBuf1D(k + (j-1)*grd%km +(i-1)*SendCountX4D(iProc+1)/grd%im + SendDisplX4D(iProc+1))%chl_ad
               end do
