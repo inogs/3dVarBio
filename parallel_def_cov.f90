@@ -249,8 +249,6 @@ subroutine parallel_def_cov
      end do
   end do
 
-  ! ! debug
-  ! print*, "DEBUGGING", MyRank, localRow, RecCountY4D(1)/(localRow*grd%km), grd%km
   if(size .eq. 1) then
      do k=1,grd%km
         do j=1,grd%jm
