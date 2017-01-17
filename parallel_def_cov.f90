@@ -238,17 +238,6 @@ subroutine parallel_def_cov
        RecBuf1D, RecCountY4D, RecDisplY4D, MPI_REAL8, CommSliceY, ierr)
   
   ! Reordering data
-  do i=1, localRow
-     do iProc=0, NumProcJ-1
-        do j=1, RecCountY4D(iProc+1)/(localRow*grd%km)
-           do k=1, grd%km
-              DefBuf3D(i,j+RecDisplY4D(iProc+1)/(localRow*grd%km),k) = &
-                   RecBuf1D(k + (j-1)*grd%km + (i-1)*RecCountY4D(iProc+1)/localRow + RecDisplY4D(iProc+1))
-           end do
-        end do
-     end do
-  end do
-
   if(size .eq. 1) then
      do k=1,grd%km
         do j=1,grd%jm
@@ -257,6 +246,18 @@ subroutine parallel_def_cov
            end do
         end do
      end do
+  else
+     do i=1, localRow
+        do iProc=0, NumProcJ-1
+           do j=1, RecCountY4D(iProc+1)/(localRow*grd%km)
+              do k=1, grd%km
+                 DefBuf3D(i,j+RecDisplY4D(iProc+1)/(localRow*grd%km),k) = &
+                        RecBuf1D(k + (j-1)*grd%km + (i-1)*RecCountY4D(iProc+1)/localRow + RecDisplY4D(iProc+1))
+              end do
+           end do
+        end do
+     end do
+
   end if
 
   !************* VERTICAL SLICING *************!
@@ -403,20 +404,20 @@ subroutine parallel_def_cov
   
   if(MyRank .eq. 0) &
        write(*,*) 'rcfl allocation :', grd%jmax, grd%imax, nthreads
-  ALLOCATE ( a_rcx(grd%jm,grd%imax,nthreads)) ; a_rcx = huge(a_rcx(1,1,1))
-  ALLOCATE ( b_rcx(grd%jm,grd%imax,nthreads)) ; b_rcx = huge(b_rcx(1,1,1))
-  ALLOCATE ( c_rcx(grd%jm,grd%imax,nthreads)) ; c_rcx = huge(c_rcx(1,1,1))
+  ALLOCATE ( a_rcx(localCol,grd%imax,nthreads)) ; a_rcx = huge(a_rcx(1,1,1))
+  ALLOCATE ( b_rcx(localCol,grd%imax,nthreads)) ; b_rcx = huge(b_rcx(1,1,1))
+  ALLOCATE ( c_rcx(localCol,grd%imax,nthreads)) ; c_rcx = huge(c_rcx(1,1,1))
   
-  ALLOCATE ( a_rcy(grd%im,grd%jmax,nthreads)) ; a_rcy = huge(a_rcy(1,1,1))
-  ALLOCATE ( b_rcy(grd%im,grd%jmax,nthreads)) ; b_rcy = huge(b_rcy(1,1,1))
-  ALLOCATE ( c_rcy(grd%im,grd%jmax,nthreads)) ; c_rcy = huge(c_rcy(1,1,1))
+  ALLOCATE ( a_rcy(localRow,grd%jmax,nthreads)) ; a_rcy = huge(a_rcy(1,1,1))
+  ALLOCATE ( b_rcy(localRow,grd%jmax,nthreads)) ; b_rcy = huge(b_rcy(1,1,1))
+  ALLOCATE ( c_rcy(localRow,grd%jmax,nthreads)) ; c_rcy = huge(c_rcy(1,1,1))
   
   
-  ALLOCATE ( alp_rcx(grd%jm,grd%imax,nthreads)) ; alp_rcx = huge(alp_rcx(1,1,1))
-  ALLOCATE ( bta_rcx(grd%jm,grd%imax,nthreads)) ; bta_rcx = huge(bta_rcx(1,1,1))
+  ALLOCATE ( alp_rcx(localCol,grd%imax,nthreads)) ; alp_rcx = huge(alp_rcx(1,1,1))
+  ALLOCATE ( bta_rcx(localCol,grd%imax,nthreads)) ; bta_rcx = huge(bta_rcx(1,1,1))
   
-  ALLOCATE ( alp_rcy(grd%im,grd%jmax,nthreads)) ; alp_rcy = huge(alp_rcy(1,1,1))
-  ALLOCATE ( bta_rcy(grd%im,grd%jmax,nthreads)) ; bta_rcy = huge(bta_rcy(1,1,1))
+  ALLOCATE ( alp_rcy(localRow,grd%jmax,nthreads)) ; alp_rcy = huge(alp_rcy(1,1,1))
+  ALLOCATE ( bta_rcy(localRow,grd%jmax,nthreads)) ; bta_rcy = huge(bta_rcy(1,1,1))
 
   DEALLOCATE(SendBuf2D, RecBuf1D, DefBuf2D)
   DEALLOCATE(SendBuf3D)
