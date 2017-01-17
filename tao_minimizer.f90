@@ -106,7 +106,7 @@ subroutine tao_minimizer
      write(drv%dia,*) "Setting MyTolerance", MyTolerance
   endif
 
-  call TaoSetTolerances(tao, MyTolerance, 2.3d-2, ctl%pgper, ierr) !PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr) !
+  call TaoSetTolerances(tao, MyTolerance, 1.d-4, ctl%pgper, ierr) !PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr) !
   CHKERRQ(ierr)
 
   ! Perform minimization
