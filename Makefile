@@ -109,12 +109,13 @@ OBJS    =  \
 	ini_itr.o\
 	rdgrds.o\
 	rdeofs.o\
-        rdrcorr.o\
-        mean_rdr.o\
+    rdrcorr.o\
+    mean_rdr.o\
 	netcdf_err.o\
 	get_obs.o\
 	get_obs_arg.o\
 	get_obs_chl.o\
+	parallel_get_obs_chl.o\
 	int_par.o\
 	obs_vec.o\
 	def_cov.o\
@@ -147,6 +148,11 @@ OBJS    =  \
 	mpi_utils.o\
 	parallel_costf.o\
 	parallel_obs_chl.o\
+	parallel_rdgrds.o\
+	parallel_rdeofs.o\
+	parallel_wrt_dia.o\
+	parallel_def_cov.o\
+	parallel_ver_hor.o\
 	tao_minimizer.o\
     oceanvar.o
 

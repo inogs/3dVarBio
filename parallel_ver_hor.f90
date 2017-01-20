@@ -53,7 +53,7 @@ subroutine parallel_ver_hor
   REAL(r8), allocatable, dimension(:,:,:,:) :: DefBufChl, DefBufChlAd
   
   ione = 1
-  
+
   ! ---
   ! Vertical EOFs
   call veof
@@ -87,7 +87,7 @@ subroutine parallel_ver_hor
      !$OMP PRIVATE(k)
      !$OMP DO
      do k=1,grd%km
-        grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:)
+        grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:,k)
      enddo
      !$OMP END DO
      !$OMP END PARALLEL
@@ -155,7 +155,7 @@ subroutine parallel_ver_hor
         !$OMP PRIVATE(k)
         !$OMP DO
         do k=1,grd%km
-           DefBufChlAd(:,:,k,l) = DefBufChlAd(:,:,k,l) * grd%scx(:,:)
+           DefBufChlAd(:,:,k,l) = DefBufChlAd(:,:,k,l) * grd%scx(:,:,k)
         enddo
         !$OMP END DO
         !$OMP END PARALLEL
@@ -171,7 +171,7 @@ subroutine parallel_ver_hor
         !$OMP PRIVATE(k)
         !$OMP DO
         do k=1,grd%km
-           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:)
+           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:,k)
         enddo
         !$OMP END DO
         !$OMP END PARALLEL
@@ -194,7 +194,7 @@ subroutine parallel_ver_hor
         !$OMP PRIVATE(k)
         !$OMP DO
         do k=1,grd%km
-           DefBufChl(:,:,k,l) = DefBufChl(:,:,k,l) * grd%scx(:,:)
+           DefBufChl(:,:,k,l) = DefBufChl(:,:,k,l) * grd%scx(:,:,k)
         enddo
         !$OMP END DO
         !$OMP END PARALLEL
@@ -256,14 +256,14 @@ subroutine parallel_ver_hor
         !$OMP PRIVATE(k)
         !$OMP DO
         do k=1,grd%km
-           grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:)
+           grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:,k)
         enddo
         !$OMP END DO
         !$OMP END PARALLEL
      enddo
      
   end if
-  
+
   ! ---
   ! y direction
   ! Apply recursive filter in y direction
@@ -276,7 +276,7 @@ subroutine parallel_ver_hor
      !$OMP PRIVATE(k)
      !$OMP DO
      do k=1,grd%km
-        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:)
+        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:,k)
      enddo
      !$OMP END DO
      !$OMP END PARALLEL
@@ -385,7 +385,7 @@ subroutine parallel_ver_hor_ad
      !$OMP PRIVATE(k)
      !$OMP DO
      do k=1,grd%km
-        grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:)
+        grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:,k)
      enddo
      !$OMP END DO
      !$OMP END PARALLEL
@@ -453,7 +453,7 @@ subroutine parallel_ver_hor_ad
         !$OMP PRIVATE(k)
         !$OMP DO
         do k=1,grd%km
-           DefBufChlAd(:,:,k,l) = DefBufChlAd(:,:,k,l) * grd%scx(:,:)
+           DefBufChlAd(:,:,k,l) = DefBufChlAd(:,:,k,l) * grd%scx(:,:,k)
         enddo
         !$OMP END DO
         !$OMP END PARALLEL
@@ -469,7 +469,7 @@ subroutine parallel_ver_hor_ad
         !$OMP PRIVATE(k)
         !$OMP DO
         do k=1,grd%km
-           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:)
+           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:,k)
         enddo
         !$OMP END DO
         !$OMP END PARALLEL
@@ -492,7 +492,7 @@ subroutine parallel_ver_hor_ad
         !$OMP PRIVATE(k)
         !$OMP DO
         do k=1,grd%km
-           DefBufChl(:,:,k,l) = DefBufChl(:,:,k,l) * grd%scx(:,:)
+           DefBufChl(:,:,k,l) = DefBufChl(:,:,k,l) * grd%scx(:,:,k)
         enddo
         !$OMP END DO
         !$OMP END PARALLEL
@@ -555,7 +555,7 @@ subroutine parallel_ver_hor_ad
         !$OMP PRIVATE(k)
         !$OMP DO
         do k=1,grd%km
-           grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:)
+           grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:,k)
         enddo
         !$OMP END DO
         !$OMP END PARALLEL
@@ -575,7 +575,7 @@ subroutine parallel_ver_hor_ad
      !$OMP PRIVATE(k)
      !$OMP DO
      do k=1,grd%km
-        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:)
+        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:,k)
      enddo
      !$OMP END DO
      !$OMP END PARALLEL
