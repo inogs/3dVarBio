@@ -127,6 +127,7 @@ subroutine oceanvar
         ! ---
         ! Write outputs and diagnostics
         call parallel_wrt_dia
+
      endif
      
      ! ---

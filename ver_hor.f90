@@ -113,7 +113,7 @@ subroutine ver_hor
      !$OMP PRIVATE(k)
      !$OMP DO
      do k=1,grd%km
-        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:) 
+        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:,k)  !laura
      enddo
      !$OMP END DO
      !$OMP END PARALLEL
@@ -130,7 +130,7 @@ subroutine ver_hor
      !$OMP PRIVATE(k)
      !$OMP DO
      do k=1,grd%km
-        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:) 
+        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:,k) !laura
      enddo
      !$OMP END DO
      !$OMP END PARALLEL
@@ -147,7 +147,7 @@ subroutine ver_hor
         !$OMP PRIVATE(k)
         !$OMP DO
         do k=1,grd%km
-           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:) 
+           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:,k)  !laura 
         enddo
         !$OMP END DO
         !$OMP END PARALLEL
@@ -164,7 +164,7 @@ subroutine ver_hor
         !$OMP PRIVATE(k)
         !$OMP DO
         do k=1,grd%km
-           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:) 
+           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:,k) !laura
         enddo
         !$OMP END DO
         !$OMP END PARALLEL

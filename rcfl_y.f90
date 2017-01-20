@@ -115,7 +115,6 @@ subroutine rcfl_y( im, jm, km, jmax, al, bt, fld, jnx, jmx)
            end if
         end do
      end do
-
      
   enddo
   !$OMP END DO

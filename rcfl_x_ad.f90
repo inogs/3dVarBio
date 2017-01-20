@@ -120,7 +120,6 @@ subroutine rcfl_x_ad( im, jm, km, imax, al, bt, fld, inx, imx)
 
      do j=1,localCol
         do i=1,GlobalRow
-           ! if(grd%global_msk(i,j + MyRank*localCol,1).eq.1) then
            if(grd%global_msk(i,j + GlobalColOffset,1).eq.1) then
               fld(i,j,k) = c_rcx(j,inx(i,j,k),tid)
            end if

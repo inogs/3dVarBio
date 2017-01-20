@@ -42,11 +42,12 @@ subroutine get_obs_arg
   arg%nc = 0
 
   
-  open(511,file='arg_mis.dat',form='formatted')
+!  open(511,file='arg_datnew.dat',form='formatted')
+  open(511,file='arg_mis.dat')
   
   ! ---
   ! Allocate memory for observations   
-  read(511,'(I5)') arg%no
+  read(511,'(I4)') arg%no
   write(drv%dia,*)'Number of ARGO observations: ',arg%no
   
   if(arg%no.eq.0)then
@@ -66,7 +67,8 @@ subroutine get_obs_arg
   
   
   do k=1,arg%no
-     read (511,'(I5,I5,F10.3,F10.3,F10.3,F10.3,F10.3,F10.3,I8)') &
+     !read (511,'(I5,I4,F12.5,F12.5,F12.5,F12.5,F12.5,F12.5,I8)') &
+     read (511,*) &
           arg%flc(k), arg%par(k), &
           arg%lon(k), arg%lat(k), &
           arg%dpt(k), arg%tim(k), &
@@ -74,9 +76,10 @@ subroutine get_obs_arg
   end do
   close (511)
 
+
   ! DECOMMENT FOLLOWING TWO LINES TO MAKE FILTER TEST
-  ! arg%res(:) = 1
-  ! arg%err(:) = 1.d-2
+   arg%res(:) = 1
+   arg%err(:) = 1.d-2
 
   
   ! ---
@@ -122,7 +125,6 @@ subroutine get_obs_arg
         arg%pq8(k) = 0.
      endif
   enddo
-  
   arg%flc(:) = arg%flg(:)
   
 end subroutine get_obs_arg

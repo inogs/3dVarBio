@@ -54,13 +54,14 @@ subroutine def_nml
   INTEGER(i4)   :: barmd(ngrids)
   INTEGER(i4)   :: divda(ngrids)
   INTEGER(i4)   :: divdi(ngrids)
+  INTEGER(i4)   :: Argo, DomDec
   LOGICAL       :: read_grd(ngrids)
 
 
-  NAMELIST /grdlst/ ntr, grid, read_grd, ratio, mask, barmd, divda, divdi
+  NAMELIST /grdlst/ ntr, grid, read_grd, ratio, mask, barmd, divda, divdi, domdec
   NAMELIST /ctllst/ ctl_m, ctl_tol, ctl_per
   NAMELIST /covlst/ neof, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
-  NAMELIST /biolst/ biol, bphy, nchl, chl_dep
+  NAMELIST /biolst/ biol, bphy, nchl, chl_dep, argo
 
 
 ! -------------------------------------------------------------------
@@ -108,6 +109,7 @@ subroutine def_nml
   ALLOCATE( drv%mask (drv%ntr))      ; drv%mask (1:drv%ntr)    = mask (1:drv%ntr)
   ALLOCATE( drv%dda(drv%ntr))        ; drv%dda  (1:drv%ntr)    = divda(1:drv%ntr)
   ALLOCATE( drv%ddi(drv%ntr))        ; drv%ddi  (1:drv%ntr)    = divdi(1:drv%ntr)
+  drv%ReadDomDec = domdec
 
   drv%ratio(        1)    = 1.0
   if(drv%ntr.gt.1) drv%ratio(2:drv%ntr)    = drv%ratco(1:drv%ntr-1) / drv%ratco(2:drv%ntr)
@@ -164,6 +166,7 @@ subroutine def_nml
     write(drv%dia,*) ' Biological+physical assimilation bphy     = ', bphy
     write(drv%dia,*) ' Number of phytoplankton species  nchl     = ', nchl
     write(drv%dia,*) ' Minimum depth for chlorophyll    chl_dep  = ', chl_dep
+    write(drv%dia,*) ' Read ARGO float observations     argo     = ', argo
 
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) '------------------------------------------------------------'
@@ -176,7 +179,7 @@ subroutine def_nml
 
   grd%nchl = nchl
   chl%dep  = chl_dep
-  drv%argo = 0 !1
   drv%ReadDomDec = 0
+  drv%argo = argo
 
 end subroutine def_nml
