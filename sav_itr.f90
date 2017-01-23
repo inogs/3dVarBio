@@ -83,18 +83,6 @@ subroutine sav_itr
   DEALLOCATE ( grd%ro_ad)
   DEALLOCATE ( ros%evc, ros%eva )
 
-  if (drv%argo .eq. 1) then
-     DEALLOCATE(grd%lon, grd%lat)
-     ! deallocate argo arrays
-     DEALLOCATE ( arg%flc)
-     DEALLOCATE ( arg%inc)
-     DEALLOCATE ( arg%err)
-     DEALLOCATE ( arg%res)
-     DEALLOCATE ( arg%ib, arg%jb, arg%kb)
-     DEALLOCATE ( arg%pq1, arg%pq2, arg%pq3, arg%pq4)
-     DEALLOCATE ( arg%pq5, arg%pq6, arg%pq7, arg%pq8)
-  endif
-
   ! Control structure
   DEALLOCATE( ctl%x_c, ctl%g_c)
 

@@ -51,7 +51,8 @@ MODULE drv_str
      REAL(r8),    POINTER  ::  msk(:,:)     ! Mask of the old grid
      
      INTEGER(i4)           ::  MyCounter    ! Number of iteration done by Tao solver
-     INTEGER(i4)           ::  argo         ! Flag for the assimilation of argo float observations
+     INTEGER(i4)           ::  sat          ! Flag for the assimilation of the satellite observations
+     INTEGER(i4)           ::  argo         ! Flag for the assimilation of the argo float observations
      INTEGER(i4)           ::  ReadDomDec   ! Flag for reading the Dom_Dec_jp*.ascii files
      
   END TYPE drv_t

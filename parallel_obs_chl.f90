@@ -37,8 +37,6 @@ subroutine parallel_obs_chl
   implicit none
   
   INTEGER(i4)   ::  i, j, l, kk
-  ! REAL(r8), POINTER    ::  ChlExtended(:,:,:)
-  ! REAL(r8), POINTER    ::  SendLeft(:), RecRight(:), SendTop(:), RecBottom(:)
   INTEGER   :: ReqLeft, ReqRight, ReqTop, ReqBottom, ierr
   INTEGER   :: StatRight(MPI_STATUS_SIZE), StatBottom(MPI_STATUS_SIZE)
   INTEGER   :: MyTag

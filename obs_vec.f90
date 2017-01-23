@@ -65,16 +65,24 @@ subroutine obs_vec
           obs%err(k) = arg%err(i)
        endif
     enddo
+
+    DEALLOCATE(arg%res, arg%err)
+    
  endif
  
  ! Observations of chlorophyll
- do i=1,chl%no
+ if(drv%sat .eq. 1) then
+  do i=1,chl%no
     if(chl%flc(i).eq.1)then
        k=k+1
        obs%res(k) = chl%res(i)
        obs%err(k) = chl%err(i)
     endif
- enddo
+  enddo
+  
+  DEALLOCATE(chl%res, chl%err)
+
+ endif
  
  
 end subroutine obs_vec

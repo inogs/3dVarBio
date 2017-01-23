@@ -79,13 +79,6 @@ subroutine parallel_rdgrd
   ALLOCATE(SendTop(grd%jm), RecBottom(grd%jm))
   ALLOCATE(SendBottom(grd%jm), RecTop(grd%jm))
 
-  ALLOCATE(ChlExtendedAD_4D(0:(grd%im+1), 0:(grd%jm+1), grd%km, grd%nchl))
-  ALLOCATE(ChlExtended4D(0:(grd%im+1), 0:(grd%jm+1), grd%km, grd%nchl))
-  ALLOCATE(SendLeft2D(grd%im, grd%km), RecRight2D(grd%im, grd%km))
-  ALLOCATE(SendRight2D(grd%im, grd%km), RecLeft2D(grd%im, grd%km))
-  ALLOCATE(SendTop2D(grd%jm, grd%km), RecBottom2D(grd%jm, grd%km))
-  ALLOCATE(SendBottom2D(grd%jm, grd%km), RecTop2D(grd%jm, grd%km))
-
   ALLOCATE ( grd%reg(grd%im,grd%jm))        ; grd%reg = huge(grd%reg(1,1))
   ALLOCATE ( grd%msk(grd%im,grd%jm,grd%km)) ; grd%msk = huge(grd%msk(1,1,1))
   ALLOCATE ( grd%dep(grd%km))        ; grd%dep = huge(grd%dep(1))

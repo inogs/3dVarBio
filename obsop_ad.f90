@@ -40,10 +40,11 @@ subroutine obsop_ad
   ! ---
   ! ARGO observations
   if (drv%argo .eq. 1) &
-       call obs_arg_ad
+    call obs_arg_ad
 
   ! ---
   ! Observations of chlorophyll
-  call parallel_obs_chl_ad
+  if(drv%sat .eq. 1) &  
+    call parallel_obs_chl_ad
   
 end subroutine obsop_ad

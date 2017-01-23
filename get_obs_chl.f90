@@ -240,4 +240,8 @@ subroutine int_par_chl
      enddo    
   endif
   
+  DEALLOCATE ( chl%pb, chl%qb)
+  DEALLOCATE ( chl%flg)
+
+
 end subroutine int_par_chl

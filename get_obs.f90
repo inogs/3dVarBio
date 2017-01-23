@@ -38,10 +38,11 @@ subroutine get_obs
   ! ----
   ! Load ARGO observations
   if (drv%argo .eq. 1) &
-       call get_obs_arg
+    call get_obs_arg
   
   ! ----
   ! Load observations of chlorophyll
-  call parallel_get_obs_chl
+  if(drv%sat .eq. 1) &
+    call parallel_get_obs_chl
   
 end subroutine get_obs

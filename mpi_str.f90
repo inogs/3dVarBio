@@ -55,11 +55,4 @@ MODULE mpi_str
   REAL(r8), POINTER, DIMENSION(:)        ::  SendLeft, RecRight, SendRight, RecLeft
   REAL(r8), POINTER, DIMENSION(:)        ::  SendTop, RecBottom, SendBottom, RecTop
 
-  REAL(r8), POINTER, DIMENSION(:,:,:,:)  ::  ChlExtended4D, ChlExtendedAD_4D
-  REAL(r8), POINTER, DIMENSION(:,:)      ::  SendLeft2D, RecRight2D
-  REAL(r8), POINTER, DIMENSION(:,:)      ::  SendRight2D, RecLeft2D
-  REAL(r8), POINTER, DIMENSION(:,:)      ::  SendTop2D, RecBottom2D
-  REAL(r8), POINTER, DIMENSION(:,:)      ::  SendBottom2D, RecTop2D
-
-
 END MODULE mpi_str
