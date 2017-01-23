@@ -22,7 +22,7 @@ subroutine parallel_rdgrd
 
   !
   ! open grid1.nc in read-only mode
-  ierr = nf90mpi_open(MPI_COMM_WORLD, GRID_FILE, NF90_NOWRITE, MPI_INFO_NULL, ncid)
+  ierr = nf90mpi_open(MyCommWorld, GRID_FILE, NF90_NOWRITE, MPI_INFO_NULL, ncid)
   if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_open', ierr)
 
   !
@@ -45,8 +45,6 @@ subroutine parallel_rdgrd
      write(drv%dia,*) ' '
      write(drv%dia,*) ' number of processors following i : NumProcI   = ', NumProcI
      write(drv%dia,*) ' number of processors following j : NumProcJ   = ', NumProcJ
-     write(drv%dia,*) ' '
-     write(drv%dia,*) ' local domains : < or = NumProcI x NumProcJ number of processors   = ', NumProcIJ
      write(drv%dia,*) ' '
 
      WRITE(*,*) 'Dimension_Med_Grid'
@@ -74,8 +72,6 @@ subroutine parallel_rdgrd
 
 
   ALLOCATE(ChlExtended(grd%im+1, grd%jm+1, grd%nchl))
-  ALLOCATE(SendLeft(grd%im), RecRight(grd%im))
-  ALLOCATE(SendRight(grd%im), RecLeft(grd%im))
   ALLOCATE(SendTop(grd%jm), RecBottom(grd%jm))
   ALLOCATE(SendBottom(grd%jm), RecTop(grd%jm))
 
@@ -366,7 +362,7 @@ end subroutine MyMax
 
 subroutine MyGetDimension(ncid, name, n)
   use pnetcdf
-  use mpi
+  use mpi_str
   implicit none
 
   character name*(*)
@@ -383,7 +379,7 @@ end subroutine MyGetDimension
 
 subroutine handle_err(err_msg, errcode)
 
-  use mpi
+  use mpi_str
   use pnetcdf
 
   implicit none
@@ -395,6 +391,6 @@ subroutine handle_err(err_msg, errcode)
   integer err
 
   write(*,*) 'Error: ', trim(err_msg), ' ', nf90mpi_strerror(errcode)
-  call MPI_Abort(MPI_COMM_WORLD, -1, err)
+  call MPI_Abort(MyCommWorld, -1, err)
   return
 end subroutine handle_err

@@ -48,7 +48,7 @@ subroutine parallel_get_obs_chl
   chl%no = 0
   chl%nc = 0
 
-  stat = nf90mpi_open(MPI_COMM_WORLD, trim(MISFIT_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
+  stat = nf90mpi_open(MyCommWorld, trim(MISFIT_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
   if (stat .ne. NF90_NOERR ) call handle_err('nf90mpi_open', stat)
   
   if(stat.ne.0)then
@@ -149,7 +149,7 @@ subroutine parallel_get_obs_chl
      endif
   enddo
 
-  call MPI_Allreduce(chl%nc, chl%nc_global, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD, stat)
+  call MPI_Allreduce(chl%nc, chl%nc_global, 1, MPI_INT, MPI_SUM, MyCommWorld, stat)
 
   if(MyRank .eq. 0) then
      print*,'Good chl observations: ',chl%nc_global

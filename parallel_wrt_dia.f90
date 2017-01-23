@@ -81,7 +81,7 @@ subroutine parallel_wrt_dia
      enddo
   enddo
   
-  status = nf90mpi_create(MPI_COMM_WORLD, trim(CORR_FILE), NF90_CLOBBER, &
+  status = nf90mpi_create(MyCommWorld, trim(CORR_FILE), NF90_CLOBBER, &
        MPI_INFO_NULL, ncid)
   if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_create ', status)
 

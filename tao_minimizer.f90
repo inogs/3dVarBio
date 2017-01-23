@@ -47,7 +47,7 @@ subroutine tao_minimizer
   ALLOCATE(loc(n), MyValues(n))
 
   ! Create MyState array and fill it
-  call VecCreateMPI(MPI_COMM_WORLD, n, M, MyState, ierr)
+  call VecCreateMPI(MyCommWorld, n, M, MyState, ierr)
   call VecGetOwnershipRange(MyState, GlobalStart, MyEnd, ierr)
 
   print*, "MyState initialization by MyRank ", MyRank, "with indices: ", GlobalStart, MyEnd
@@ -78,7 +78,7 @@ subroutine tao_minimizer
   drv%MyCounter = 0
 
   ! Create Tao object and set type BLMVM (ones that use BFGS minimization algorithm)
-  call TaoCreate(MPI_COMM_WORLD, tao, ierr)
+  call TaoCreate(MyCommWorld, tao, ierr)
   CHKERRQ(ierr)
   ! call TaoSetType(tao,"blmvm",ierr)
   call TaoSetType(tao,"lmvm",ierr)
@@ -99,7 +99,7 @@ subroutine tao_minimizer
      MaxGrad = max(MaxGrad, abs(ctl%g_c(j)))
   end do
 
-  call MPI_Allreduce(MPI_IN_PLACE, MaxGrad, 1, MPI_REAL8, MPI_MAX, MPI_COMM_WORLD, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, MaxGrad, 1, MPI_REAL8, MPI_MAX, MyCommWorld, ierr)
   MyTolerance = ctl%pgper * MaxGrad
   if(MyRank .eq. 0) then
      print*, "Setting MyTolerance", MyTolerance

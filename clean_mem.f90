@@ -82,12 +82,10 @@ subroutine clean_mem
   DEALLOCATE(RecDisplX2D, RecDisplX4D)
 
   DEALLOCATE(ChlExtended)
-  DEALLOCATE(SendRight, RecLeft)
-  DEALLOCATE(SendLeft, RecRight)
   DEALLOCATE(SendBottom, RecTop)
   DEALLOCATE(SendTop, RecBottom)
 
-  call MPI_Comm_free(CommSliceX, ierr)
+  call MPI_Comm_free(MyCommWorld, ierr)
   call MPI_Comm_free(CommSliceY, ierr)
   if(MyRank .eq. 0) then
     write(*,*) ' ALL MEMORY CLEAN'

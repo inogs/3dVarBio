@@ -47,7 +47,7 @@ subroutine parallel_rdeofs
   real(4), allocatable           :: x3(:,:,:), x2(:,:)
   
   ! stat = nf90_open(trim(EOF_FILE), NF90_NOWRITE, ncid)
-  stat = nf90mpi_open(MPI_COMM_WORLD, trim(EOF_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
+  stat = nf90mpi_open(MyCommWorld, trim(EOF_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
   if (stat /= nf90_noerr) call handle_err("nf90mpi_open", stat)
   
   ! Get dimensions 
@@ -74,7 +74,7 @@ subroutine parallel_rdeofs
      if(MyRank .eq. 0) &
           write(drv%dia,*)'Error: ros%nreg differs from nregs'
 
-     call MPI_Abort(MPI_COMM_WORLD, -1, stat)
+     call MPI_Abort(MyCommWorld, -1, stat)
      
   endif
   
@@ -82,7 +82,7 @@ subroutine parallel_rdeofs
 
      if(MyRank .eq. 0) &
           write(drv%dia,*)'Error: Requires more Eofs than available in the input file.'
-     call MPI_Abort(MPI_COMM_WORLD, -1, stat)
+     call MPI_Abort(MyCommWorld, -1, stat)
      
   else if(ros%neof .lt. neofs) then
      
@@ -98,7 +98,7 @@ subroutine parallel_rdeofs
      if(MyRank .eq. 0) &
           write(drv%dia,*)'Error: Vertical dimension different than in the input file.'
 
-     call MPI_Abort(MPI_COMM_WORLD, -1, stat)
+     call MPI_Abort(MyCommWorld, -1, stat)
   endif
   
   !  Allocate eof arrays and get data

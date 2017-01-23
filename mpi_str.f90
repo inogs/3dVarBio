@@ -15,8 +15,6 @@ MODULE mpi_str
   !     MyRowRank : process rank in a row communicator
   !     MyPosI : rank on communicator along row direction
   !     MyPosJ : rank on communicator along column direction
-  !     ProcLeft : rank of process to my left side
-  !     ProcRight: rank of process to my right side
   !     ProcBottom: rank of process under me
   !     ProcTop: rank of process on top of me
   !     NumProcI : number of processes along i direction
@@ -32,14 +30,14 @@ MODULE mpi_str
 
   integer  :: size, MyRank, MyPosI, MyPosJ
   integer  :: MyColRank, MyRowRank
-  integer  :: ProcLeft, ProcRight, ProcBottom, ProcTop
-  integer  :: NumProcI, NumProcJ, NumProcIJ
+  integer  :: ProcBottom, ProcTop
+  integer  :: NumProcI, NumProcJ
   integer  :: GlobalRow, GlobalCol
   integer  :: localRow, localCol
   integer  :: GlobalRowOffset, GlobalColOffset
   integer  :: MyPair
 
-  integer  :: CommSliceY, CommSliceX
+  integer  :: CommSliceY, MyCommWorld
   integer(KIND=MPI_OFFSET_KIND) :: MyStart(3), MyCount(3)
 
   ! Arrays needed for alltoallv communication
@@ -52,7 +50,6 @@ MODULE mpi_str
 
   ! Arrays needed for the ghost cells exchange
   REAL(r8), POINTER, DIMENSION(:,:,:)    ::  ChlExtended
-  REAL(r8), POINTER, DIMENSION(:)        ::  SendLeft, RecRight, SendRight, RecLeft
   REAL(r8), POINTER, DIMENSION(:)        ::  SendTop, RecBottom, SendBottom, RecTop
 
 END MODULE mpi_str

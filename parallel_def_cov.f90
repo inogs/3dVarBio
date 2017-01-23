@@ -97,8 +97,8 @@ subroutine parallel_def_cov
   enddo
 
   ! Computes the global maximum and minimum
-  call MPI_Allreduce(MPI_IN_PLACE, rcf%dsmx, 1, MPI_REAL8, MPI_MAX, MPI_COMM_WORLD, ierr)
-  call MPI_Allreduce(MPI_IN_PLACE, rcf%dsmn, 1, MPI_REAL8, MPI_MIN, MPI_COMM_WORLD, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, rcf%dsmx, 1, MPI_REAL8, MPI_MAX, MyCommWorld, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, rcf%dsmn, 1, MPI_REAL8, MPI_MIN, MyCommWorld, ierr)
   
   rcf%dsmx = rcf%dsmx + max(1.d0,(rcf%dsmx-rcf%dsmn)/(rcf%ntb-2.))
   
@@ -132,7 +132,7 @@ subroutine parallel_def_cov
   ALLOCATE(DefBuf2D(GlobalRow, localCol))
 
   call MPI_Alltoallv(grd%dx, SendCountX2D, SendDisplX2D, MPI_REAL8, &
-       RecBuf1D, RecCountX2D, RecDisplX2D, MPI_REAL8, CommSliceX, ierr)
+       RecBuf1D, RecCountX2D, RecDisplX2D, MPI_REAL8, MyCommWorld, ierr)
 
   do j=1, localCol
      do iProc=0, NumProcI-1
@@ -305,7 +305,7 @@ subroutine parallel_def_cov
   end do
 
   call MPI_Alltoallv(SendBuf3D, SendCountX4D, SendDisplX4D, MPI_REAL8, &
-       RecBuf1D, RecCountX4D, RecDisplX4D, MPI_REAL8, CommSliceX, ierr)
+       RecBuf1D, RecCountX4D, RecDisplX4D, MPI_REAL8, MyCommWorld, ierr)
 
   do j=1, localCol
      do iProc=0, NumProcI-1
@@ -360,8 +360,8 @@ subroutine parallel_def_cov
      
   enddo
 
-  call MPI_Allreduce(MPI_IN_PLACE, grd%imax, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD, ierr)
-  call MPI_Allreduce(MPI_IN_PLACE, grd%jmax, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, grd%imax, 1, MPI_INT, MPI_MAX, MyCommWorld, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, grd%jmax, 1, MPI_INT, MPI_MAX, MyCommWorld, ierr)
   
   ALLOCATE( grd%aex(localCol,grd%imax,grd%km)) ; grd%aex(:,:,:) = 0.0
   ALLOCATE( grd%bex(localCol,grd%imax,grd%km)) ; grd%bex(:,:,:) = 0.0

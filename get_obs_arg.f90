@@ -139,11 +139,6 @@ subroutine get_obs_arg
   enddo
   
   
-  ! residual check
-  ! do k=1,arg%no
-  !    if(arg%par(k).eq.1 .and. abs(arg%res(k)).gt.5.0) arg%flg(k) = 0
-  ! enddo
-    
   ! ---
   ! Count good observations
   arg%nc = 0

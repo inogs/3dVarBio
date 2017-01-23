@@ -71,7 +71,7 @@ subroutine parallel_def_grd
      !stop
      endif
 
-     call MPI_Abort(MPI_COMM_WORLD, -1, i)
+     call MPI_Abort(MyCommWorld, -1, i)
 
   endif
 

@@ -44,7 +44,7 @@ subroutine parallel_costf
   ! -------------------------------------------------------
 
   ctl%f_b = 0.5 * dot_product( ctl%x_c, ctl%x_c)
-  call MPI_Allreduce(MPI_IN_PLACE, ctl%f_b, 1, MPI_REAL8, MPI_SUM, MPI_COMM_WORLD, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, ctl%f_b, 1, MPI_REAL8, MPI_SUM, MyCommWorld, ierr)
   !    write(*,*) 'COSTF f_b = ', ctl%f_b
   
   ! -------------------------------------------------------
@@ -70,7 +70,7 @@ subroutine parallel_costf
   ! --------
   ! calculate cost
   ctl%f_o = 0.5 * dot_product( obs%amo, obs%amo)
-  call MPI_Allreduce(MPI_IN_PLACE, ctl%f_o, 1, MPI_REAL8, MPI_SUM, MPI_COMM_WORLD, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, ctl%f_o, 1, MPI_REAL8, MPI_SUM, MyCommWorld, ierr)
   
   ! -------------------------------------------------------
   ! Cost function

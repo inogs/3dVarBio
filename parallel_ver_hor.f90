@@ -124,7 +124,7 @@ subroutine parallel_ver_hor
      end do
      
      call MPI_Alltoallv(SendBuf4D, SendCountX4D, SendDisplX4D, MyPair, &
-          RecBuf1D, RecCountX4D, RecDisplX4D, MyPair, CommSliceX, ierr)
+          RecBuf1D, RecCountX4D, RecDisplX4D, MyPair, MyCommWorld, ierr)
      
      SurfaceIndex = localCol*grd%km
      do j=1,localCol
@@ -221,7 +221,7 @@ subroutine parallel_ver_hor
      end do
      
      call MPI_Alltoallv(SendBuf4D, RecCountX4D, RecDisplX4D, MyPair, &
-          RecBuf1D, SendCountX4D, SendDisplX4D, MyPair, CommSliceX, ierr)
+          RecBuf1D, SendCountX4D, SendDisplX4D, MyPair, MyCommWorld, ierr)
 
      SurfaceIndex = grd%im*grd%km
      do i=1,grd%im
@@ -422,7 +422,7 @@ subroutine parallel_ver_hor_ad
      end do
 
      call MPI_Alltoallv(SendBuf4D, SendCountX4D, SendDisplX4D, MyPair, &
-          RecBuf1D, RecCountX4D, RecDisplX4D, MyPair, CommSliceX, ierr)
+          RecBuf1D, RecCountX4D, RecDisplX4D, MyPair, MyCommWorld, ierr)
      
      SurfaceIndex = localCol*grd%km
      do j=1,localCol
@@ -519,7 +519,7 @@ subroutine parallel_ver_hor_ad
      end do
      
      call MPI_Alltoallv(SendBuf4D, RecCountX4D, RecDisplX4D, MyPair, &
-          RecBuf1D, SendCountX4D, SendDisplX4D, MyPair, CommSliceX, ierr)
+          RecBuf1D, SendCountX4D, SendDisplX4D, MyPair, MyCommWorld, ierr)
      
      SurfaceIndex = grd%im*grd%km
      do i=1,grd%im
