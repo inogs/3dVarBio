@@ -32,28 +32,62 @@ subroutine get_obs_arg
   use drv_str
   use grd_str
   use obs_str
+  use mpi_str
   
   implicit none
   
   INTEGER(i4)   ::  k
   INTEGER(i4)   ::  i1, kk, i
+  REAL(r8), ALLOCATABLE, DIMENSION(:) :: TmpFlc, TmpPar, TmpLon, TmpLat, &
+    TmpDpt, TmpTim, TmpRes, TmpErr, TmpIno 
+  INTEGER(i4)   :: GlobalArgNum, Counter
   
-  arg%no = 0
-  arg%nc = 0
-
+  arg%no  = 0
+  arg%nc  = 0
+  Counter = 0
   
 !  open(511,file='arg_datnew.dat',form='formatted')
   open(511,file='arg_mis.dat')
   
   ! ---
   ! Allocate memory for observations   
-  read(511,'(I4)') arg%no
-  write(drv%dia,*)'Number of ARGO observations: ',arg%no
+  read(511,'(I4)') GlobalArgNum ! arg%no
+  write(drv%dia,*)'Number of ARGO observations: ', GlobalArgNum !arg%no
   
-  if(arg%no.eq.0)then
+  if(GlobalArgNum .eq. 0)then
      close(511)
      return
   endif
+
+  ALLOCATE( TmpFlc(GlobalArgNum), TmpPar(GlobalArgNum))
+  ALLOCATE( TmpLon(GlobalArgNum), TmpLat(GlobalArgNum))
+  ALLOCATE( TmpDpt(GlobalArgNum), TmpTim(GlobalArgNum))
+  ALLOCATE( TmpRes(GlobalArgNum), TmpErr(GlobalArgNum))
+  ALLOCATE( TmpIno(GlobalArgNum))
+
+  ! each process reads all the argo observations
+  do k=1,GlobalArgNum
+     !read (511,'(I5,I4,F12.5,F12.5,F12.5,F12.5,F12.5,F12.5,I8)') &
+     read (511,*) &
+          TmpFlc(k), TmpPar(k), &
+          TmpLon(k), TmpLat(k), &
+          TmpDpt(k), TmpTim(k), &
+          TmpRes(k), TmpErr(k), TmpIno(k)
+  end do
+  close (511)
+
+  ! Counting the number of observations that falls in the domain
+  do k=1,GlobalArgNum
+    if( TmpLon(k) .ge. grd%lon(1,1) .and. TmpLon(k) .lt. grd%lon(grd%im,grd%jm) .and. &
+        TmpLat(k) .ge. grd%lat(1,1) .and. TmpLat(k) .lt. grd%lat(grd%im,grd%jm) ) then
+      Counter = Counter + 1
+    endif
+  enddo
+
+  print*, "MyRank", MyRank, "has",Counter,"observations"
+
+  arg%no  = Counter
+
   ALLOCATE ( arg%ino(arg%no), arg%flg(arg%no), arg%flc(arg%no), arg%par(arg%no))
   ALLOCATE ( arg%lon(arg%no), arg%lat(arg%no), arg%dpt(arg%no), arg%tim(arg%no))
   ALLOCATE ( arg%inc(arg%no))
@@ -64,19 +98,23 @@ subroutine get_obs_arg
   ALLOCATE ( arg%pq1(arg%no), arg%pq2(arg%no), arg%pq3(arg%no), arg%pq4(arg%no))
   ALLOCATE ( arg%pq5(arg%no), arg%pq6(arg%no), arg%pq7(arg%no), arg%pq8(arg%no))
   
-  
-  
-  do k=1,arg%no
-     !read (511,'(I5,I4,F12.5,F12.5,F12.5,F12.5,F12.5,F12.5,I8)') &
-     read (511,*) &
-          arg%flc(k), arg%par(k), &
-          arg%lon(k), arg%lat(k), &
-          arg%dpt(k), arg%tim(k), &
-          arg%res(k), arg%err(k), arg%ino(k)
-  end do
-  close (511)
+  Counter = 0
+  do k=1,GlobalArgNum
+    if( TmpLon(k) .ge. grd%lon(1,1) .and. TmpLon(k) .lt. grd%lon(grd%im,grd%jm) .and. &
+        TmpLat(k) .ge. grd%lat(1,1) .and. TmpLat(k) .lt. grd%lat(grd%im,grd%jm) ) then
+      Counter = Counter + 1
+      arg%flc(Counter) = TmpFlc(k)
+      arg%par(Counter) = TmpPar(k)
+      arg%lon(Counter) = TmpLon(k)
+      arg%lat(Counter) = TmpLat(k)
+      arg%dpt(Counter) = TmpDpt(k)
+      arg%res(Counter) = TmpRes(k)
+      arg%err(Counter) = TmpErr(k)
+      arg%ino(Counter) = TmpIno(k)
+    endif
 
-
+  enddo  
+  
   ! DECOMMENT FOLLOWING TWO LINES TO MAKE FILTER TEST
    arg%res(:) = 1
    arg%err(:) = 1.d-2
@@ -126,6 +164,12 @@ subroutine get_obs_arg
      endif
   enddo
   arg%flc(:) = arg%flg(:)
+
+  DEALLOCATE( TmpFlc, TmpPar)
+  DEALLOCATE( TmpLon, TmpLat)
+  DEALLOCATE( TmpDpt, TmpTim)
+  DEALLOCATE( TmpRes, TmpErr)
+  DEALLOCATE( TmpIno)  
   
 end subroutine get_obs_arg
 
@@ -280,4 +324,8 @@ subroutine int_par_arg
      
   endif
   
+  DEALLOCATE ( arg%ino, arg%flg, arg%par)  
+  DEALLOCATE ( arg%lon, arg%lat, arg%dpt, arg%tim)
+  DEALLOCATE ( arg%pb, arg%qb, arg%rb)
+
 end subroutine int_par_arg
