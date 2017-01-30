@@ -51,9 +51,10 @@ subroutine parallel_def_cov
   REAL(r8), allocatable :: SendBuf3D(:,:,:), RecBuf3D(:,:,:), DefBuf3D(:,:,:)
   REAL(r8), allocatable :: ColBuf3D(:,:,:)
   
-  ! call rdrcorr
-  ALLOCATE(rcf%Lxyz(GlobalRow,GlobalCol,grd%km))
-  rcf%Lxyz = rcf%L
+  call parallel_rdrcorr
+  
+  ! decomment the next line to use one single correlation radius
+  ! rcf%Lxyz = rcf%L
 
   nthreads = 1
   threadid = 0

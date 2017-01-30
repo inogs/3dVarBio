@@ -35,7 +35,6 @@ subroutine parallel_rdeofs
   use grd_str
   use filenames
 
-  use mpi
   use mpi_str
   use pnetcdf
   
