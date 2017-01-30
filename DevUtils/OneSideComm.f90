@@ -38,25 +38,21 @@ program OneSideComm
     enddo
 
     call MPI_Win_create(a, nbytes, lenreal, MPI_INFO_NULL, MPI_COMM_WORLD, mpi_win_obj, ierr)
-    print*, MyRank, "exit from MPI_Win_create with ierr=", ierr
     call MPI_Win_fence(0, mpi_win_obj, ierr)
-    print*, MyRank, "exit from MPI_Win_fence with ierr=", ierr
 
     print*, "MyRank", MyRank, "print matrix:", a
     
     if(MyRank .eq. 0) then
-        target_displ = 2
+        target_displ = 4
         CALL MPI_WIN_LOCK( MPI_LOCK_EXCLUSIVE, 1, 0, mpi_win_obj, ierr )
-        print*, MyRank, "exit from MPI_WIN_LOCK with ierr=", ierr
 
         call MPI_Get(Test, 1, MPI_REAL8, MyRank+1, target_displ, 1, MPI_REAL8, mpi_win_obj, ierr)
-        print*, MyRank, "exit from MPI_Get with ierr=", ierr
+
+        ! now perform "+=" operation on the array
         target_displ = 0
         call MPI_Accumulate(a, MyCount, MPI_REAL8, 1, target_displ, MyCount, MPI_REAL8, MPI_SUM, mpi_win_obj, ierr)
-        print*, MyRank, "exit from MPI_Accumulate with ierr=", ierr
         
         call MPI_WIN_UNLOCK(1, mpi_win_obj, ierr)
-        print*, MyRank, "exit from MPI_WIN_UNLOCK with ierr=", ierr
         print*, ""
         print*, ""
         print*, ""
@@ -67,12 +63,9 @@ program OneSideComm
     endif
 
     call MPI_Barrier(MPI_COMM_WORLD, ierr)
-    print*, MyRank, "exit from MPI_Barrier with ierr=", ierr
 
     print*, "MyRank", MyRank, "print matrix:", a
-    
     call MPI_Win_free(mpi_win_obj, ierr)
-    print*, MyRank, "exit from MPI_Win_free with ierr=", ierr
 
     DEALLOCATE(a)
 
