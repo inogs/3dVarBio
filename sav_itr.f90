@@ -52,6 +52,9 @@ subroutine sav_itr
      ALLOCATE ( drv%ro(drv%im,drv%jm,ros%neof))    ; drv%ro   (:,:,:) = grd%ro   (:,:,:)
      ALLOCATE ( drv%msk(drv%im,drv%jm))            ; drv%msk  (:,:)   = grd%msr  (:,:,1)
   endif
+
+  call FreeWindows
+
   ! ---
   ! Grid structure
   DEALLOCATE ( grd%reg)
@@ -103,3 +106,17 @@ subroutine sav_itr
   if(MyRank .eq. 0) write(*,*) ' DEALLOCATION DONE'
   
 end subroutine sav_itr
+
+subroutine FreeWindows
+
+  use grd_str
+  use mpi_str
+
+  implicit none
+
+  integer ierr
+
+  call MPI_Win_free(MpiWinChl, ierr)
+  call MPI_Win_free(MpiWinChlAd, ierr)
+
+end subroutine FreeWindows

@@ -43,6 +43,7 @@ subroutine obsop
   ! ---
   ! Observations of chlorophyll
   if(drv%sat .eq. 1) &
-    call parallel_obs_chl
+    call onesided_obs_chl
+    ! call parallel_obs_chl
   
 end subroutine obsop

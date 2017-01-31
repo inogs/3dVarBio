@@ -154,6 +154,7 @@ OBJS    =  \
 	parallel_def_cov.o\
 	parallel_ver_hor.o\
 	parallel_rdrcorr.o\
+	oneside_chl.f90\
 	tao_minimizer.o\
     oceanvar.o
 

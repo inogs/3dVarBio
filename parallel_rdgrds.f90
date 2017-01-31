@@ -163,6 +163,8 @@ subroutine parallel_rdgrd
   ! *****************************************************************************************
   ! *****************************************************************************************
 
+  call CreateMpiWindows
+
 end subroutine parallel_rdgrd
 
 subroutine DomainDecomposition
@@ -394,3 +396,25 @@ subroutine handle_err(err_msg, errcode)
   call MPI_Abort(MyCommWorld, -1, err)
   return
 end subroutine handle_err
+
+
+subroutine CreateMpiWindows
+
+  use grd_str
+  use mpi_str
+
+  implicit none
+  ! include "mpif.h"
+  
+  integer :: ierr
+  integer(kind=MPI_ADDRESS_KIND) :: nbytes, lenreal
+
+  nbytes = grd%im*grd%jm*grd%km*grd%nchl
+  lenreal = 8
+
+  call MPI_Win_create(grd%chl, nbytes, lenreal, MPI_INFO_NULL, MPI_COMM_WORLD, MpiWinChl, ierr)
+  call MPI_Win_create(grd%chl_ad, nbytes, lenreal, MPI_INFO_NULL, MPI_COMM_WORLD, MpiWinChlAd, ierr)
+  call MPI_Win_fence(0, MpiWinChl, ierr)
+  call MPI_Win_fence(0, MpiWinChlAd, ierr)
+
+end subroutine CreateMpiWindows

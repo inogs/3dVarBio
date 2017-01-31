@@ -5,7 +5,6 @@ MODULE mpi_str
   IMPLICIT NONE
   public
 
-
   !-------------------------------------------------------!
   !     MPI vaiables
   !
@@ -25,6 +24,8 @@ MODULE mpi_str
   !     localCol : number of col slicing in j direction
   !     GlobalRowOffset : offset needed to read grd%global_msk
   !     GlobalColOffset : offset needed to read grd%global_msk
+  !     MpiWinChl : Window for one-sided communication on grd%chl array
+  !     MpiWinChlAd : Window for one-sided communication on grd%chl_ad array
   !
   !-------------------------------------------------------!
 
@@ -36,6 +37,7 @@ MODULE mpi_str
   integer  :: localRow, localCol
   integer  :: GlobalRowOffset, GlobalColOffset
   integer  :: MyPair
+  integer  :: MpiWinChl, MpiWinChlAd
 
   integer  :: CommSliceY, MyCommWorld
   integer(KIND=MPI_OFFSET_KIND) :: MyStart(3), MyCount(3)
