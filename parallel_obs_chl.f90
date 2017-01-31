@@ -32,7 +32,6 @@ subroutine parallel_obs_chl
   use grd_str
   use obs_str
   use mpi_str
-  use mpi
   
   implicit none
   
@@ -103,7 +102,6 @@ subroutine parallel_obs_chl_ad
   use grd_str
   use obs_str
   use mpi_str
-  use mpi
   
   implicit none
   

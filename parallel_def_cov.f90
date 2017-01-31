@@ -35,7 +35,6 @@ subroutine parallel_def_cov
   use cns_str
   use rcfl
   use mpi_str
-  use mpi
   
   implicit none
   

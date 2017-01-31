@@ -4,8 +4,6 @@ subroutine parallel_rdgrd
   use drv_str
   use grd_str
   use filenames
-
-  use mpi
   use mpi_str
   use pnetcdf
   use cns_str

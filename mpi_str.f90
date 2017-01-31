@@ -3,6 +3,7 @@ MODULE mpi_str
   use mpi
 
   IMPLICIT NONE
+  !include "mpif.h"
   public
 
   !-------------------------------------------------------!

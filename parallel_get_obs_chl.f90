@@ -31,8 +31,6 @@ subroutine parallel_get_obs_chl
   use drv_str
   use grd_str
   use obs_str
-
-  use mpi
   use mpi_str
   use pnetcdf
   use filenames

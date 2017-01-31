@@ -39,7 +39,6 @@ subroutine clean_mem
   use cns_str
   use rcfl
   use mpi_str
-  use mpi
   
   implicit none
 
