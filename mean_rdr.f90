@@ -9,7 +9,8 @@
       REAL(r8),INTENT(IN):: rad_xy(GlobalRow,GlobalCol,1)
       REAL(r8):: meanxy
      
-      ! print*, k
+      ! the Mean Radius is computed 
+      ! just on the owned part of the domain
       count=0
       meanxy=0
       do j=1,grd%jm
