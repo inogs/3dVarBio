@@ -453,5 +453,6 @@ subroutine parallel_def_cov
   DEALLOCATE(SendBuf2D, RecBuf1D, DefBuf2D)
   DEALLOCATE(SendBuf3D)
   DEALLOCATE(ColBuf3D,  DefBuf3D)
+  DEALLOCATE(rcf%Lxyz)
   
 end subroutine parallel_def_cov

@@ -5,7 +5,7 @@
       IMPLICIT NONE
       INTEGER(i4):: j,i,count
       INTEGER(i4),INTENT(IN):: k
-      REAL(r8),INTENT(IN):: rad_xy(grd%im,grd%jm,1)
+      REAL(r8),INTENT(IN):: rad_xy(GlobalRow,GlobalCol,1)
       REAL(r8):: meanxy
      
       ! print*, k

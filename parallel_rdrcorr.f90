@@ -35,18 +35,23 @@ subroutine parallel_rdrcorr
   implicit none
 
   integer(i4)            :: stat, ncid, idvar
+  integer(KIND=MPI_OFFSET_KIND)  :: GlobalStart(3), GlobalCount(3)
   real(r4), ALLOCATABLE  :: x3(:,:,:)
 
   !write(*,*)trim(RCORR_FILE)
   stat = nf90mpi_open(MyCommWorld, trim(RCORR_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
   if (stat /= nf90_noerr) call handle_err("nf90mpi_open",stat)
 
-  ALLOCATE ( rcf%Lxyz(grd%im,grd%jm,grd%km))
-  ALLOCATE ( x3(grd%im,grd%jm,grd%km))
+  ALLOCATE ( rcf%Lxyz(GlobalRow,GlobalCol,grd%km))
+  ALLOCATE ( x3(GlobalRow,GlobalCol,grd%km))
+  GlobalStart(:) = 1
+  GlobalCount(1) = GlobalRow
+  GlobalCount(2) = GlobalCol
+  GlobalCount(3) = grd%km
 
   stat = nf90mpi_inq_varid (ncid, 'radius', idvar)
   if (stat /= nf90_noerr) call handle_err("nf90mpi_inq_varid radius",stat)
-  stat = nfmpi_get_vara_real_all (ncid, idvar, MyStart, MyCount, x3)
+  stat = nfmpi_get_vara_real_all (ncid, idvar, GlobalStart, GlobalCount, x3)
   if (stat /= nf90_noerr) call handle_err("nfmpi_get_vara_real_all radius",stat)
   rcf%Lxyz(:,:,:) = x3(:,:,:)
 
