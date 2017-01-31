@@ -1,7 +1,8 @@
       REAL(r8) FUNCTION mean_rad(k,rad_xy)
       use rcfl
       use grd_str
-      
+      use mpi_str
+
       IMPLICIT NONE
       INTEGER(i4):: j,i,count
       INTEGER(i4),INTENT(IN):: k
