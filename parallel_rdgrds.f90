@@ -216,6 +216,12 @@ subroutine DomainDecomposition
     OffsetRow = GlobalRestRow
   end if
 
+  if(MyPosI+1 .ge. GlobalRestRow) then
+    NextLocalRow = MyCount(1)-1 
+  else
+    NextLocalRow = MyCount(1)
+  endif
+
   ! computing rests for Y direction
   OffsetCol = 0
   if (MyPosJ .lt. GlobalRestCol) then

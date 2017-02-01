@@ -38,7 +38,7 @@ subroutine obsop
   ! ---
   ! Observations by ARGO floats
   if (drv%argo .eq. 1) &
-    call obs_arg
+    call parallel_obs_arg
   
   ! ---
   ! Observations of chlorophyll

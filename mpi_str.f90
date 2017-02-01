@@ -27,6 +27,7 @@ MODULE mpi_str
   !     GlobalColOffset : offset needed to read grd%global_msk
   !     MpiWinChl : Window for one-sided communication on grd%chl array
   !     MpiWinChlAd : Window for one-sided communication on grd%chl_ad array
+  !     NextLocalRow : size of the local number of row for the process "below" me
   !
   !-------------------------------------------------------!
 
@@ -39,6 +40,7 @@ MODULE mpi_str
   integer  :: GlobalRowOffset, GlobalColOffset
   integer  :: MyPair
   integer  :: MpiWinChl, MpiWinChlAd
+  integer  :: NextLocalRow
 
   integer  :: CommSliceY, MyCommWorld
   integer(KIND=MPI_OFFSET_KIND) :: MyStart(3), MyCount(3)
