@@ -216,8 +216,8 @@ subroutine DomainDecomposition
     OffsetRow = GlobalRestRow
   end if
 
-  if(MyPosI+1 .ge. GlobalRestRow) then
-    NextLocalRow = MyCount(1)-1 
+  if(MyPosI+1 .eq. GlobalRestRow) then
+    NextLocalRow = MyCount(1)-1
   else
     NextLocalRow = MyCount(1)
   endif
