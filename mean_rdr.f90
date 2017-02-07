@@ -13,8 +13,8 @@
       ! just on the owned part of the domain
       count=0
       meanxy=0
-      do j=1,grd%jm
-        do i=1,grd%im
+      do j=1,GlobalCol ! grd%jm
+        do i=1,GlobalRow ! grd%im
           if(rad_xy(i,j,1)>0.0001) then
             count=count+1
             meanxy=meanxy+rad_xy(i,j,1)

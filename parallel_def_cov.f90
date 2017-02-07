@@ -158,12 +158,12 @@ subroutine parallel_def_cov
      do j=1,localCol
         do i=2,GlobalRow
            dst = (DefBuf2D(i-1,j) + DefBuf2D(i,j)) * 0.5 
-           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i,j,k)**2)
+           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i,j+GlobalColOffset,k)**2)
            grd%alx(i,j,k) = 1. + E - sqrt(E*(E+2.))
         enddo
         do i=1,GlobalRow-1
            dst = (DefBuf2D(i,j) + DefBuf2D(i+1,j)) * 0.5 
-           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i,j,k)**2)
+           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i,j+GlobalColOffset,k)**2)
            grd%btx(i,j,k) = 1. + E - sqrt(E*(E+2.))
         enddo
      enddo
@@ -172,7 +172,7 @@ subroutine parallel_def_cov
   do k=1,grd%km
      do j=1,localCol
         do i=1,GlobalRow
-           grd%istp(i,j,k) = int( rcf%Lxyz(i,j,k) * rcf%efc / DefBuf2D(i,j) )+1
+           grd%istp(i,j,k) = int( rcf%Lxyz(i,j+GlobalColOffset,k) * rcf%efc / DefBuf2D(i,j) )+1
         enddo
      enddo
   enddo
@@ -218,14 +218,14 @@ subroutine parallel_def_cov
      do j=2,GlobalCol
         do i=1,localRow
            dst = (DefBuf2D(i,j-1) + DefBuf2D(i,j)) * 0.5 
-           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i,j,k)**2)
+           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i+GloablRowOffset,j,k)**2)
            grd%aly(i,j,k) = 1. + E - sqrt(E*(E+2.))
         enddo
      enddo
      do j=1,GlobalCol-1
         do i=1,localRow
            dst = (DefBuf2D(i,j) + DefBuf2D(i,j+1)) * 0.5 
-           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i,j,k)**2)
+           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i+GloablRowOffset,j,k)**2)
            grd%bty(i,j,k) = 1. + E - sqrt(E*(E+2.))
         enddo
      enddo
@@ -243,7 +243,7 @@ subroutine parallel_def_cov
   do k=1,grd%km
      do j=1,GlobalCol
         do i=1,localRow
-           grd%jstp(i,j,k) = int( rcf%Lxyz(i,j,k) * rcf%efc / DefBuf2D(i,j) )+1
+           grd%jstp(i,j,k) = int( rcf%Lxyz(i+GloablRowOffset,j,k) * rcf%efc / DefBuf2D(i,j) )+1
         enddo
      enddo
   enddo
