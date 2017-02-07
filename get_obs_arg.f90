@@ -84,7 +84,7 @@ subroutine get_obs_arg
     endif
   enddo
 
-  print*, "MyRank", MyRank, "has",Counter,"observations"
+  print*, "MyRank", MyRank, "has",Counter,"ARGO observations"
 
   arg%no  = Counter
 
