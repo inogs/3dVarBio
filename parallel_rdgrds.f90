@@ -17,6 +17,7 @@ subroutine parallel_rdgrd
 
   integer(8) :: GlobalStart(3), GlobalCount(3)
   integer(KIND=MPI_OFFSET_KIND) MyOffset
+  integer    :: MyStatus(MPI_STATUS_SIZE)
 
   !
   ! open grid1.nc in read-only mode
@@ -131,6 +132,10 @@ subroutine parallel_rdgrd
      ierr = nfmpi_get_vara_real_all (ncid, VarId, MyStart, MyCount, x2)
      if (ierr .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all lat', ierr)
      grd%lat(:,:) = x2(:,:)
+     
+     grd%NextLongitude=grd%lon(1,1)
+     call MPI_Sendrecv_replace(grd%NextLongitude,1,MPI_REAL8,ProcTop,MyRank,ProcBottom,ProcBottom, MyCommWorld, MyStatus, ierr)
+
   endif
 
 

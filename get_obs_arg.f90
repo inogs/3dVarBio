@@ -51,8 +51,8 @@ subroutine get_obs_arg
   
   ! ---
   ! Allocate memory for observations   
-  read(511,'(I4)') GlobalArgNum ! arg%no
-  write(drv%dia,*)'Number of ARGO observations: ', GlobalArgNum !arg%no
+  read(511,'(I4)') GlobalArgNum
+  write(drv%dia,*)'Number of ARGO observations: ', GlobalArgNum
   
   if(GlobalArgNum .eq. 0)then
      close(511)
@@ -78,8 +78,8 @@ subroutine get_obs_arg
 
   ! Counting the number of observations that falls in the domain
   do k=1,GlobalArgNum
-    if( TmpLon(k) .ge. grd%lon(1,1) .and. TmpLon(k) .lt. grd%lon(grd%im,grd%jm) .and. &
-        TmpLat(k) .ge. grd%lat(1,1) .and. TmpLat(k) .lt. grd%lat(grd%im,grd%jm) ) then
+    if( TmpLon(k) .ge. grd%lon(1,1) .and. TmpLon(k) .lt. grd%NextLongitude .and. &
+        TmpLat(k) .ge. grd%lat(1,1) .and. TmpLat(k) .le. grd%lat(grd%im,grd%jm) ) then
       Counter = Counter + 1
     endif
   enddo
@@ -100,7 +100,7 @@ subroutine get_obs_arg
   
   Counter = 0
   do k=1,GlobalArgNum
-    if( TmpLon(k) .ge. grd%lon(1,1) .and. TmpLon(k) .lt. grd%lon(grd%im,grd%jm) .and. &
+    if( TmpLon(k) .ge. grd%lon(1,1) .and. TmpLon(k) .lt. grd%NextLongitude .and. &
         TmpLat(k) .ge. grd%lat(1,1) .and. TmpLat(k) .lt. grd%lat(grd%im,grd%jm) ) then
       Counter = Counter + 1
       arg%flc(Counter) = TmpFlc(k)
@@ -183,7 +183,8 @@ subroutine int_par_arg
   use drv_str
   use grd_str
   use obs_str
-  
+  use mpi_str
+
   implicit none
   
   INTEGER(i4)   ::  i, j, k
@@ -192,7 +193,7 @@ subroutine int_par_arg
   REAL(r8)      ::  msk4, div_x, div_y
   LOGICAL       ::  ins
   
-  ins(i,i1) = i.ge.1 .and. i.lt.i1
+  ins(i,i1) = i.ge.1 .and. i.le.i1
   
   if(arg%no.gt.0) then
      
@@ -209,9 +210,16 @@ subroutine int_par_arg
                  i1 = i
                  q1 = j1 + (arg%lat(k) - grd%lat(i,j)) / (grd%lat(i,j+1) - grd%lat(i,j))
                  p1 = i1 + (arg%lon(k) - grd%lon(i,j)) / (grd%lon(i+1,j) - grd%lon(i,j))
+              else if( i .eq. grd%im-1 .and. grd%lat(i,j).le.arg%lat(k) .and. grd%lat(i,j+1).gt.arg%lat(k) .and.   &
+                   grd%lon(grd%im,j).le.arg%lon(k) .and. grd%NextLongitude.gt.arg%lon(k) ) then
+                 j1 = j
+                 i1 = grd%im
+                 q1 = j1 + (arg%lat(k) - grd%lat(i,j)) / (grd%lat(i,j+1) - grd%lat(i,j))
+                 p1 = i1 + (arg%lon(k) - grd%lon(grd%im,j)) / (grd%NextLongitude - grd%lon(grd%im,j))
               endif
            enddo
         enddo
+        
         !     q1 = (arg%lat(k) - grd%lat(1,1)) / grd%dlt + 1.0
         !     j1 = int(q1)
         !     p1 = (arg%lon(k) - grd%lon(1,1)) / grd%dln + 1.0
