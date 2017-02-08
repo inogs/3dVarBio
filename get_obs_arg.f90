@@ -241,7 +241,7 @@ subroutine int_par_arg
            i1 = arg%ib(k)
            j1 = arg%jb(k)
            idep = arg%kb(k)+1
-           msk4 = grd%msk(i1,j1,idep) + grd%msk(i1+1,j1,idep) + grd%msk(i1,j1+1,idep) + grd%msk(i1+1,j1+1,idep)
+           msk4 = grd%global_msk(GlobalRowOffset+i1,j1,idep) + grd%global_msk(GlobalRowOffset+i1+1,j1,idep) + grd%global_msk(GlobalRowOffset+i1,j1+1,idep) + grd%global_msk(GlobalRowOffset+i1+1,j1+1,idep)
            if(msk4.lt.1.) arg%flc(k) = 0
         endif
      enddo
@@ -258,46 +258,46 @@ subroutine int_par_arg
            
            
            k1=arg%kb(k)
-           div_y =  (1.-q1) * max(grd%msk(i1,j1  ,k1),grd%msk(i1+1,j1  ,k1))     &
-                +    q1  * max(grd%msk(i1,j1+1,k1),grd%msk(i1+1,j1+1,k1))
-           div_x =  (1.-p1) * grd%msk(i1  ,j1,k1) + p1 * grd%msk(i1+1,j1,k1)
-           arg%pq1(k) = grd%msk(i1,j1,k1)                                       &
-                * max(grd%msk(i1,j1,k1),grd%msk(i1+1,j1,k1))             &
+           div_y =  (1.-q1) * max(grd%global_msk(GlobalRowOffset+i1,j1  ,k1),grd%global_msk(GlobalRowOffset+i1+1,j1  ,k1))     &
+                +    q1  * max(grd%global_msk(GlobalRowOffset+i1,j1+1,k1),grd%global_msk(GlobalRowOffset+i1+1,j1+1,k1))
+           div_x =  (1.-p1) * grd%global_msk(GlobalRowOffset+i1  ,j1,k1) + p1 * grd%global_msk(GlobalRowOffset+i1+1,j1,k1)
+           arg%pq1(k) = grd%global_msk(GlobalRowOffset+i1,j1,k1)                                       &
+                * max(grd%global_msk(GlobalRowOffset+i1,j1,k1),grd%global_msk(GlobalRowOffset+i1+1,j1,k1))             &
                 * (1.-p1) * (1.-q1)                                     &
                 /( div_x * div_y + 1.e-16 )
-           arg%pq2(k) = grd%msk(i1+1,j1,k1)                                     &
-                * max(grd%msk(i1,j1,k1),grd%msk(i1+1,j1,k1))             &
+           arg%pq2(k) = grd%global_msk(GlobalRowOffset+i1+1,j1,k1)                                     &
+                * max(grd%global_msk(GlobalRowOffset+i1,j1,k1),grd%global_msk(GlobalRowOffset+i1+1,j1,k1))             &
                 *     p1  * (1.-q1)                                      &
                 /( div_x * div_y + 1.e-16 )
-           div_x =  (1.-p1) * grd%msk(i1  ,j1+1,k1) + p1 * grd%msk(i1+1,j1+1,k1)
-           arg%pq3(k) = grd%msk(i1,j1+1,k1)                                     &
-                * max(grd%msk(i1,j1+1,k1),grd%msk(i1+1,j1+1,k1))         &
+           div_x =  (1.-p1) * grd%global_msk(GlobalRowOffset+i1  ,j1+1,k1) + p1 * grd%global_msk(GlobalRowOffset+i1+1,j1+1,k1)
+           arg%pq3(k) = grd%global_msk(GlobalRowOffset+i1,j1+1,k1)                                     &
+                * max(grd%global_msk(GlobalRowOffset+i1,j1+1,k1),grd%global_msk(GlobalRowOffset+i1+1,j1+1,k1))         &
                 * (1.-p1) *     q1                                       &
                 /( div_x * div_y + 1.e-16 )
-           arg%pq4(k) = grd%msk(i1+1,j1+1,k1)                                   &
-                * max(grd%msk(i1,j1+1,k1),grd%msk(i1+1,j1+1,k1))         &
+           arg%pq4(k) = grd%global_msk(GlobalRowOffset+i1+1,j1+1,k1)                                   &
+                * max(grd%global_msk(GlobalRowOffset+i1,j1+1,k1),grd%global_msk(GlobalRowOffset+i1+1,j1+1,k1))         &
                 *     p1  *     q1                                       &
                 /( div_x * div_y + 1.e-16 )
            
            k1=arg%kb(k) + 1
-           div_y =  (1.-q1) * max(grd%msk(i1,j1  ,k1),grd%msk(i1+1,j1  ,k1))     &
-                +    q1  * max(grd%msk(i1,j1+1,k1),grd%msk(i1+1,j1+1,k1))
-           div_x =  (1.-p1) * grd%msk(i1  ,j1,k1) + p1 * grd%msk(i1+1,j1,k1)
-           arg%pq5(k) = grd%msk(i1,j1,k1)                                       &
-                * max(grd%msk(i1,j1,k1),grd%msk(i1+1,j1,k1))             &
+           div_y =  (1.-q1) * max(grd%global_msk(GlobalRowOffset+i1,j1  ,k1),grd%global_msk(GlobalRowOffset+i1+1,j1  ,k1))     &
+                +    q1  * max(grd%global_msk(GlobalRowOffset+i1,j1+1,k1),grd%global_msk(GlobalRowOffset+i1+1,j1+1,k1))
+           div_x =  (1.-p1) * grd%global_msk(GlobalRowOffset+i1  ,j1,k1) + p1 * grd%global_msk(GlobalRowOffset+i1+1,j1,k1)
+           arg%pq5(k) = grd%global_msk(GlobalRowOffset+i1,j1,k1)                                       &
+                * max(grd%global_msk(GlobalRowOffset+i1,j1,k1),grd%global_msk(GlobalRowOffset+i1+1,j1,k1))             &
                 * (1.-p1) * (1.-q1)                                     &
                 /( div_x * div_y + 1.e-16 )
-           arg%pq6(k) = grd%msk(i1+1,j1,k1)                                     &
-                * max(grd%msk(i1,j1,k1),grd%msk(i1+1,j1,k1))             &
+           arg%pq6(k) = grd%global_msk(GlobalRowOffset+i1+1,j1,k1)                                     &
+                * max(grd%global_msk(GlobalRowOffset+i1,j1,k1),grd%global_msk(GlobalRowOffset+i1+1,j1,k1))             &
                 *     p1  * (1.-q1)                                      &
                 /( div_x * div_y + 1.e-16 )
-           div_x =  (1.-p1) * grd%msk(i1  ,j1+1,k1) + p1 * grd%msk(i1+1,j1+1,k1)
-           arg%pq7(k) = grd%msk(i1,j1+1,k1)                                     &
-                * max(grd%msk(i1,j1+1,k1),grd%msk(i1+1,j1+1,k1))         &
+           div_x =  (1.-p1) * grd%global_msk(GlobalRowOffset+i1  ,j1+1,k1) + p1 * grd%global_msk(GlobalRowOffset+i1+1,j1+1,k1)
+           arg%pq7(k) = grd%global_msk(GlobalRowOffset+i1,j1+1,k1)                                     &
+                * max(grd%global_msk(GlobalRowOffset+i1,j1+1,k1),grd%global_msk(GlobalRowOffset+i1+1,j1+1,k1))         &
                 * (1.-p1) *     q1                                       &
                 /( div_x * div_y + 1.e-16 )
-           arg%pq8(k) = grd%msk(i1+1,j1+1,k1)                                   &
-                * max(grd%msk(i1,j1+1,k1),grd%msk(i1+1,j1+1,k1))         &
+           arg%pq8(k) = grd%global_msk(GlobalRowOffset+i1+1,j1+1,k1)                                   &
+                * max(grd%global_msk(GlobalRowOffset+i1,j1+1,k1),grd%global_msk(GlobalRowOffset+i1+1,j1+1,k1))         &
                 *     p1  *     q1                                       &
                 /( div_x * div_y + 1.e-16 )
            

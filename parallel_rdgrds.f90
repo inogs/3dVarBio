@@ -135,7 +135,7 @@ subroutine parallel_rdgrd
      
      grd%NextLongitude=grd%lon(1,1)
      call MPI_Sendrecv_replace(grd%NextLongitude,1,MPI_REAL8,ProcTop,MyRank,ProcBottom,ProcBottom, MyCommWorld, MyStatus, ierr)
-
+     if(ProcBottom .eq. MPI_PROC_NULL) grd%NextLongitude = grd%lon(grd%im,grd%jm)
   endif
 
 
@@ -418,8 +418,8 @@ subroutine CreateMpiWindows
   integer :: ierr
   integer(kind=MPI_ADDRESS_KIND) :: nbytes, lenreal
 
-  nbytes = grd%im*grd%jm*grd%km*grd%nchl
   lenreal = 8
+  nbytes = grd%im*grd%jm*grd%km*grd%nchl*lenreal
 
   call MPI_Win_create(grd%chl, nbytes, lenreal, MPI_INFO_NULL, MPI_COMM_WORLD, MpiWinChl, ierr)
   call MPI_Win_create(grd%chl_ad, nbytes, lenreal, MPI_INFO_NULL, MPI_COMM_WORLD, MpiWinChlAd, ierr)

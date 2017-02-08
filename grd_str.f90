@@ -93,4 +93,5 @@ MODULE grd_str
   INTEGER(i4) :: nSurfaceWaterPoints
   REAL(r4),   ALLOCATABLE, DIMENSION(:,:,:)     ::  Dump_chl, Dump_vip
   REAL(r4),   ALLOCATABLE, DIMENSION(:,:)       ::  Dump_msk
+
 END MODULE grd_str
