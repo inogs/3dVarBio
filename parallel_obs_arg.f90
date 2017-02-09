@@ -43,6 +43,9 @@ subroutine parallel_obs_arg
   INTEGER       :: ierr, NData
   real(r8), pointer, dimension(:,:,:)   :: GetData
   
+  call MPI_Barrier(MyCommWorld, ierr)
+  call MPI_Win_fence(0, MpiWinChlAd, ierr)
+
   do kk = 1,arg%no
      
      if(arg%flc(kk).eq.1)then
@@ -126,7 +129,9 @@ subroutine parallel_obs_arg
      endif
      
   enddo
-  ! DEALLOCATE(TmpPrintGet)
+
+  call MPI_Barrier(MyCommWorld, ierr)
+  call MPI_Win_fence(0, MpiWinChlAd, ierr)
   
 end subroutine parallel_obs_arg
 
@@ -166,7 +171,9 @@ subroutine parallel_obs_arg_ad
   use grd_str
   use obs_str
   use mpi_str
-  
+  use filenames
+  use drv_str
+
   implicit none
   
   INTEGER(i4)   ::  i, j, k, kk
@@ -175,6 +182,9 @@ subroutine parallel_obs_arg_ad
   INTEGER       :: ierr, NData
   real(r8), pointer, dimension(:,:,:) :: MatrixToSum
   
+  call MPI_Barrier(MyCommWorld, ierr)
+  call MPI_Win_fence(0, MpiWinChlAd, ierr)
+
   do kk = 1,arg%no
      
      if(arg%flc(kk).eq.1)then
@@ -197,6 +207,7 @@ subroutine parallel_obs_arg_ad
            grd%chl_ad(i+1,j+1,k+1,1) = grd%chl_ad(i+1,j+1,k+1,1) + arg%pq8(kk) * obs%gra(obs%k)
            
         else
+
            ALLOCATE(MatrixToSum(NextLocalRow,grd%jm,2))
            MatrixToSum(:,:,:) = dble(0)
            
@@ -213,7 +224,6 @@ subroutine parallel_obs_arg_ad
            call MPI_Win_lock (MPI_LOCK_EXCLUSIVE, ProcBottom, 0, MpiWinChlAd, ierr )
            NData = NextLocalRow*grd%jm*2
            TargetOffset = (k-1)*grd%jm*NextLocalRow
-           ToSum = arg%pq2(kk) * obs%gra(obs%k)
            call MPI_Accumulate (MatrixToSum, NData, MPI_REAL8, ProcBottom, TargetOffset, NData, MPI_REAL8, MPI_SUM, MpiWinChlAd, ierr)
            
            ! call MPI_Win_lock (MPI_LOCK_EXCLUSIVE, ProcBottom, 0, MpiWinChlAd, ierr )
@@ -235,14 +245,14 @@ subroutine parallel_obs_arg_ad
            
            call MPI_Win_unlock(ProcBottom, MpiWinChlAd, ierr)
            DEALLOCATE(MatrixToSum)
-           
+
         endif
         
      endif
      
   enddo
   
-  ! call MPI_Barrier(MyCommWorld, ierr)
+  call MPI_Barrier(MyCommWorld, ierr)
   call MPI_Win_fence(0, MpiWinChlAd, ierr)
-  
+
 end subroutine parallel_obs_arg_ad
