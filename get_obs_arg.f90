@@ -187,7 +187,7 @@ subroutine int_par_arg
 
   implicit none
   
-  INTEGER(i4)   ::  i, j, k
+  INTEGER(i4)   ::  i, j, k, ierr
   INTEGER(i4)   ::  i1, j1, k1, idep
   REAL(r8)      ::  p1, q1, r1
   REAL(r8)      ::  msk4, div_x, div_y
@@ -236,9 +236,6 @@ subroutine int_par_arg
         endif
      enddo
      
-     call MPI_Allreduce(MPI_IN_PLACE, NeedArgoComm, 1, MPI_INT, MPI_SUM, MyCommWorld, ierr)
-     if(MyRank .eq. 0) print*, "Flag NeedArgoComm =", NeedArgoComm
-
      ! ---
      ! Undefine masked for multigrid
      do k = 1,arg%no
@@ -332,6 +329,9 @@ subroutine int_par_arg
      
   endif
   
+  call MPI_Allreduce(MPI_IN_PLACE, NeedArgoComm, 1, MPI_INT, MPI_SUM, MyCommWorld, ierr)
+  if(MyRank .eq. 0) print*, "Flag NeedArgoComm =", NeedArgoComm
+
   DEALLOCATE ( arg%ino, arg%flg, arg%par)  
   DEALLOCATE ( arg%lon, arg%lat, arg%dpt, arg%tim)
   DEALLOCATE ( arg%pb, arg%qb, arg%rb)
