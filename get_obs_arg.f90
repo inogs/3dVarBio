@@ -216,6 +216,8 @@ subroutine int_par_arg
                  i1 = grd%im
                  q1 = j1 + (arg%lat(k) - grd%lat(i,j)) / (grd%lat(i,j+1) - grd%lat(i,j))
                  p1 = i1 + (arg%lon(k) - grd%lon(grd%im,j)) / (grd%NextLongitude - grd%lon(grd%im,j))
+                ! flag that activates the communication
+                 NeedArgoComm = 1
               endif
            enddo
         enddo
@@ -234,6 +236,9 @@ subroutine int_par_arg
         endif
      enddo
      
+     call MPI_Allreduce(MPI_IN_PLACE, NeedArgoComm, 1, MPI_INT, MPI_SUM, MyCommWorld, ierr)
+     if(MyRank .eq. 0) print*, "Flag NeedArgoComm =", NeedArgoComm
+
      ! ---
      ! Undefine masked for multigrid
      do k = 1,arg%no

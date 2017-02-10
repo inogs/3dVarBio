@@ -28,6 +28,7 @@ MODULE mpi_str
   !     MpiWinChl : Window for one-sided communication on grd%chl array
   !     MpiWinChlAd : Window for one-sided communication on grd%chl_ad array
   !     NextLocalRow : size of the local number of row for the process "below" me
+  !     NeedArgoComm : flag for the activation of the Oneside communication for argo
   !
   !-------------------------------------------------------!
 
@@ -41,6 +42,7 @@ MODULE mpi_str
   integer  :: MyPair
   integer  :: MpiWinChl, MpiWinChlAd
   integer  :: NextLocalRow
+  integer  :: NeedArgoComm
 
   integer  :: CommSliceY, MyCommWorld
   integer(KIND=MPI_OFFSET_KIND) :: MyStart(3), MyCount(3)
