@@ -141,7 +141,7 @@ subroutine parallel_ver_hor
         do iProc=0, NumProcI-1
            do i=1,RecCountX4D(iProc+1)/SurfaceIndex
               do k=1,grd%km
-                 DefBufChlAd(i + RecDisplX4D(iProc+1)/(localCol*grd%km),j,k,1) = &
+                 DefBufChlAd(i + RecDisplX4D(iProc+1)/(SurfaceIndex),j,k,1) = &
                       RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX4D(iProc+1)/localCol + RecDisplX4D(iProc+1))%chl_ad
               end do
            end do
@@ -524,7 +524,7 @@ subroutine parallel_ver_hor_ad
      SurfaceIndex = grd%im*grd%km
      do i=1,grd%im
         do iProc=0, NumProcI-1
-           do j=1,SendCountX4D(iProc+1)/(grd%im*grd%km)
+           do j=1,SendCountX4D(iProc+1)/SurfaceIndex
               do k=1,grd%km
                  grd%chl(i, j + SendDisplX4D(iProc+1)/SurfaceIndex,k,1) = &
                       RecBuf1D(k + (j-1)*grd%km +(i-1)*SendCountX4D(iProc+1)/grd%im + SendDisplX4D(iProc+1))%chl
@@ -534,7 +534,7 @@ subroutine parallel_ver_hor_ad
      end do
      do i=1,grd%im
         do iProc=0, NumProcI-1
-           do j=1,SendCountX4D(iProc+1)/(grd%im*grd%km)
+           do j=1,SendCountX4D(iProc+1)/SurfaceIndex
               do k=1,grd%km
                  grd%chl_ad(i, j + SendDisplX4D(iProc+1)/SurfaceIndex,k,1) = &
                       RecBuf1D(k + (j-1)*grd%km +(i-1)*SendCountX4D(iProc+1)/grd%im + SendDisplX4D(iProc+1))%chl_ad
