@@ -86,7 +86,8 @@ subroutine parallel_def_grd
 
   ALLOCATE (SurfaceWaterPoints(2,nSurfaceWaterPoints))
 
-  write(*,*) 'nSurfaceWaterPoints = ', nSurfaceWaterPoints, 'of Rank ', MyRank
+  if(drv%Verbose .eq. 1) &
+       write(*,*) 'nSurfaceWaterPoints = ', nSurfaceWaterPoints, 'of Rank ', MyRank
 
   indSupWP=0
   do i=1,grd%im

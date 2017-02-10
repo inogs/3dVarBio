@@ -84,7 +84,8 @@ subroutine get_obs_arg
     endif
   enddo
 
-  print*, "MyRank", MyRank, "has",Counter,"ARGO observations"
+  if(drv%Verbose .eq. 1) &
+       print*, "MyRank", MyRank, "has",Counter,"ARGO observations"
 
   arg%no  = Counter
 
@@ -325,12 +326,18 @@ subroutine int_par_arg
            arg%nc = arg%nc + 1
         endif
      enddo
-     write(drv%dia,*)'Real number of ARGO observations: ',arg%nc
      
   endif
   
+  arg%nc_global = 0
+  call MPI_Allreduce(arg%nc, arg%nc_global, 1, MPI_INT, MPI_SUM, MyCommWorld, ierr)
   call MPI_Allreduce(MPI_IN_PLACE, NeedArgoComm, 1, MPI_INT, MPI_SUM, MyCommWorld, ierr)
-  if(MyRank .eq. 0) print*, "Flag NeedArgoComm =", NeedArgoComm
+
+  if(MyRank .eq. 0) then
+     write(drv%dia,*)'Real number of ARGO observations: ',arg%nc_global
+     print*,'Good argo observations: ',arg%nc_global
+     print*, "Flag NeedArgoComm =", NeedArgoComm
+  end if
 
   DEALLOCATE ( arg%ino, arg%flg, arg%par)  
   DEALLOCATE ( arg%lon, arg%lat, arg%dpt, arg%tim)

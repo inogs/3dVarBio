@@ -27,12 +27,16 @@ subroutine tao_minimizer
 
   external MyFuncAndGradient, MyBounds, MyConvTest
 
-  if(MyRank .eq. 0) print*,'Initialize Petsc and Tao stuffs'
+  if(MyRank .eq. 0) then
+     print*,'PETSc-TAO lmvm minimizer configuration'
+     print*, ''
+  endif
 
   call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
   CHKERRQ(ierr)
 
-  print*, 'PetscInitialize(...) done by MyRank ', MyRank, ctl%n, ctl%n_global
+  if(drv%Verbose .eq. 1) &
+       print*, 'PetscInitialize(...) done by MyRank ', MyRank, ctl%n, ctl%n_global
 
   if(MyRank .eq. 0) then
      write(drv%dia,*) ''
@@ -50,7 +54,8 @@ subroutine tao_minimizer
   call VecCreateMPI(MyCommWorld, n, M, MyState, ierr)
   call VecGetOwnershipRange(MyState, GlobalStart, MyEnd, ierr)
 
-  print*, "MyState initialization by MyRank ", MyRank, "with indices: ", GlobalStart, MyEnd
+  if(drv%Verbose .eq. 1) &
+       print*, "MyState initialization by MyRank ", MyRank, "with indices: ", GlobalStart, MyEnd
 
   if( ctl%n .ne. MyEnd - GlobalStart ) then
      print*, ""
@@ -103,6 +108,7 @@ subroutine tao_minimizer
   MyTolerance = ctl%pgper * MaxGrad
   if(MyRank .eq. 0) then
      print*, "Setting MyTolerance", MyTolerance
+     print*, ""
      write(drv%dia,*) "Setting MyTolerance", MyTolerance
   endif
 

@@ -183,5 +183,6 @@ subroutine def_nml
   drv%ReadDomDec = 0
   drv%sat  = sat
   drv%argo = argo
+  drv%Verbose = 0
 
 end subroutine def_nml
