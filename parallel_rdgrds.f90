@@ -424,7 +424,5 @@ subroutine CreateMpiWindows
 
   call MPI_Win_create(grd%chl, nbytes, lenreal, MPI_INFO_NULL, MyCommWorld, MpiWinChl, ierr)
   call MPI_Win_create(grd%chl_ad, nbytes, lenreal, MPI_INFO_NULL, MyCommWorld, MpiWinChlAd, ierr)
-  call MPI_Win_fence(0, MpiWinChl, ierr)
-  call MPI_Win_fence(0, MpiWinChlAd, ierr)
 
 end subroutine CreateMpiWindows
