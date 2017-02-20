@@ -43,11 +43,6 @@ subroutine parallel_obs_arg
   INTEGER       :: ierr, NData
   real(r8), pointer, dimension(:,:,:)   :: GetData
   
-!   if(NeedArgoComm .gt. 0) then
-!     call MPI_Barrier(MyCommWorld, ierr)
-!     call MPI_Win_fence(0, MpiWinChlAd, ierr)
-!   endif
-
   do kk = 1,arg%no
      
      if(arg%flc(kk).eq.1)then
@@ -132,11 +127,6 @@ subroutine parallel_obs_arg
      
   enddo
 
-!   if(NeedArgoComm .gt. 0) then
-!     call MPI_Barrier(MyCommWorld, ierr)
-!     call MPI_Win_fence(0, MpiWinChlAd, ierr)
-!   endif
-
 end subroutine parallel_obs_arg
 
 subroutine parallel_obs_arg_ad
@@ -186,11 +176,6 @@ subroutine parallel_obs_arg_ad
   INTEGER       :: ierr, NData
   real(r8), pointer, dimension(:,:,:) :: MatrixToSum
   
-!   if(NeedArgoComm .gt. 0) then
-!     call MPI_Barrier(MyCommWorld, ierr)
-!     call MPI_Win_fence(0, MpiWinChlAd, ierr)
-!   endif
-
   do kk = 1,arg%no
      
      if(arg%flc(kk).eq.1)then
@@ -258,9 +243,4 @@ subroutine parallel_obs_arg_ad
      
   enddo
   
-!   if(NeedArgoComm .gt. 0) then
-!     call MPI_Barrier(MyCommWorld, ierr)
-!     call MPI_Win_fence(0, MpiWinChlAd, ierr)
-!   endif
-
 end subroutine parallel_obs_arg_ad

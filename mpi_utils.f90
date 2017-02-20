@@ -78,9 +78,6 @@ subroutine mynode()
   ! print for debug 
   ! write(*,*) "MyRank", MyRank, "PosI", MyPosI, "PosJ", MyPosJ, "Left", ProcLeft, "Right", ProcRight, "Top", ProcTop, "Bottom", ProcBottom
 
-  ! initialize ArgoCommunication flag
-  NeedArgoComm = 0
-
   if(NumProcI * NumProcJ .ne. size) then
      if(MyRank .eq. 0) then
         WRITE(*,*) ""
