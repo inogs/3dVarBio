@@ -32,8 +32,11 @@ subroutine obsop_ad
   use set_knd
   use obs_str
   use drv_str
+  use mpi_str
   
   implicit none
+  
+  INTEGER(i4)  :: ierr
   
   obs%k = 0
 
@@ -47,5 +50,7 @@ subroutine obsop_ad
   if(drv%sat .eq. 1) &  
     call onesided_obs_chl_ad
     ! call parallel_obs_chl_ad
+
+  call MPI_Barrier(MyCommWorld, ierr)
   
 end subroutine obsop_ad

@@ -35,8 +35,10 @@ subroutine onesided_obs_chl
 
   implicit none
   
-  INTEGER(i4)   ::  i, j, l, kk, ierr
-  REAL(r8)      :: FirstData, LastData
+  INTEGER(i4)   ::  i, j, l, kk
+  INTEGER       :: NData, ierr
+  ! REAL(r8)      :: FirstData, LastData
+  REAL(r8), allocatable :: GetData(:,:)
   INTEGER(kind=MPI_ADDRESS_KIND) :: TargetOffset
 
   do kk = 1,chl%no
@@ -58,24 +60,31 @@ subroutine onesided_obs_chl
                   chl%pq4(kk) * grd%chl(i+1,j+1,1,l) ) * chl%dzr(1,kk)
           enddo
         else
+          ALLOCATE(GetData(NextLocalRow,grd%jm))
+          
+          ! call MPI_Win_lock (MPI_LOCK_EXCLUSIVE, ProcBottom, 0, MpiWinChl, ierr )
+          ! TargetOffset = j-1
+          ! call MPI_Get (FirstData, 1, MPI_REAL8, ProcBottom, TargetOffset, 1, MPI_REAL8, MpiWinChl, ierr)
+          ! TargetOffset = j
+          ! call MPI_Get (LastData, 1, MPI_REAL8, ProcBottom, TargetOffset, 1, MPI_REAL8, MpiWinChl, ierr)
+          ! call MPI_Win_unlock(ProcBottom, MpiWinChl, ierr)
+
           call MPI_Win_lock (MPI_LOCK_EXCLUSIVE, ProcBottom, 0, MpiWinChl, ierr )
-
-          TargetOffset = j-1
-          call MPI_Get (FirstData, 1, MPI_REAL8, ProcBottom, TargetOffset, 1, MPI_REAL8, MpiWinChl, ierr)
-          TargetOffset = j
-          call MPI_Get (LastData, 1, MPI_REAL8, ProcBottom, TargetOffset, 1, MPI_REAL8, MpiWinChl, ierr)
-
+          TargetOffset = 0
+          NData = NextLocalRow * grd%jm
+          call MPI_Get (GetData, NData, MPI_REAL8, ProcBottom, TargetOffset, NData, MPI_REAL8, MpiWinChl, ierr)
           call MPI_Win_unlock(ProcBottom, MpiWinChl, ierr)
 
 
           do l=1,grd%nchl
             chl%inc(kk) = chl%inc(kk) + (                        &
                   chl%pq1(kk) * grd%chl(i  ,j  ,1,l) +       &
-                  chl%pq2(kk) * FirstData +       &
+                  chl%pq2(kk) * GetData(1,j) +       &
                   chl%pq3(kk) * grd%chl(i  ,j+1,1,l) +       &
-                  chl%pq4(kk) * LastData ) * chl%dzr(1,kk)
+                  chl%pq4(kk) * GetData(1,j+1) ) * chl%dzr(1,kk)
           enddo
 
+          DEALLOCATE(GetData)
         endif
 
      endif
@@ -122,8 +131,10 @@ subroutine onesided_obs_chl_ad
 
   implicit none
   
-  INTEGER(i4)   ::  i, j, kk, l, ierr
-  REAL(r8)      :: ToSum
+  INTEGER(i4)   ::  i, j, kk, l
+  INTEGER(i4)   :: NData, ierr
+  ! REAL(r8)      :: ToSum
+  REAL(r8), allocatable :: MatrixToSum(:,:)
   INTEGER(kind=MPI_ADDRESS_KIND) :: TargetOffset
   
   do kk = 1,chl%no
@@ -144,6 +155,9 @@ subroutine onesided_obs_chl_ad
           enddo
         else
 
+          ALLOCATE(MatrixToSum(NextLocalRow,grd%jm))
+          MatrixToSum(:,:) = dble(0)
+
           do l=1,grd%nchl
             grd%chl_ad(i  ,j  ,1,l) = grd%chl_ad(i  ,j  ,1,l) + chl%pq1(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
             ! grd%chl_ad(i+1,j  ,1,l) = grd%chl_ad(i+1,j  ,1,l) + chl%pq2(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
@@ -151,23 +165,31 @@ subroutine onesided_obs_chl_ad
             ! grd%chl_ad(i+1,j+1,1,l) = grd%chl_ad(i+1,j+1,1,l) + chl%pq4(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
           enddo
 
-          call MPI_Win_lock (MPI_LOCK_EXCLUSIVE, ProcBottom, 0, MpiWinChlAd, ierr )
+          ! call MPI_Win_lock (MPI_LOCK_EXCLUSIVE, ProcBottom, 0, MpiWinChlAd, ierr )
+          ! TargetOffset = j-1
+          ! ToSum = chl%pq2(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
+          ! call MPI_Accumulate (ToSum, 1, MPI_REAL8, ProcBottom, TargetOffset, 1, MPI_REAL8, MPI_SUM, MpiWinChlAd, ierr)
+          ! TargetOffset = j
+          ! ToSum = chl%pq4(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
+          ! call MPI_Accumulate (ToSum, 1, MPI_REAL8, ProcBottom, TargetOffset, 1, MPI_REAL8, MPI_SUM, MpiWinChlAd, ierr)
 
-          TargetOffset = j-1
-          ToSum = chl%pq2(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
-          call MPI_Accumulate (ToSum, 1, MPI_REAL8, ProcBottom, TargetOffset, 1, MPI_REAL8, MPI_SUM, MpiWinChlAd, ierr)
-          TargetOffset = j
-          ToSum = chl%pq4(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
-          call MPI_Accumulate (ToSum, 1, MPI_REAL8, ProcBottom, TargetOffset, 1, MPI_REAL8, MPI_SUM, MpiWinChlAd, ierr)
+          ! call MPI_Win_unlock(ProcBottom, MpiWinChlAd, ierr)
 
+          MatrixToSum(1,j)   = chl%pq2(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
+          MatrixToSum(1,j+1) = chl%pq4(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
+
+          call MPI_Win_lock (MPI_LOCK_EXCLUSIVE, ProcBottom, 0, MpiWinChlAd, ierr)
+          TargetOffset = 0
+          NData = NextLocalRow * grd%jm
+          call MPI_Accumulate (MatrixToSum, NData, MPI_REAL8, ProcBottom, TargetOffset, NData, MPI_REAL8, MPI_SUM, MpiWinChlAd, ierr)
           call MPI_Win_unlock(ProcBottom, MpiWinChlAd, ierr)
+
+          DEALLOCATE(MatrixToSum)
 
         endif
 
 
      endif   
   enddo
-  
-  call MPI_Barrier(MyCommWorld, ierr)
   
 end subroutine onesided_obs_chl_ad
