@@ -134,7 +134,10 @@ subroutine parallel_rdgrd
      grd%lat(:,:) = x2(:,:)
      
      grd%NextLongitude=grd%lon(1,1)
-     call MPI_Sendrecv_replace(grd%NextLongitude,1,MPI_REAL8,ProcTop,MyRank,ProcBottom,ProcBottom, MyCommWorld, MyStatus, ierr)
+     ! Send to ProcTop with Tag = MyRank and receiving from 
+     ! ProcBottom with Tag = ProcBottom :)
+     call MPI_Sendrecv_replace(grd%NextLongitude,1,MPI_REAL8,ProcTop,MyRank,&
+      ProcBottom,ProcBottom, MyCommWorld, MyStatus, ierr)
      if(ProcBottom .eq. MPI_PROC_NULL) grd%NextLongitude = grd%lon(grd%im,grd%jm)
   endif
 

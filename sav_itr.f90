@@ -87,7 +87,7 @@ subroutine sav_itr
   DEALLOCATE ( ros%evc, ros%eva )
 
   ! Control structure
-  DEALLOCATE( ctl%x_c, ctl%g_c)
+  DEALLOCATE ( ctl%x_c, ctl%g_c)
 
   DEALLOCATE (SurfaceWaterPoints)  
   

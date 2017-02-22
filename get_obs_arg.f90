@@ -242,7 +242,8 @@ subroutine int_par_arg
            i1 = arg%ib(k)
            j1 = arg%jb(k)
            idep = arg%kb(k)+1
-           msk4 = grd%global_msk(GlobalRowOffset+i1,j1,idep) + grd%global_msk(GlobalRowOffset+i1+1,j1,idep) + grd%global_msk(GlobalRowOffset+i1,j1+1,idep) + grd%global_msk(GlobalRowOffset+i1+1,j1+1,idep)
+           msk4 = grd%global_msk(GlobalRowOffset+i1,j1,idep) + grd%global_msk(GlobalRowOffset+i1+1,j1,idep) + &
+            grd%global_msk(GlobalRowOffset+i1,j1+1,idep) + grd%global_msk(GlobalRowOffset+i1+1,j1+1,idep)
            if(msk4.lt.1.) arg%flc(k) = 0
         endif
      enddo
@@ -311,7 +312,17 @@ subroutine int_par_arg
            arg%pq6(k) =     r1  * arg%pq6(k)
            arg%pq7(k) =     r1  * arg%pq7(k)
            arg%pq8(k) =     r1  * arg%pq8(k)
-           
+
+           if(arg%pq1(k) .lt. 1.E-16) arg%pq1(k) = dble(0)
+           if(arg%pq2(k) .lt. 1.E-16) arg%pq2(k) = dble(0)
+           if(arg%pq3(k) .lt. 1.E-16) arg%pq3(k) = dble(0)
+           if(arg%pq4(k) .lt. 1.E-16) arg%pq4(k) = dble(0)
+           if(arg%pq5(k) .lt. 1.E-16) arg%pq5(k) = dble(0)
+           if(arg%pq6(k) .lt. 1.E-16) arg%pq6(k) = dble(0)
+           if(arg%pq7(k) .lt. 1.E-16) arg%pq7(k) = dble(0)
+           if(arg%pq8(k) .lt. 1.E-16) arg%pq8(k) = dble(0)
+
+
         endif
      enddo
      
