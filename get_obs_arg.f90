@@ -38,9 +38,10 @@ subroutine get_obs_arg
   
   INTEGER(i4)   ::  k
   INTEGER(i4)   ::  i1, kk, i
-  REAL(r8), ALLOCATABLE, DIMENSION(:) :: TmpFlc, TmpPar, TmpLon, TmpLat, &
-    TmpDpt, TmpTim, TmpRes, TmpErr, TmpIno 
-  INTEGER(i4)   :: GlobalArgNum, Counter
+  REAL(r8), ALLOCATABLE, DIMENSION(:) :: TmpFlc, TmpPar, TmpLon, TmpLat
+  REAL(r8), ALLOCATABLE, DIMENSION(:) :: TmpDpt, TmpTim, TmpRes, TmpErr, TmpIno 
+  INTEGER(i4)   :: GlobalArgNum, Counter, ierr
+  character(len=1024) :: filename
   
   arg%no  = 0
   arg%nc  = 0
@@ -50,10 +51,14 @@ subroutine get_obs_arg
   open(511,file='arg_mis.dat')
   
   ! ---
-  ! Allocate memory for observations   
-  read(511,'(I4)') GlobalArgNum
-  write(drv%dia,*)'Number of ARGO observations: ', GlobalArgNum
-  
+  ! Allocate memory for observations
+  if(MyRank .eq. 0) then
+    read(511,'(I4)') GlobalArgNum
+    write(drv%dia,*)'Number of ARGO observations: ', GlobalArgNum
+  endif
+
+  call MPI_Bcast(GlobalArgNum, 1, MPI_INT, 0, MyCommWorld, ierr)
+
   if(GlobalArgNum .eq. 0)then
      close(511)
      return
@@ -65,21 +70,33 @@ subroutine get_obs_arg
   ALLOCATE( TmpRes(GlobalArgNum), TmpErr(GlobalArgNum))
   ALLOCATE( TmpIno(GlobalArgNum))
 
-  ! each process reads all the argo observations
-  do k=1,GlobalArgNum
-     !read (511,'(I5,I4,F12.5,F12.5,F12.5,F12.5,F12.5,F12.5,I8)') &
-     read (511,*) &
-          TmpFlc(k), TmpPar(k), &
-          TmpLon(k), TmpLat(k), &
-          TmpDpt(k), TmpTim(k), &
-          TmpRes(k), TmpErr(k), TmpIno(k)
-  end do
-  close (511)
+  if(MyRank .eq. 0) then
+    ! each process reads all the argo observations
+    do k=1,GlobalArgNum
+      read (511,'(I5,I5,F12.5,F12.5,F12.5,F12.5,F12.5,F12.5,I8)') &
+      ! read (511,*) &
+            TmpFlc(k), TmpPar(k), &
+            TmpLon(k), TmpLat(k), &
+            TmpDpt(k), TmpTim(k), &
+            TmpRes(k), TmpErr(k), TmpIno(k)
+    end do
+    close (511)
+  endif
+
+  call MPI_Bcast(TmpFlc, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
+  call MPI_Bcast(TmpPar, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
+  call MPI_Bcast(TmpLon, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
+  call MPI_Bcast(TmpLat, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
+  call MPI_Bcast(TmpDpt, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
+  call MPI_Bcast(TmpTim, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
+  call MPI_Bcast(TmpRes, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
+  call MPI_Bcast(TmpErr, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
+  call MPI_Bcast(TmpIno, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
 
   ! Counting the number of observations that falls in the domain
   do k=1,GlobalArgNum
     if( TmpLon(k) .ge. grd%lon(1,1) .and. TmpLon(k) .lt. grd%NextLongitude .and. &
-        TmpLat(k) .ge. grd%lat(1,1) .and. TmpLat(k) .le. grd%lat(grd%im,grd%jm) ) then
+        TmpLat(k) .ge. grd%lat(1,1) .and. TmpLat(k) .lt. grd%lat(grd%im,grd%jm) ) then
       Counter = Counter + 1
     endif
   enddo
@@ -97,8 +114,8 @@ subroutine get_obs_arg
   ALLOCATE ( arg%ib(arg%no), arg%jb(arg%no), arg%kb(arg%no))
   ALLOCATE ( arg%pb(arg%no), arg%qb(arg%no), arg%rb(arg%no))
   ALLOCATE ( arg%pq1(arg%no), arg%pq2(arg%no), arg%pq3(arg%no), arg%pq4(arg%no))
-  ALLOCATE ( arg%pq5(arg%no), arg%pq6(arg%no), arg%pq7(arg%no), arg%pq8(arg%no))
-  
+  ALLOCATE ( arg%pq5(arg%no), arg%pq6(arg%no), arg%pq7(arg%no), arg%pq8(arg%no))  
+
   Counter = 0
   do k=1,GlobalArgNum
     if( TmpLon(k) .ge. grd%lon(1,1) .and. TmpLon(k) .lt. grd%NextLongitude .and. &
@@ -124,6 +141,7 @@ subroutine get_obs_arg
   ! ---
   ! Initialise quality flag
   arg%flg(:) = 1
+  arg%rb(:) = 0
   
   ! ---
 ! Vertical interpolation parameters

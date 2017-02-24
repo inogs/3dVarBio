@@ -49,5 +49,7 @@ subroutine obsop
   if(drv%sat .eq. 1) &
     call onesided_obs_chl
     ! call parallel_obs_chl
+
+  call MPI_Barrier(MyCommWorld, ierr)
   
 end subroutine obsop
