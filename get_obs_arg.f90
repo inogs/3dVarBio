@@ -60,7 +60,7 @@ subroutine get_obs_arg
   call MPI_Bcast(GlobalArgNum, 1, MPI_INT, 0, MyCommWorld, ierr)
 
   if(GlobalArgNum .eq. 0)then
-    if(MyRank .eq. o) &
+    if(MyRank .eq. 0) &
       close(511)
     return
   endif
