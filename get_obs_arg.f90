@@ -47,12 +47,12 @@ subroutine get_obs_arg
   arg%nc  = 0
   Counter = 0
   
-!  open(511,file='arg_datnew.dat',form='formatted')
-  open(511,file='arg_mis.dat')
   
   ! ---
   ! Allocate memory for observations
   if(MyRank .eq. 0) then
+    ! open(511,file='arg_datnew.dat',form='formatted')
+    open(511,file='arg_mis.dat')
     read(511,'(I4)') GlobalArgNum
     write(drv%dia,*)'Number of ARGO observations: ', GlobalArgNum
   endif
@@ -60,8 +60,9 @@ subroutine get_obs_arg
   call MPI_Bcast(GlobalArgNum, 1, MPI_INT, 0, MyCommWorld, ierr)
 
   if(GlobalArgNum .eq. 0)then
-     close(511)
-     return
+    if(MyRank .eq. o) &
+      close(511)
+    return
   endif
 
   ALLOCATE( TmpFlc(GlobalArgNum), TmpPar(GlobalArgNum))
