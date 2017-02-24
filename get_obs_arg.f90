@@ -45,7 +45,6 @@ subroutine get_obs_arg
   
   arg%no  = 0
   arg%nc  = 0
-  Counter = 0
   
   
   ! ---
@@ -72,7 +71,7 @@ subroutine get_obs_arg
   ALLOCATE( TmpIno(GlobalArgNum))
 
   if(MyRank .eq. 0) then
-    ! each process reads all the argo observations
+    ! process 0 reads all the argo observations
     do k=1,GlobalArgNum
       read (511,'(I5,I5,F12.5,F12.5,F12.5,F12.5,F12.5,F12.5,I8)') &
       ! read (511,*) &
@@ -95,6 +94,7 @@ subroutine get_obs_arg
   call MPI_Bcast(TmpIno, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
 
   ! Counting the number of observations that falls in the domain
+  Counter = 0
   do k=1,GlobalArgNum
     if( TmpLon(k) .ge. grd%lon(1,1) .and. TmpLon(k) .lt. grd%NextLongitude .and. &
         TmpLat(k) .ge. grd%lat(1,1) .and. TmpLat(k) .lt. grd%lat(grd%im,grd%jm) ) then
@@ -148,13 +148,17 @@ subroutine get_obs_arg
 ! Vertical interpolation parameters
   do k = 1,arg%no
      if(arg%flg(k).eq.1)then
-        arg%kb(k) = grd%km-1
+        arg%kb(k) = 1 ! grd%km-1
+        Counter = 0
         do kk = 1,grd%km-1
            if( arg%dpt(k).ge.grd%dep(kk) .and. arg%dpt(k).lt.grd%dep(kk+1) ) then
+              Counter = 1
               arg%kb(k) = kk
               arg%rb(k) = (arg%dpt(k) - grd%dep(kk)) / (grd%dep(kk+1) - grd%dep(kk))
            endif
         enddo
+        if(Counter .eq. 0) &
+          arg%kb(k) = grd%km-1
      endif
   enddo
   
