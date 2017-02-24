@@ -35,6 +35,10 @@ subroutine get_obs
   
   implicit none
   
+  arg%no = 0
+  chl%no = 0
+
+  
   ! ----
   ! Load ARGO observations
   if (drv%argo .eq. 1) &

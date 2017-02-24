@@ -38,12 +38,11 @@ program OneSideComm
     enddo
 
     call MPI_Win_create(a, nbytes, lenreal, MPI_INFO_NULL, MPI_COMM_WORLD, mpi_win_obj, ierr)
-    call MPI_Win_fence(0, mpi_win_obj, ierr)
 
     print*, "MyRank", MyRank, "print matrix:", a
     
     if(MyRank .eq. 0) then
-        target_displ = 4
+        target_displ = 6
         CALL MPI_WIN_LOCK( MPI_LOCK_EXCLUSIVE, 1, 0, mpi_win_obj, ierr )
 
         call MPI_Get(Test, 1, MPI_REAL8, MyRank+1, target_displ, 1, MPI_REAL8, mpi_win_obj, ierr)

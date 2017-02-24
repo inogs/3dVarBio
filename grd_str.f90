@@ -45,8 +45,9 @@ MODULE grd_str
      REAL(r8),    POINTER     ::  ro(:,:,:)    ! Reduced order control vector
      INTEGER(i4), POINTER     ::  reg(:,:)     ! Mask for EOF regions
      ! REAL(r8),    POINTER     ::  msk(:,:,:)   ! Sea-Land mask for scalar points
-     INTEGER(KIND=1),    POINTER     ::  msk(:,:,:)   ! Sea-Land mask for scalar points
-     REAL(r8),    POINTER     ::    f(:,:)     ! Coriolis term
+     INTEGER(KIND=1),    POINTER     ::  msk(:,:,:)          ! Local Sea-Land mask for scalar points
+     INTEGER(KIND=1),    POINTER     ::  global_msk(:,:,:)   ! Global Sea-land mask
+     ! REAL(r8),    POINTER     ::    f(:,:)     ! Coriolis term
 
      REAL(r8),    POINTER     ::  ro_ad(:,:,:)    ! Reduced order control vector adjoint
 
@@ -84,7 +85,6 @@ MODULE grd_str
      REAL(r8),    POINTER     ::  lon(:,:)       ! Longitude
      REAL(r8),    POINTER     ::  lat(:,:)       ! Latitude
      REAL(r8)                 ::  NextLongitude  ! longitude value of the process below MyRank
-     REAL(r8),    POINTER     ::  global_msk(:,:,:)   ! Global Sea-land mask
 
   END TYPE grid_t
 

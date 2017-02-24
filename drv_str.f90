@@ -54,7 +54,8 @@ MODULE drv_str
      INTEGER(i4)           ::  sat          ! Flag for the assimilation of the satellite observations
      INTEGER(i4)           ::  argo         ! Flag for the assimilation of the argo float observations
      INTEGER(i4)           ::  ReadDomDec   ! Flag for reading the Dom_Dec_jp*.ascii files
-     
+     INTEGER(i4)           ::  Verbose      ! Flag for printing verbose output
+
   END TYPE drv_t
   
   TYPE (drv_t)              :: drv

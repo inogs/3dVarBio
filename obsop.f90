@@ -32,9 +32,13 @@ subroutine obsop
   use set_knd
   use obs_str
   use drv_str
+  use mpi_str
   
   implicit none
   
+  INTEGER(i4) :: ierr
+
+  call MPI_Barrier(MyCommWorld, ierr)
   ! ---
   ! Observations by ARGO floats
   if (drv%argo .eq. 1) &
@@ -45,5 +49,7 @@ subroutine obsop
   if(drv%sat .eq. 1) &
     call onesided_obs_chl
     ! call parallel_obs_chl
+
+  call MPI_Barrier(MyCommWorld, ierr)
   
 end subroutine obsop

@@ -134,7 +134,10 @@ subroutine parallel_rdgrd
      grd%lat(:,:) = x2(:,:)
      
      grd%NextLongitude=grd%lon(1,1)
-     call MPI_Sendrecv_replace(grd%NextLongitude,1,MPI_REAL8,ProcTop,MyRank,ProcBottom,ProcBottom, MyCommWorld, MyStatus, ierr)
+     ! Send to ProcTop with Tag = MyRank and receiving from 
+     ! ProcBottom with Tag = ProcBottom :)
+     call MPI_Sendrecv_replace(grd%NextLongitude,1,MPI_REAL8,ProcTop,MyRank,&
+      ProcBottom,ProcBottom, MyCommWorld, MyStatus, ierr)
      if(ProcBottom .eq. MPI_PROC_NULL) grd%NextLongitude = grd%lon(grd%im,grd%jm)
   endif
 
@@ -247,7 +250,8 @@ subroutine DomainDecomposition
   MyStart(3) = 1
   MyCount(3) = grd%km
 
-  write(*,*) "MyRank = ", MyRank, " MyStart = ", MyStart, " MyCount = ", MyCount
+  if(drv%Verbose .eq. 1) &
+       write(*,*) "MyRank = ", MyRank, " MyStart = ", MyStart, " MyCount = ", MyCount
 
   grd%im = MyCount(1)
   grd%jm = MyCount(2)
@@ -421,9 +425,7 @@ subroutine CreateMpiWindows
   lenreal = 8
   nbytes = grd%im*grd%jm*grd%km*grd%nchl*lenreal
 
-  call MPI_Win_create(grd%chl, nbytes, lenreal, MPI_INFO_NULL, MPI_COMM_WORLD, MpiWinChl, ierr)
-  call MPI_Win_create(grd%chl_ad, nbytes, lenreal, MPI_INFO_NULL, MPI_COMM_WORLD, MpiWinChlAd, ierr)
-  call MPI_Win_fence(0, MpiWinChl, ierr)
-  call MPI_Win_fence(0, MpiWinChlAd, ierr)
+  call MPI_Win_create(grd%chl, nbytes, lenreal, MPI_INFO_NULL, MyCommWorld, MpiWinChl, ierr)
+  call MPI_Win_create(grd%chl_ad, nbytes, lenreal, MPI_INFO_NULL, MyCommWorld, MpiWinChlAd, ierr)
 
 end subroutine CreateMpiWindows
