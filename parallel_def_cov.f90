@@ -45,15 +45,28 @@ subroutine parallel_def_cov
   INTEGER nthreads, threadid
   INTEGER :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
   INTEGER(i8) :: ierr, iProc
+  INTEGER(8)  :: tmpint
   REAL(r8), allocatable :: SendBuf2D(:,:), RecBuf2D(:,:), DefBuf2D(:,:)
   REAL(r8), allocatable :: SendBuf1D(:), RecBuf1D(:), TmpBuf1D(:), DefBuf1D(:)
   REAL(r8), allocatable :: SendBuf3D(:,:,:), RecBuf3D(:,:,:), DefBuf3D(:,:,:)
   REAL(r8), allocatable :: ColBuf3D(:,:,:)
-  
+
   call parallel_rdrcorr
-  
-  ! decomment the next line to use one single correlation radius
-  ! rcf%Lxyz = rcf%L
+
+  ! the following loop is useful in order to initialize
+  ! rcf%Lxyz array to a fixed value; otherwise,
+  ! decomment the line below and issue
+  ! ulimit -s unlimited
+  ! ALLOCATE ( rcf%Lxyz(GlobalRow,GlobalCol,grd%km))
+  ! rcf%Lxyz(:,:,:) = rcf%L/1000. !500. !
+
+  ! do k=1,grd%km
+  !   do j=1,GlobalCol
+  !     do i=1,GlobalRow
+  !        rcf%Lxyz(i,j,k) = rcf%L/1000.
+  !     enddo
+  !   enddo
+  ! enddo
 
   nthreads = 1
   threadid = 0
@@ -281,8 +294,12 @@ subroutine parallel_def_cov
         do iProc=0, NumProcJ-1
            do j=1, RecCountY4D(iProc+1)/(localRow*grd%km)
               do k=1, grd%km
-                 DefBuf3D(i,j+RecDisplY4D(iProc+1)/(localRow*grd%km),k) = &
-                        RecBuf1D(k + (j-1)*grd%km + (i-1)*RecCountY4D(iProc+1)/localRow + RecDisplY4D(iProc+1))
+                ! avoiding overflows..
+                ! is not clear why in parallel_ver_hor.f90
+                ! this problem not occurs...
+                tmpint = RecCountY4D(iProc+1)/localRow
+                DefBuf3D(i,j+RecDisplY4D(iProc+1)/(localRow*grd%km),k) = &
+                        RecBuf1D(k + (j-1)*grd%km + (i-1)*tmpint + RecDisplY4D(iProc+1))
               end do
            end do
         end do
@@ -311,8 +328,9 @@ subroutine parallel_def_cov
      do iProc=0, NumProcI-1
         do i=1, RecCountX4D(iProc+1)/(localCol*grd%km)
            do k=1, grd%km
+              tmpint = RecCountX4D(iProc+1)/localCol
               ColBuf3D(i + RecDisplX4D(iProc+1)/(localCol*grd%km), j, k) = &
-                   RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX4D(iProc+1)/localCol + RecDisplX4D(iProc+1))
+                   RecBuf1D(k + (i-1)*grd%km + (j-1)*tmpint + RecDisplX4D(iProc+1)) 
            end do
         end do
      end do
