@@ -42,6 +42,7 @@ subroutine oceanvar
   implicit none
   
   INTEGER(i4)   ::  ktr
+  REAL(r8)      ::  tstart, tend
   
   call mynode
   
@@ -115,9 +116,15 @@ subroutine oceanvar
      
      ! ---
      ! Minimize the cost function (inner loop)
+     tstart = MPI_Wtime()
      call tao_minimizer
+     tend = MPI_Wtime()
      if(MyRank .eq. 0) then
         write(drv%dia,*) 'out of tao_minimizer'
+        write(drv%dia,*) 'minimization executed in', tend-tstart,'sec'
+        write(drv%dia,*) 'time/iteration = ', (tend-tstart)/drv%MyCounter,'sec'
+        write(*,*) 'minimization executed in', tend-tstart,'sec'
+        write(*,*) 'time/iteration = ', (tend-tstart)/drv%MyCounter,'sec'
      endif
         
      if(ktr.eq.drv%ntr)then
