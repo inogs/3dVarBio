@@ -49,9 +49,6 @@ MODULE mpi_str
   ! X dimension
   integer, allocatable, dimension(:) :: SendCountX2D, SendCountX4D, SendDisplX2D, SendDisplX4D
   integer, allocatable, dimension(:) :: RecCountX2D, RecCountX4D, RecDisplX2D, RecDisplX4D
-  ! Y dimension
-  integer, allocatable, dimension(:) :: SendCountY2D, SendCountY4D, SendDisplY2D, SendDisplY4D
-  integer, allocatable, dimension(:) :: RecCountY2D, RecCountY4D, RecDisplY2D, RecDisplY4D
 
   ! Arrays needed for the ghost cells exchange
   REAL(r8), POINTER, DIMENSION(:,:,:)    ::  ChlExtended

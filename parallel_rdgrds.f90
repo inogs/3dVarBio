@@ -193,6 +193,7 @@ subroutine DomainDecomposition
   integer     :: nnx, ii, iProc, i0
 
   integer, allocatable :: ToBalanceX(:,:), ToBalanceY(:,:)
+  integer, allocatable, dimension(:) :: SendDisplY2D, SendCountY2D
 
   GlobalRestRow = mod(GlobalRow, NumProcI)
   GlobalRestCol = mod(GlobalCol, NumProcJ)
@@ -304,17 +305,14 @@ subroutine DomainDecomposition
     end if
   end do
 
+  ALLOCATE(SendDisplY2D(NumProcJ), SendCountY2D(NumProcJ))
   ! y direction (-> GlobalCol)
   if(SliceRestRow .ne. 0) then
     if(MyPosJ .lt. SliceRestRow) &
           localRow = localRow + 1
   end if
 
-  SendDisplY4D(1) = 0
-  RecDisplY4D(1)  = 0
-
   SendDisplY2D(1) = 0
-  RecDisplY2D(1)  = 0
 
   do i=1,NumProcJ
     if(i-1 .lt. SliceRestRow) then
@@ -329,18 +327,10 @@ subroutine DomainDecomposition
         OffsetRow = 0
     end if
 
-    SendCountY4D(i) = (grd%im / NumProcJ + OffsetCol) * grd%jm * grd%km
-    RecCountY4D(i)  = localRow * grd%km * (GlobalCol / NumProcJ + OffsetRow)
-
     SendCountY2D(i) = (grd%im / NumProcJ + OffsetCol) * grd%jm
-    RecCountY2D(i)  = localRow * (GlobalCol / NumProcJ + OffsetRow)
 
     if(i .lt. NumProcJ) then
-        SendDisplY4D(i+1) = SendDisplY4D(i) + SendCountY4D(i)
-        RecDisplY4D(i+1)  = RecDisplY4D(i) + RecCountY4D(i)
-
         SendDisplY2D(i+1) = SendDisplY2D(i) + SendCountY2D(i)
-        RecDisplY2D(i+1)  = RecDisplY2D(i) + RecCountY2D(i)
     end if
   end do
 
@@ -358,6 +348,8 @@ subroutine DomainDecomposition
   end if
   GlobalColOffset = SendDisplX2D(MyPosI+1)/grd%im + MyPosJ*grd%jm + TmpInt*GlobalRestCol
 
+  DEALLOCATE(SendDisplY2D, SendCountY2D)
+
 end subroutine DomainDecomposition
 
 subroutine MyMax(arr, GlobCol, km, i0, ii, k, val)
@@ -369,7 +361,6 @@ subroutine MyMax(arr, GlobCol, km, i0, ii, k, val)
   integer, intent(inout)    :: val
 
   do j=i0,ii
-     ! print*, arr(:,:)
      val = max(val, arr(j, k))
   end do
 

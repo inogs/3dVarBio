@@ -80,11 +80,6 @@ subroutine my_3dvar_node()
   ALLOCATE(RecCountX2D(NumProcI), RecCountX4D(NumProcI))
   ALLOCATE(RecDisplX2D(NumProcI), RecDisplX4D(NumProcI))
 
-  ALLOCATE(SendCountY2D(NumProcJ), SendCountY4D(NumProcJ))
-  ALLOCATE(SendDisplY2D(NumProcJ), SendDisplY4D(NumProcJ))
-  ALLOCATE(RecCountY2D(NumProcJ), RecCountY4D(NumProcJ))
-  ALLOCATE(RecDisplY2D(NumProcJ), RecDisplY4D(NumProcJ))
-
   ! print for debug 
   ! write(*,*) "MyRank", MyRank, "PosI", MyPosI, "PosJ", MyPosJ, "Left", ProcLeft, "Right", ProcRight, "Top", ProcTop, "Bottom", ProcBottom
 
