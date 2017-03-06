@@ -42,7 +42,7 @@ MODULE mpi_str
   integer  :: MpiWinChl, MpiWinChlAd
   integer  :: NextLocalRow
 
-  integer  :: CommSliceY, MyCommWorld
+  integer  :: MyCommWorld
   integer(KIND=MPI_OFFSET_KIND) :: MyStart(3), MyCount(3)
 
   ! Arrays needed for alltoallv communication

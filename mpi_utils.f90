@@ -3,11 +3,14 @@ subroutine my_mpi_init()
   use mpi_str
   implicit none
 
-  integer :: ierr
+  integer :: ierr, zero
 
   CALL mpi_init(ierr)
   CALL mpi_comm_rank(MPI_COMM_WORLD, MyRank,ierr)
   CALL mpi_comm_size(MPI_COMM_WORLD, size,ierr)
+
+  zero = 0
+  call MPI_Comm_split(MPI_COMM_WORLD, zero, MyRank, MyCommWorld, ierr)
 
 end subroutine my_mpi_init
 
@@ -68,9 +71,6 @@ subroutine my_3dvar_node()
      ProcTop    = MPI_PROC_NULL
      ProcBottom = MPI_PROC_NULL
   end if
-
-  call MPI_Comm_split(MPI_COMM_WORLD, MyPosI, MyRank, CommSliceY, ierr)
-  call MPI_Comm_split(MPI_COMM_WORLD, MyPosJ, MyRank, MyCommWorld, ierr)
 
   call MPI_TYPE_CONTIGUOUS(2, MPI_REAL8, MyPair, ierr)
   call MPI_TYPE_COMMIT(MyPair, ierr)
