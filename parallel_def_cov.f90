@@ -51,7 +51,11 @@ subroutine parallel_def_cov
   REAL(r8), allocatable :: SendBuf3D(:,:,:), RecBuf3D(:,:,:), DefBuf3D(:,:,:)
   REAL(r8), allocatable :: ColBuf3D(:,:,:)
 
+#ifndef _MERGE_OGSTM
+
   call parallel_rdrcorr
+
+#else
 
   ! the following loop is useful in order to initialize
   ! rcf%Lxyz array to a fixed value; otherwise,
@@ -60,13 +64,16 @@ subroutine parallel_def_cov
   ! ALLOCATE ( rcf%Lxyz(GlobalRow,GlobalCol,grd%km))
   ! rcf%Lxyz(:,:,:) = rcf%L/1000. !500. !
 
-  ! do k=1,grd%km
-  !   do j=1,GlobalCol
-  !     do i=1,GlobalRow
-  !        rcf%Lxyz(i,j,k) = rcf%L/1000.
-  !     enddo
-  !   enddo
-  ! enddo
+  ALLOCATE ( rcf%Lxyz(GlobalRow,GlobalCol,grd%km))
+  do k=1,grd%km
+    do j=1,GlobalCol
+      do i=1,GlobalRow
+         rcf%Lxyz(i,j,k) = rcf%L
+      enddo
+    enddo
+  enddo
+
+#endif
 
   nthreads = 1
   threadid = 0
