@@ -44,7 +44,7 @@ subroutine oceanvar
   INTEGER(i4)   ::  ktr
   REAL(r8)      ::  tstart, tend
   
-  call mynode
+  call my_3dvar_node
   
   ! ---
   ! Initialize diagnostics and read namelists

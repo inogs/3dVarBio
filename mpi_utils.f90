@@ -1,4 +1,17 @@
-subroutine mynode()
+subroutine my_mpi_init()
+
+  use mpi_str
+  implicit none
+
+  integer :: ierr
+
+  CALL mpi_init(ierr)
+  CALL mpi_comm_rank(MPI_COMM_WORLD, MyRank,ierr)
+  CALL mpi_comm_size(MPI_COMM_WORLD, size,ierr)
+
+end subroutine my_mpi_init
+
+subroutine my_3dvar_node()
   ! ---------------------------------------------------------------------
   !
   !                        routine mynode
@@ -37,9 +50,6 @@ subroutine mynode()
   !
 
   INTEGER ierr
-  CALL mpi_init(ierr)
-  CALL mpi_comm_rank(MPI_COMM_WORLD, MyRank,ierr)
-  CALL mpi_comm_size(MPI_COMM_WORLD, size,ierr)
 
   NumProcI = Size
   NumProcJ = 1
@@ -97,7 +107,7 @@ subroutine mynode()
      WRITE(*,*) ' '
   endif
 
-end subroutine mynode
+end subroutine my_3dvar_node
 
 subroutine mpi_sync
 
