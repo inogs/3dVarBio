@@ -9,7 +9,7 @@ MODULE mpi_str
   !-------------------------------------------------------!
   !     MPI vaiables
   !
-  !     NPE : number of processes
+  !     NPE : Number of Processing Elements
   !     MyId : process number  [ 0 - NPE-1 ]
   !     MyColRank : process rank in a column communicator
   !     MyRowRank : process rank in a row communicator

@@ -46,34 +46,34 @@ subroutine parallel_def_grd
   call parallel_rdgrd
 
   ! Define grid for horizontal covariances
-  if( drv%mask(drv%ktr).eq.1)then
-     grd%msr(:,:,:) = 1.0
-  else if( drv%mask(drv%ktr).eq.2)then
-     do k=1,grd%km
-        grd%msr(:,:,k) = grd%msk(:,:,1)
-     enddo
+  ! if( drv%mask(drv%ktr).eq.1)then
+  !    grd%msr(:,:,:) = 1.0
+  ! else if( drv%mask(drv%ktr).eq.2)then
+  !    do k=1,grd%km
+  !       grd%msr(:,:,k) = grd%msk(:,:,1)
+  !    enddo
 
-  else if( drv%mask(drv%ktr).eq.3)then
-     do i=1,grd%im
-        do j=1,grd%jm
-           do k=1,grd%km
-              grd%msr(i,j,k) = grd%msk(i,j,k)
-           enddo
-        enddo
-     enddo
-     !         grd%msr(:,:,:) = grd%msk(:,:,:)
-  else
-     if(MyId .eq. 0) then
+  ! else if( drv%mask(drv%ktr).eq.3)then
+  !    do i=1,grd%im
+  !       do j=1,grd%jm
+  !          do k=1,grd%km
+  !             grd%msr(i,j,k) = grd%msk(i,j,k)
+  !          enddo
+  !       enddo
+  !    enddo
+  !    !         grd%msr(:,:,:) = grd%msk(:,:,:)
+  ! else
+  !    if(MyId .eq. 0) then
 
-        write(drv%dia,*)'Wrong mask for horizontal covariances ',  &
-             drv%mask(drv%ktr)
+  !       write(drv%dia,*)'Wrong mask for horizontal covariances ',  &
+  !            drv%mask(drv%ktr)
 
-     !stop
-     endif
+  !    !stop
+  !    endif
 
-     call MPI_Abort(Var3DCommunicator, -1, i)
+  !    call MPI_Abort(Var3DCommunicator, -1, i)
 
-  endif
+  ! endif
 
 
   nSurfaceWaterPoints = 0

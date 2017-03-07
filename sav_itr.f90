@@ -50,7 +50,7 @@ subroutine sav_itr
   ! Save eigenvalues
   if (1.eq.0) then ! We do not know the reason of these lines
      ALLOCATE ( drv%ro(drv%im,drv%jm,ros%neof))    ; drv%ro   (:,:,:) = grd%ro   (:,:,:)
-     ALLOCATE ( drv%msk(drv%im,drv%jm))            ; drv%msk  (:,:)   = grd%msr  (:,:,1)
+     ! ALLOCATE ( drv%msk(drv%im,drv%jm))            ; drv%msk  (:,:)   = grd%msr  (:,:,1)
   endif
 
   call FreeWindows
@@ -67,7 +67,6 @@ subroutine sav_itr
   DEALLOCATE ( grd%bty )
   DEALLOCATE ( grd%scx )
   DEALLOCATE ( grd%scy )
-  DEALLOCATE ( grd%msr )
   DEALLOCATE ( grd%imx, grd%jmx)
   DEALLOCATE ( grd%istp, grd%jstp)
   DEALLOCATE ( grd%inx, grd%jnx)
@@ -75,12 +74,15 @@ subroutine sav_itr
   DEALLOCATE ( grd%aey)
   DEALLOCATE ( grd%bex)
   DEALLOCATE ( grd%bey)
+ 
   ! Biological vectors
   DEALLOCATE ( grd%chl)
   DEALLOCATE ( grd%chl_ad)
+ 
   ! Observational vector
   DEALLOCATE ( obs%inc, obs%amo, obs%res)
   DEALLOCATE ( obs%err, obs%gra)
+ 
   ! Covariances structure
   DEALLOCATE ( grd%ro)
   DEALLOCATE ( grd%ro_ad)

@@ -87,7 +87,6 @@ subroutine parallel_rdgrd
   ALLOCATE ( grd%bty(localRow,GlobalCol,grd%km) )         ; grd%bty  = huge(grd%bty(1,1,1))
   ALLOCATE ( grd%scx(GlobalRow,localCol,grd%km) )         ; grd%scx  = huge(grd%scx(1,1,1))
   ALLOCATE ( grd%scy(localRow,GlobalCol,grd%km) )         ; grd%scy  = huge(grd%scy(1,1,1))
-  ALLOCATE ( grd%msr(grd%im,grd%jm,grd%km) )  ; grd%msr  = huge(grd%msr(1,1,1))
   ALLOCATE ( grd%imx(grd%km))                 ; grd%imx  = huge(grd%imx(1))
   ALLOCATE (  grd%jmx(grd%km))                ; grd%jmx  = huge(grd%jmx(1))
   ALLOCATE ( grd%istp(GlobalRow,localCol,grd%km))         ; grd%istp = huge(grd%istp(1,1,1))

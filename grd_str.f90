@@ -44,10 +44,8 @@ MODULE grd_str
 
      REAL(r8),    POINTER     ::  ro(:,:,:)    ! Reduced order control vector
      INTEGER(i4), POINTER     ::  reg(:,:)     ! Mask for EOF regions
-     ! REAL(r8),    POINTER     ::  msk(:,:,:)   ! Sea-Land mask for scalar points
      INTEGER(KIND=1),    POINTER     ::  msk(:,:,:)          ! Local Sea-Land mask for scalar points
      INTEGER(KIND=1),    POINTER     ::  global_msk(:,:,:)   ! Global Sea-land mask
-     ! REAL(r8),    POINTER     ::    f(:,:)     ! Coriolis term
 
      REAL(r8),    POINTER     ::  ro_ad(:,:,:)    ! Reduced order control vector adjoint
 
@@ -67,7 +65,6 @@ MODULE grd_str
      REAL(r8),    POINTER     ::  scx(:,:,:)   ! Scaling factor for x direction  !laura
      REAL(r8),    POINTER     ::  scy(:,:,:)   ! Scaling factor for y direction  !laura
 
-     REAL(r8),    POINTER     ::  msr(:,:,:)   ! Sea-land mask used in the recursive filter
      INTEGER(i4)              ::  imax         ! Maximum number of extended points
      INTEGER(i4)              ::  jmax         ! Maximum number of extended points
      INTEGER(i4), POINTER     ::  imx(:)       ! Max. no. of extended pnts at each level
@@ -76,7 +73,6 @@ MODULE grd_str
      INTEGER(i4), POINTER     ::  jstp(:,:,:)    ! Extended points
      INTEGER(i4), POINTER     ::  inx(:,:,:)   ! Pointer for extended grid
      INTEGER(i4), POINTER     ::  jnx(:,:,:)   ! Pointer for extended grid
-     ! REAL(r8),    POINTER     ::  fct(:,:,:)   ! Normalisation factor
      REAL(r8),    POINTER     ::  aex(:,:,:)   ! Alpha x direction on extended grid
      REAL(r8),    POINTER     ::  aey(:,:,:)   ! Alpha y direction on extended grid
      REAL(r8),    POINTER     ::  bex(:,:,:)   ! Beta x direction on extended grid

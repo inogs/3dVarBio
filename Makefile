@@ -103,11 +103,9 @@ PHYSOBS  =  \
 OBJS    =  \
 	routines.o\
 	def_nml.o\
-	def_grd.o\
 	parallel_def_grd.o\
 	sav_itr.o\
 	ini_itr.o\
-	rdgrds.o\
 	rdeofs.o\
     rdrcorr.o\
     mean_rdr.o\
@@ -118,7 +116,6 @@ OBJS    =  \
 	parallel_get_obs_chl.o\
 	int_par.o\
 	obs_vec.o\
-	def_cov.o\
 	ini_cfn.o\
 	ini_nrm.o\
 	costf.o\
