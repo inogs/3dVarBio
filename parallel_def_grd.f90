@@ -63,7 +63,7 @@ subroutine parallel_def_grd
      enddo
      !         grd%msr(:,:,:) = grd%msk(:,:,:)
   else
-     if(MyRank .eq. 0) then
+     if(MyId .eq. 0) then
 
         write(drv%dia,*)'Wrong mask for horizontal covariances ',  &
              drv%mask(drv%ktr)
@@ -71,7 +71,7 @@ subroutine parallel_def_grd
      !stop
      endif
 
-     call MPI_Abort(MyCommWorld, -1, i)
+     call MPI_Abort(Var3DCommunicator, -1, i)
 
   endif
 
@@ -87,7 +87,7 @@ subroutine parallel_def_grd
   ALLOCATE (SurfaceWaterPoints(2,nSurfaceWaterPoints))
 
   if(drv%Verbose .eq. 1) &
-       write(*,*) 'nSurfaceWaterPoints = ', nSurfaceWaterPoints, 'of Rank ', MyRank
+       write(*,*) 'nSurfaceWaterPoints = ', nSurfaceWaterPoints, 'of Rank ', MyId
 
   indSupWP=0
   do i=1,grd%im

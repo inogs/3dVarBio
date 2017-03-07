@@ -51,6 +51,6 @@ subroutine obsop_ad
     call onesided_obs_chl_ad
     ! call parallel_obs_chl_ad
 
-  call MPI_Barrier(MyCommWorld, ierr)
+  call MPI_Barrier(Var3DCommunicator, ierr)
   
 end subroutine obsop_ad

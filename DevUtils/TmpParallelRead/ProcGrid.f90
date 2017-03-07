@@ -5,7 +5,7 @@ program MyPnetCDF
 
   implicit none
   
-  integer :: ierr, MyID, size, cmode, ncid
+  integer :: ierr, MyID, NPE, cmode, ncid
   integer :: jpni, jpnj, jpnij, jpreci, jprecj, jpkb
   integer :: jpiglo, jpjglo, jpk, DimId, VarId
   integer :: gridX, gridY, TmpInt
@@ -22,7 +22,7 @@ program MyPnetCDF
 
   call MPI_Init(ierr)
   call MPI_Comm_rank(MPI_COMM_WORLD, MyID, ierr)
-  call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
+  call MPI_Comm_NPE(MPI_COMM_WORLD, NPE, ierr)
 
   !
   ! init check
@@ -43,7 +43,7 @@ program MyPnetCDF
   gridX = 5
   gridY = 4
 
-  if(gridX * gridY .ne. size) then
+  if(gridX * gridY .ne. NPE) then
      if(MyID .eq. 0) then
         WRITE(*,*) ""
         WRITE(*,*) " Error: gridX * gridY != nproc "
@@ -60,7 +60,7 @@ program MyPnetCDF
 
   if(MyID .eq. 0) then
      WRITE(*,*) ' '
-     WRITE(*,*) 'Dom_Size'
+     WRITE(*,*) 'Dom_NPE'
      WRITE(*,*) ' '
      WRITE(*,*) ' number of processors following i : jpni   = ', jpni
      WRITE(*,*) ' number of processors following j : jpnj   = ', jpnj
@@ -105,8 +105,8 @@ program MyPnetCDF
      WRITE(*,*) ' jpjglo  : second dimension of global domain --> j ',jpjglo
      ! WRITE(*,*) ' jpk     : number of levels           > or = jpk   ',jpk
      ! WRITE(*,*) ' jpkb    : first vertical layers where biology is active > or = jpkb   ',jpkb
-     ! WRITE(*,*) ' WorkLoad: jpiglo / size                           ',jpiglo/ size
-     ! WRITE(*,*) ' Rest    : mod(jpiglo, size)                       ',mod(jpiglo, size)
+     ! WRITE(*,*) ' WorkLoad: jpiglo / NPE                           ',jpiglo/ NPE
+     ! WRITE(*,*) ' Rest    : mod(jpiglo, NPE)                       ',mod(jpiglo, NPE)
      WRITE(*,*) ' '
   endif
 
@@ -143,7 +143,7 @@ program MyPnetCDF
   !
   ! PDICERBO version of the domain decomposition:
   ! the domain is divided among the processes into slices
-  ! of size (jpiglo / gridX, jpjglo / gridY).
+  ! of NPE (jpiglo / gridX, jpjglo / gridY).
   ! Clearly, the division is done tacking into account 
   ! rests. The only condition we need is that gridX*gridY = NPROC
   !

@@ -39,7 +39,7 @@ subroutine parallel_rdrcorr
   real(r4), ALLOCATABLE  :: x3(:,:,:)
 
   !write(*,*)trim(RCORR_FILE)
-  stat = nf90mpi_open(MyCommWorld, trim(RCORR_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
+  stat = nf90mpi_open(Var3DCommunicator, trim(RCORR_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
   if (stat /= nf90_noerr) call handle_err("nf90mpi_open",stat)
 
   ALLOCATE ( rcf%Lxyz(GlobalRow,GlobalCol,grd%km))

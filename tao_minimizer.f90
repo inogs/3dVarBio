@@ -27,7 +27,7 @@ subroutine tao_minimizer
 
   external MyFuncAndGradient, MyBounds, MyConvTest
 
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
      print*,'PETSc-TAO lmvm minimizer configuration'
      print*, ''
   endif
@@ -36,9 +36,9 @@ subroutine tao_minimizer
   CHKERRQ(ierr)
 
   if(drv%Verbose .eq. 1) &
-       print*, 'PetscInitialize(...) done by MyRank ', MyRank, ctl%n, ctl%n_global
+       print*, 'PetscInitialize(...) done by MyId ', MyId, ctl%n, ctl%n_global
 
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
      write(drv%dia,*) ''
      write(drv%dia,*) "Within tao_minimizer subroutine!"
   endif
@@ -51,11 +51,11 @@ subroutine tao_minimizer
   ALLOCATE(loc(n), MyValues(n))
 
   ! Create MyState array and fill it
-  call VecCreateMPI(MyCommWorld, n, M, MyState, ierr)
+  call VecCreateMPI(Var3DCommunicator, n, M, MyState, ierr)
   call VecGetOwnershipRange(MyState, GlobalStart, MyEnd, ierr)
 
   if(drv%Verbose .eq. 1) &
-       print*, "MyState initialization by MyRank ", MyRank, "with indices: ", GlobalStart, MyEnd
+       print*, "MyState initialization by MyId ", MyId, "with indices: ", GlobalStart, MyEnd
 
   if( ctl%n .ne. MyEnd - GlobalStart ) then
      print*, ""
@@ -83,7 +83,7 @@ subroutine tao_minimizer
   drv%MyCounter = 0
 
   ! Create Tao object and set type BLMVM (ones that use BFGS minimization algorithm)
-  call TaoCreate(MyCommWorld, tao, ierr)
+  call TaoCreate(Var3DCommunicator, tao, ierr)
   CHKERRQ(ierr)
   ! call TaoSetType(tao,"blmvm",ierr)
   call TaoSetType(tao,"lmvm",ierr)
@@ -104,9 +104,9 @@ subroutine tao_minimizer
      MaxGrad = max(MaxGrad, abs(ctl%g_c(j)))
   end do
 
-  call MPI_Allreduce(MPI_IN_PLACE, MaxGrad, 1, MPI_REAL8, MPI_MAX, MyCommWorld, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, MaxGrad, 1, MPI_REAL8, MPI_MAX, Var3DCommunicator, ierr)
   MyTolerance = ctl%pgper * MaxGrad
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
      print*, "Setting MyTolerance", MyTolerance
      print*, ""
      write(drv%dia,*) "Setting MyTolerance", MyTolerance
@@ -119,7 +119,7 @@ subroutine tao_minimizer
   call TaoSolve(tao, ierr)
   CHKERRQ(ierr)
 
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
      print*, ''
      print*, 'Tao Solver Info:'
      print*, ''
@@ -150,7 +150,7 @@ subroutine tao_minimizer
   CHKERRQ(ierr)
 
   call PetscFinalize(ierr)
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
      write(drv%dia,*) 'Minimization done with ', drv%MyCounter
      write(drv%dia,*) 'iterations'
      write(drv%dia,*) ''

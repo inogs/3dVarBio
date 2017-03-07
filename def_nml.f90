@@ -70,7 +70,7 @@ subroutine def_nml
 
   drv%dia = 12
 
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
     open ( drv%dia, file='OceanVar.diagnostics', form='formatted' )
   endif
 
@@ -83,7 +83,7 @@ subroutine def_nml
   ! ---
   read(11,grdlst)
 
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
 
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) '  '
@@ -117,7 +117,7 @@ subroutine def_nml
 ! ---
   read(11,ctllst)
 
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
 
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) ' MINIMIZER NAMELIST INPUT: '
@@ -134,7 +134,7 @@ subroutine def_nml
 ! ---
   read(11,covlst)
 
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
 
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) ' COVARIANCE NAMELIST INPUT: '
@@ -157,7 +157,7 @@ subroutine def_nml
 ! ---
   read(11,biolst)
 
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
 
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) '------------------------------------------------------------'

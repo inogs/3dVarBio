@@ -84,9 +84,9 @@ subroutine clean_mem
   DEALLOCATE(SendBottom, RecTop)
   DEALLOCATE(SendTop, RecBottom)
 
-  call MPI_Comm_free(MyCommWorld, ierr)
+  call MPI_Comm_free(Var3DCommunicator, ierr)
 
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
     write(*,*) ' ALL MEMORY CLEAN'
     write(*,*) ''
   endif

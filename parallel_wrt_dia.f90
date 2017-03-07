@@ -52,7 +52,7 @@ subroutine parallel_wrt_dia
   
   ! ---
   ! Innovations
-  if(MyRank .eq. 0) &
+  if(MyId .eq. 0) &
      write(drv%dia,*) 'writes to corrections.dat !!!!!!!!!!!!!!!!!!!!!!!!!'     
 
   write(fgrd,'(i1)')drv%ktr
@@ -81,7 +81,7 @@ subroutine parallel_wrt_dia
      enddo
   enddo
   
-  status = nf90mpi_create(MyCommWorld, trim(CORR_FILE), NF90_CLOBBER, &
+  status = nf90mpi_create(Var3DCommunicator, trim(CORR_FILE), NF90_CLOBBER, &
        MPI_INFO_NULL, ncid)
   if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_create ', status)
 

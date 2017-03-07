@@ -4,15 +4,15 @@ program myalltoall
   
   implicit none
 
-  integer :: MyRank, Size, ierr, i, j, NData, iProc, blockSize
+  integer :: MyId, NPE, ierr, i, j, NData, iProc, blockNPE
   integer :: GlobalRow, localRow, localCol
   real, allocatable :: Buffer(:,:), TmpBuf(:,:), RecBuf(:,:), DefBuf(:,:), LastBuf(:,:)
   
   call MPI_Init(ierr)
-  call MPI_Comm_size(MPI_COMM_WORLD, Size, ierr)
-  call MPI_Comm_rank(MPI_COMM_WORLD, MyRank, ierr)
+  call MPI_Comm_NPE(MPI_COMM_WORLD, NPE, ierr)
+  call MPI_Comm_rank(MPI_COMM_WORLD, MyId, ierr)
 
-  write(*,*) "Hello world from process ", MyRank, " of ", Size
+  write(*,*) "Hello world from process ", MyId, " of ", NPE
 
   localRow = 6
   localCol = 3
@@ -22,36 +22,36 @@ program myalltoall
   ! localCol = 5
   ! GlobalRow = 10
 
-  if(mod(localRow, size) .ne. 0) then
-     if(MyRank .eq. 0) then
+  if(mod(localRow, NPE) .ne. 0) then
+     if(MyId .eq. 0) then
         print*, ''
         print*, 'Warning! localRow % 2 == ', mod(localRow, 2)
         print*, ''
      end if
   end if
 
-  blockSize = localRow/Size
+  blockNPE = localRow/NPE
 
   ALLOCATE(Buffer(localRow, localCol))
   ALLOCATE(TmpBuf(localCol, localRow))
   ALLOCATE(RecBuf(localCol, localRow))
-  ALLOCATE(DefBuf(blockSize, localCol*Size))
+  ALLOCATE(DefBuf(blockNPE, localCol*NPE))
   ALLOCATE(LastBuf(localRow, localCol))
 
   ! Store initial data
   do i=1,localRow
      do j=1,localCol
-        Buffer(i, j) = j + (i - 1) * GlobalRow + MyRank*localCol
+        Buffer(i, j) = j + (i - 1) * GlobalRow + MyId*localCol
      end do
   end do
 
   TmpBuf = TRANSPOSE(Buffer)
-  NData = localCol * localRow / Size
+  NData = localCol * localRow / NPE
 
   ! Perform AllToAll communication
   call MPI_Alltoall(TmpBuf, NData, MPI_FLOAT, RecBuf, NData, MPI_FLOAT, MPI_COMM_WORLD, ierr)
 
-  write(*,*) "MyRank = ", MyRank, " is starting with:"
+  write(*,*) "MyId = ", MyId, " is starting with:"
   ! print*, ""
   ! print*, Buffer
   ! print*, ""
@@ -59,11 +59,11 @@ program myalltoall
   ! print*, ""
 
   ! Reorder data
-  do j = 1,blockSize
-     do iProc = 0, Size-1
+  do j = 1,blockNPE
+     do iProc = 0, NPE-1
         
         do i=1,localCol
-           DefBuf(j,i + iProc*localCol) = RecBuf(i, j + iProc*blockSize)
+           DefBuf(j,i + iProc*localCol) = RecBuf(i, j + iProc*blockNPE)
         end do
 
      end do
@@ -73,8 +73,8 @@ program myalltoall
   print*, DefBuf
   print*, ""
 
-  NData = blockSize * localCol
-  RecBuf = RESHAPE(RecBuf, (/blockSize, localCol*Size/))
+  NData = blockNPE * localCol
+  RecBuf = RESHAPE(RecBuf, (/blockNPE, localCol*NPE/))
   call MPI_Alltoall(DefBuf, NData, MPI_FLOAT, RecBuf, NData, MPI_FLOAT, MPI_COMM_WORLD, ierr)
 
   ! print*, ""
@@ -83,9 +83,9 @@ program myalltoall
   ! print*, ""
 
   do j=1,localCol
-     do iProc=0, Size-1
-        do i=1,blockSize
-           LastBuf(i + iProc*blockSize, j) = RecBuf(i, iProc*localCol + j)
+     do iProc=0, NPE-1
+        do i=1,blockNPE
+           LastBuf(i + iProc*blockNPE, j) = RecBuf(i, iProc*localCol + j)
         end do
      end do
   end do

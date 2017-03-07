@@ -103,7 +103,7 @@ subroutine sav_itr
   DEALLOCATE ( bta_rcy)
   DEALLOCATE (Dump_chl, Dump_vip, Dump_msk)
   
-  if(MyRank .eq. 0) write(*,*) ' DEALLOCATION DONE'
+  if(MyId .eq. 0) write(*,*) ' DEALLOCATION DONE'
   
 end subroutine sav_itr
 

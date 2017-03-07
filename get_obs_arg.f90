@@ -49,17 +49,17 @@ subroutine get_obs_arg
   
   ! ---
   ! Allocate memory for observations
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
     ! open(511,file='arg_datnew.dat',form='formatted')
     open(511,file='arg_mis.dat')
     read(511,'(I4)') GlobalArgNum
     write(drv%dia,*)'Number of ARGO observations: ', GlobalArgNum
   endif
 
-  call MPI_Bcast(GlobalArgNum, 1, MPI_INT, 0, MyCommWorld, ierr)
+  call MPI_Bcast(GlobalArgNum, 1, MPI_INT, 0, Var3DCommunicator, ierr)
 
   if(GlobalArgNum .eq. 0)then
-    if(MyRank .eq. 0) &
+    if(MyId .eq. 0) &
       close(511)
     return
   endif
@@ -70,7 +70,7 @@ subroutine get_obs_arg
   ALLOCATE( TmpRes(GlobalArgNum), TmpErr(GlobalArgNum))
   ALLOCATE( TmpIno(GlobalArgNum))
 
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
     ! process 0 reads all the argo observations
     do k=1,GlobalArgNum
       read (511,'(I5,I5,F12.5,F12.5,F12.5,F12.5,F12.5,F12.5,I8)') &
@@ -83,15 +83,15 @@ subroutine get_obs_arg
     close (511)
   endif
 
-  call MPI_Bcast(TmpFlc, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
-  call MPI_Bcast(TmpPar, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
-  call MPI_Bcast(TmpLon, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
-  call MPI_Bcast(TmpLat, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
-  call MPI_Bcast(TmpDpt, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
-  call MPI_Bcast(TmpTim, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
-  call MPI_Bcast(TmpRes, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
-  call MPI_Bcast(TmpErr, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
-  call MPI_Bcast(TmpIno, GlobalArgNum, MPI_REAL8, 0, MyCommWorld, ierr)
+  call MPI_Bcast(TmpFlc, GlobalArgNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
+  call MPI_Bcast(TmpPar, GlobalArgNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
+  call MPI_Bcast(TmpLon, GlobalArgNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
+  call MPI_Bcast(TmpLat, GlobalArgNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
+  call MPI_Bcast(TmpDpt, GlobalArgNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
+  call MPI_Bcast(TmpTim, GlobalArgNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
+  call MPI_Bcast(TmpRes, GlobalArgNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
+  call MPI_Bcast(TmpErr, GlobalArgNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
+  call MPI_Bcast(TmpIno, GlobalArgNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
 
   ! Counting the number of observations that falls in the domain
   Counter = 0
@@ -103,7 +103,7 @@ subroutine get_obs_arg
   enddo
 
   if(drv%Verbose .eq. 1) &
-       print*, "MyRank", MyRank, "has",Counter,"ARGO observations"
+       print*, "MyId", MyId, "has",Counter,"ARGO observations"
 
   arg%no  = Counter
 
@@ -362,9 +362,9 @@ subroutine int_par_arg
   endif
   
   arg%nc_global = 0
-  call MPI_Allreduce(arg%nc, arg%nc_global, 1, MPI_INT, MPI_SUM, MyCommWorld, ierr)
+  call MPI_Allreduce(arg%nc, arg%nc_global, 1, MPI_INT, MPI_SUM, Var3DCommunicator, ierr)
 
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
      write(drv%dia,*)'Real number of ARGO observations: ',arg%nc_global
      print*,'Good argo observations: ',arg%nc_global
   end if

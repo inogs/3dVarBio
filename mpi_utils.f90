@@ -6,11 +6,11 @@ subroutine my_mpi_init()
   integer :: ierr, zero
 
   CALL mpi_init(ierr)
-  CALL mpi_comm_rank(MPI_COMM_WORLD, MyRank,ierr)
-  CALL mpi_comm_size(MPI_COMM_WORLD, size,ierr)
+  CALL mpi_comm_rank(MPI_COMM_WORLD, MyId,ierr)
+  CALL mpi_comm_size(MPI_COMM_WORLD, NPE,ierr)
 
   zero = 0
-  call MPI_Comm_split(MPI_COMM_WORLD, zero, MyRank, MyCommWorld, ierr)
+  call MPI_Comm_split(MPI_COMM_WORLD, zero, MyId, Var3DCommunicator, ierr)
 
 end subroutine my_mpi_init
 
@@ -54,19 +54,19 @@ subroutine my_3dvar_node()
 
   INTEGER ierr
 
-  CALL mpi_comm_rank(MPI_COMM_WORLD, MyRank,ierr)
-  CALL mpi_comm_size(MPI_COMM_WORLD, size,ierr)  
+  CALL mpi_comm_rank(Var3DCommunicator, MyId,ierr)
+  CALL mpi_comm_size(Var3DCommunicator, NPE,ierr)  
 
-  NumProcI = Size
+  NumProcI = NPE
   NumProcJ = 1
 
-  MyPosI = mod(MyRank, NumProcI)
-  MyPosJ = MyRank / NumProcI
+  MyPosI = mod(MyId, NumProcI)
+  MyPosJ = MyId / NumProcI
 
   if(NumProcI .gt. 1) then
-     ProcTop  = MyRank - 1
+     ProcTop  = MyId - 1
      if(ProcTop .lt. 0) ProcTop = MPI_PROC_NULL
-     ProcBottom = MyRank + 1
+     ProcBottom = MyId + 1
      if(ProcBottom .ge. NumProcI) ProcBottom = MPI_PROC_NULL
   else
      print*, ""
@@ -84,21 +84,21 @@ subroutine my_3dvar_node()
   ALLOCATE(RecDisplX2D(NumProcI), RecDisplX4D(NumProcI))
 
   ! print for debug 
-  ! write(*,*) "MyRank", MyRank, "PosI", MyPosI, "PosJ", MyPosJ, "Left", ProcLeft, "Right", ProcRight, "Top", ProcTop, "Bottom", ProcBottom
+  ! write(*,*) "MyId", MyId, "PosI", MyPosI, "PosJ", MyPosJ, "Left", ProcLeft, "Right", ProcRight, "Top", ProcTop, "Bottom", ProcBottom
 
-  if(NumProcI * NumProcJ .ne. size) then
-     if(MyRank .eq. 0) then
+  if(NumProcI * NumProcJ .ne. NPE) then
+     if(MyId .eq. 0) then
         WRITE(*,*) ""
         WRITE(*,*) " Error: gridX * gridY != nproc "
         WRITE(*,*) " Exit "
         WRITE(*,*) ""
      end if
-     call MPI_Abort(MyCommWorld, -1, ierr)
+     call MPI_Abort(Var3DCommunicator, -1, ierr)
   end if
 
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
      WRITE(*,*) ' '
-     WRITE(*,*) 'Dom_Size'
+     WRITE(*,*) 'Dom_NPE'
      WRITE(*,*) ' '
      WRITE(*,*) ' number of processors following i : NumProcI   = ', NumProcI
      WRITE(*,*) ' number of processors following j : NumProcJ   = ', NumProcJ
@@ -115,7 +115,7 @@ subroutine mpi_sync
 
   INTEGER :: ierror
 
-  CALL mpi_barrier(MyCommWorld, ierror)
+  CALL mpi_barrier(Var3DCommunicator, ierror)
 
 end subroutine mpi_sync
 

@@ -46,9 +46,9 @@ subroutine ini_cfn
      ! Allocate memory for optimization arrays
      
      ctl%n = nSurfaceWaterPoints * ros%neof
-     call MPI_Allreduce(ctl%n, ctl%n_global, 1, MPI_INT, MPI_SUM, MyCommWorld, ierr)
+     call MPI_Allreduce(ctl%n, ctl%n_global, 1, MPI_INT, MPI_SUM, Var3DCommunicator, ierr)
 
-     if (MyRank .eq. 0) write(drv%dia,*) 'Size of the control vector: ',ctl%n_global
+     if (MyId .eq. 0) write(drv%dia,*) 'NPE of the control vector: ',ctl%n_global
 
 
      ALLOCATE( ctl%x_c(ctl%n)) ; ctl%x_c = huge(ctl%x_c(1))

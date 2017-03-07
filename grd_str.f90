@@ -84,7 +84,7 @@ MODULE grd_str
 
      REAL(r8),    POINTER     ::  lon(:,:)       ! Longitude
      REAL(r8),    POINTER     ::  lat(:,:)       ! Latitude
-     REAL(r8)                 ::  NextLongitude  ! longitude value of the process below MyRank
+     REAL(r8)                 ::  NextLongitude  ! longitude value of the process below MyId
 
   END TYPE grid_t
 

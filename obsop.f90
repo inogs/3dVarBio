@@ -38,7 +38,7 @@ subroutine obsop
   
   INTEGER(i4) :: ierr
 
-  call MPI_Barrier(MyCommWorld, ierr)
+  call MPI_Barrier(Var3DCommunicator, ierr)
   ! ---
   ! Observations by ARGO floats
   if (drv%argo .eq. 1) &
@@ -50,6 +50,6 @@ subroutine obsop
     call onesided_obs_chl
     ! call parallel_obs_chl
 
-  call MPI_Barrier(MyCommWorld, ierr)
+  call MPI_Barrier(Var3DCommunicator, ierr)
   
 end subroutine obsop

@@ -99,7 +99,7 @@ subroutine parallel_obs_arg
            
            !call MPI_Barrier(MPI_COMM_WORLD, ierr)
            ! if(drv%MyCounter.eq.5)then
-           !    print*,"AFTER onesidecomm, MyRank",MyRank,"is here;",FirstData,SecData,ThirdData,LastData, GetData
+           !    print*,"AFTER onesidecomm, MyId",MyId,"is here;",FirstData,SecData,ThirdData,LastData, GetData
            ! endif
            ! arg%inc(kk) = arg%pq1(kk) * grd%chl(i  ,j  ,k  ,1) +       &
            !               arg%pq2(kk) * FirstData +       &

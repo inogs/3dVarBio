@@ -4,13 +4,13 @@ program CommunicationTime
 
   implicit none
 
-  integer :: ierr, MyRank, size, i, j, k
+  integer :: ierr, MyId, NPE, i, j, k
   integer :: im, jm, km, nlev, NRep, Counter
   real(8), allocatable, dimension(:,:,:) :: ToSend
 
   call MPI_Init(ierr)
-  call MPI_Comm_rank(MPI_COMM_WORLD, MyRank, ierr)
-  call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
+  call MPI_Comm_rank(MPI_COMM_WORLD, MyId, ierr)
+  call MPI_Comm_NPE(MPI_COMM_WORLD, NPE, ierr)
 
   NRep = 20 ! 1000
 
@@ -24,7 +24,7 @@ program CommunicationTime
   ! km = 20
   ! nlev = 1
 
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
      ALLOCATE(ToSend(im,jm,km))
      do k=1,km
         do j=1,jm
@@ -40,20 +40,20 @@ program CommunicationTime
   ! Master-Slave execution
   do Counter=1, NRep
 
-     if(MyRank .eq. 0) then
+     if(MyId .eq. 0) then
         print*, "Repetition", Counter
-        call Master(ToSend, im, jm, km, nlev, size)
+        call Master(ToSend, im, jm, km, nlev, NPE)
      else
-        call Slave(im, jm, km, nlev, MyRank)
+        call Slave(im, jm, km, nlev, MyId)
      end if
 
-     ! print*, "process ", MyRank, " ending"
+     ! print*, "process ", MyId, " ending"
      call MPI_Barrier(MPI_COMM_WORLD, ierr)
 
   end do
 
   ! Printing (if needed)
-  ! if(MyRank .eq. 0) then
+  ! if(MyId .eq. 0) then
   !    do k=1,km
   !       print*, "Printing level", k
   !       ! do j=1,jm
@@ -63,7 +63,7 @@ program CommunicationTime
   !       ! end do
   !    end do
   ! end if
-  if(MyRank .eq. 0) &
+  if(MyId .eq. 0) &
        DEALLOCATE(ToSend)
 
   call MPI_Finalize(ierr)
@@ -86,12 +86,12 @@ subroutine ReadySlave(WhoIs, Res, ComputedLevel, im, jm, nlev)
 
 end subroutine ReadySlave
 
-subroutine Master(ToSend, im, jm, km, nlev, size)
+subroutine Master(ToSend, im, jm, km, nlev, NPE)
 
   use mpi
   implicit none
 
-  integer :: im, jm, km, nlev, size
+  integer :: im, jm, km, nlev, NPE
   integer :: i, j, SendCounter, ReadyProc, ierr, nlev_tmp
   integer :: ComputedLevel, tmpk, RecCounter
   real(8), dimension(im, jm, km) :: ToSend
@@ -137,7 +137,7 @@ subroutine Master(ToSend, im, jm, km, nlev, size)
      ! else
   end do
 
-  ! do i=1,size-1
+  ! do i=1,NPE-1
   !    ! print*, "killing process ", i
   !    call MPI_Send(ToSend(:,:,1:nlev), im*jm*nlev, MPI_REAL8, i, km+1, MPI_COMM_WORLD, ierr)
   ! end do
@@ -146,14 +146,14 @@ subroutine Master(ToSend, im, jm, km, nlev, size)
 
 end subroutine Master
 
-subroutine Slave(im, jm, km, nlev, MyRank)
+subroutine Slave(im, jm, km, nlev, MyId)
 
   use mpi
 
   implicit none
 
   integer :: i, j, k
-  integer :: im, jm, km, nlev, MyRank
+  integer :: im, jm, km, nlev, MyId
   integer :: MyLevel, ierr
   integer :: MyStatus(MPI_STATUS_SIZE)
   real(8), allocatable, dimension(:,:,:) :: MyArr
@@ -182,10 +182,10 @@ subroutine Slave(im, jm, km, nlev, MyRank)
         !
         ! OPERATIONS TO PERFORM
         !
-        ! print*, "MyRank slave", MyRank
+        ! print*, "MyId slave", MyId
         ! do j=1, jm
         !    do i=1,im
-        !       MyArr(i,j,nlev) = real(MyRank, 8)
+        !       MyArr(i,j,nlev) = real(MyId, 8)
         !    end do
         ! end do
         do i=1,4

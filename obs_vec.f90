@@ -44,7 +44,7 @@ subroutine obs_vec
   
   obs%no = chl%nc + arg%no
 
-  if(MyRank .eq. 0) &
+  if(MyId .eq. 0) &
        write(drv%dia,*) ' Total number of observations: ', obs%no
 
   ALLOCATE ( obs%inc(obs%no)) ; obs%inc = huge(obs%inc(1))

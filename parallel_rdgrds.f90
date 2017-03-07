@@ -21,7 +21,7 @@ subroutine parallel_rdgrd
 
   !
   ! open grid1.nc in read-only mode
-  ierr = nf90mpi_open(MyCommWorld, GRID_FILE, NF90_NOWRITE, MPI_INFO_NULL, ncid)
+  ierr = nf90mpi_open(Var3DCommunicator, GRID_FILE, NF90_NOWRITE, MPI_INFO_NULL, ncid)
   if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_open', ierr)
 
   !
@@ -36,11 +36,11 @@ subroutine parallel_rdgrd
   call MyGetDimension(ncid, 'km', MyOffset)
   grd%km = MyOffset
 
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
      write(drv%dia,*)'Grid dimensions are: ',GlobalRow,GlobalCol,grd%km
 
      write(drv%dia,*) ' '
-     write(drv%dia,*) 'Dom_Size'
+     write(drv%dia,*) 'Dom_size'
      write(drv%dia,*) ' '
      write(drv%dia,*) ' number of processors following i : NumProcI   = ', NumProcI
      write(drv%dia,*) ' number of processors following j : NumProcJ   = ', NumProcJ
@@ -50,6 +50,7 @@ subroutine parallel_rdgrd
      WRITE(*,*) ' '
      WRITE(*,*) ' GlobalRow  : first  dimension of global domain --> i ',GlobalRow
      WRITE(*,*) ' GlobalCol  : second dimension of global domain --> j ',GlobalCol
+     WRITE(*,*) ' Depth      : third dimension of global domain --> j ',grd%km
      WRITE(*,*) ' ReadDomDec : ',drv%ReadDomDec
      WRITE(*,*) ' '
   endif
@@ -134,10 +135,10 @@ subroutine parallel_rdgrd
      grd%lat(:,:) = x2(:,:)
      
      grd%NextLongitude=grd%lon(1,1)
-     ! Send to ProcTop with Tag = MyRank and receiving from 
+     ! Send to ProcTop with Tag = MyId and receiving from 
      ! ProcBottom with Tag = ProcBottom :)
-     call MPI_Sendrecv_replace(grd%NextLongitude,1,MPI_REAL8,ProcTop,MyRank,&
-      ProcBottom,ProcBottom, MyCommWorld, MyStatus, ierr)
+     call MPI_Sendrecv_replace(grd%NextLongitude,1,MPI_REAL8,ProcTop,MyId,&
+      ProcBottom,ProcBottom, Var3DCommunicator, MyStatus, ierr)
      if(ProcBottom .eq. MPI_PROC_NULL) grd%NextLongitude = grd%lon(grd%im,grd%jm)
   endif
 
@@ -202,7 +203,7 @@ subroutine DomainDecomposition
   !
   ! PDICERBO version of the domain decomposition:
   ! the domain is divided among the processes into slices
-  ! of size (GlobalRow / NumProcI, GlobalCol / NumProcJ).
+  ! of NPE (GlobalRow / NumProcI, GlobalCol / NumProcJ).
   ! Clearly, the division is done tacking into account
   ! rests. The only condition we need is that NumProcI*NumProcJ = NPROC
   !
@@ -243,7 +244,7 @@ subroutine DomainDecomposition
   MyStart(1) = TmpInt * MyPosI + OffsetRow + 1
   MyCount(1) = MyCount(1)
 
-  TmpInt = MyRank / NumProcI
+  TmpInt = MyId / NumProcI
   MyStart(2) = mod(MyCount(2) * TmpInt + OffsetCol, GlobalCol) + 1
   MyCount(2) = MyCount(2)
 
@@ -252,7 +253,7 @@ subroutine DomainDecomposition
   MyCount(3) = grd%km
 
   if(drv%Verbose .eq. 1) &
-       write(*,*) "MyRank = ", MyRank, " MyStart = ", MyStart, " MyCount = ", MyCount
+       write(*,*) "MyId = ", MyId, " MyStart = ", MyStart, " MyCount = ", MyCount
 
   grd%im = MyCount(1)
   grd%jm = MyCount(2)
@@ -397,7 +398,7 @@ subroutine handle_err(err_msg, errcode)
   integer err
 
   write(*,*) 'Error: ', trim(err_msg), ' ', nf90mpi_strerror(errcode)
-  call MPI_Abort(MyCommWorld, -1, err)
+  call MPI_Abort(Var3DCommunicator, -1, err)
   return
 end subroutine handle_err
 
@@ -416,7 +417,7 @@ subroutine CreateMpiWindows
   lenreal = 8
   nbytes = grd%im*grd%jm*grd%km*grd%nchl*lenreal
 
-  call MPI_Win_create(grd%chl, nbytes, lenreal, MPI_INFO_NULL, MyCommWorld, MpiWinChl, ierr)
-  call MPI_Win_create(grd%chl_ad, nbytes, lenreal, MPI_INFO_NULL, MyCommWorld, MpiWinChlAd, ierr)
+  call MPI_Win_create(grd%chl, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinChl, ierr)
+  call MPI_Win_create(grd%chl_ad, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinChlAd, ierr)
 
 end subroutine CreateMpiWindows

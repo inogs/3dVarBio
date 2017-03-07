@@ -9,23 +9,23 @@ program vectest
   Vec MyState
   PetscErrorCode :: ierr
   PetscInt :: GlobalStart, MyEnd 
-  integer :: state, size, MyRank, n, M, j
+  integer :: state, NPE, MyId, n, M, j
   integer, allocatable :: loc(:)
   PetscScalar, allocatable :: MyValues(:)
   PetscScalar, pointer, dimension(:)  :: TmpPtr
   real(8) :: zero
 
   call MPI_Init(state)
-  call MPI_Comm_rank(MPI_COMM_WORLD, MyRank, state)
-  call MPI_Comm_size(MPI_COMM_WORLD, size, state)
+  call MPI_Comm_rank(MPI_COMM_WORLD, MyId, state)
+  call MPI_Comm_NPE(MPI_COMM_WORLD, NPE, state)
 
-  print*, "MPI_Init done by rank ", MyRank
+  print*, "MPI_Init done by rank ", MyId
 
   call PetscInitialize(PETSC_NULL_CHARACTER, ierr)
-  print*, "PetscInitialize done by rank ", MyRank
+  print*, "PetscInitialize done by rank ", MyId
 
   n = 5
-  M = n*size
+  M = n*NPE
 
   ALLOCATE(loc(n), MyValues(n))
 
@@ -33,7 +33,7 @@ program vectest
   call VecGetOwnershipRange(MyState, GlobalStart, MyEnd, ierr)
 
   zero = 0.
-  zero = zero + MyRank*n
+  zero = zero + MyId*n
 
   do j = 1, n
      zero = zero + 1

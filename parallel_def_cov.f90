@@ -78,7 +78,7 @@ subroutine parallel_def_cov
   !$ nthreads = OMP_GET_NUM_THREADS()
   !$ threadid = OMP_GET_THREAD_NUM()
   if(threadid.eq.0) then
-     if(MyRank .eq. 0) &
+     if(MyId .eq. 0) &
           write(*,*) "OMP version with threads = ", nthreads
   endif
   !$OMP END PARALLEL
@@ -114,8 +114,8 @@ subroutine parallel_def_cov
   enddo
 
   ! Computes the global maximum and minimum
-  call MPI_Allreduce(MPI_IN_PLACE, rcf%dsmx, 1, MPI_REAL8, MPI_MAX, MyCommWorld, ierr)
-  call MPI_Allreduce(MPI_IN_PLACE, rcf%dsmn, 1, MPI_REAL8, MPI_MIN, MyCommWorld, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, rcf%dsmx, 1, MPI_REAL8, MPI_MAX, Var3DCommunicator, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, rcf%dsmn, 1, MPI_REAL8, MPI_MIN, Var3DCommunicator, ierr)
   
   rcf%dsmx = rcf%dsmx + max(1.d0,(rcf%dsmx-rcf%dsmn)/(rcf%ntb-2.))
   
@@ -149,7 +149,7 @@ subroutine parallel_def_cov
   ALLOCATE(DefBuf2D(GlobalRow, localCol))
 
   call MPI_Alltoallv(grd%dx, SendCountX2D, SendDisplX2D, MPI_REAL8, &
-       RecBuf1D, RecCountX2D, RecDisplX2D, MPI_REAL8, MyCommWorld, ierr)
+       RecBuf1D, RecCountX2D, RecDisplX2D, MPI_REAL8, Var3DCommunicator, ierr)
 
   do j=1, localCol
      do iProc=0, NumProcI-1
@@ -290,8 +290,8 @@ subroutine parallel_def_cov
      
   enddo
 
-  call MPI_Allreduce(MPI_IN_PLACE, grd%imax, 1, MPI_INT, MPI_MAX, MyCommWorld, ierr)
-  call MPI_Allreduce(MPI_IN_PLACE, grd%jmax, 1, MPI_INT, MPI_MAX, MyCommWorld, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, grd%imax, 1, MPI_INT, MPI_MAX, Var3DCommunicator, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, grd%jmax, 1, MPI_INT, MPI_MAX, Var3DCommunicator, ierr)
   
   ALLOCATE( grd%aex(localCol,grd%imax,grd%km)) ; grd%aex(:,:,:) = 0.0
   ALLOCATE( grd%bex(localCol,grd%imax,grd%km)) ; grd%bex(:,:,:) = 0.0
@@ -362,7 +362,7 @@ subroutine parallel_def_cov
   ALLOCATE ( grd%ro_ad( grd%im, grd%jm, ros%neof))   ; grd%ro_ad = 0.0
   ALLOCATE ( Dump_vip ( grd%im, grd%jm, ros%neof))   ; Dump_vip  = 0.0
   
-  if(MyRank .eq. 0) &
+  if(MyId .eq. 0) &
        write(*,*) 'rcfl allocation :', grd%jmax, grd%imax, nthreads
   ALLOCATE ( a_rcx(localCol,grd%imax,nthreads)) ; a_rcx = huge(a_rcx(1,1,1))
   ALLOCATE ( b_rcx(localCol,grd%imax,nthreads)) ; b_rcx = huge(b_rcx(1,1,1))

@@ -185,7 +185,7 @@ subroutine int_par_chl
   real(r8)      ::  p1, q1
   real(r8)      ::  div_x, div_y
 
-  if(MyRank .eq. 0) &
+  if(MyId .eq. 0) &
        write(drv%dia,*) 'Number of CHL observations:  >>>>>>>>>>>>>',chl%nc_global
 
   if(chl%nc.gt.0) then

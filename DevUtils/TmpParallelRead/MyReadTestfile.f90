@@ -5,7 +5,7 @@ program MyPnetCDF
 
   implicit none
   
-  integer :: ierr, MyID, size, cmode, ncid
+  integer :: ierr, MyID, NPE, cmode, ncid
   integer :: jpni, jpnj, jpnij, jpreci, jprecj, jpkb
   integer :: jpiglo, jpjglo, jpk, DimId, VarId
   real, allocatable :: values(:,:)
@@ -21,7 +21,7 @@ program MyPnetCDF
 
   call MPI_Init(ierr)
   call MPI_Comm_rank(MPI_COMM_WORLD, MyID, ierr)
-  call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
+  call MPI_Comm_NPE(MPI_COMM_WORLD, NPE, ierr)
 
   !
   ! init check
@@ -45,7 +45,7 @@ program MyPnetCDF
 
   if(MyID .eq. 0) then
      WRITE(*,*) ' '
-     WRITE(*,*) 'Dom_Size'
+     WRITE(*,*) 'Dom_NPE'
      WRITE(*,*) ' '
      WRITE(*,*) ' number of processors following i : jpni   = ', jpni
      WRITE(*,*) ' number of processors following j : jpnj   = ', jpnj
@@ -86,8 +86,8 @@ program MyPnetCDF
      WRITE(*,*) ' jpjglo  : second dimension of global domain --> j ',jpjglo
      WRITE(*,*) ' jpk     : number of levels           > or = jpk   ',jpk
      ! WRITE(*,*) ' jpkb    : first vertical layers where biology is active > or = jpkb   ',jpkb
-     WRITE(*,*) ' WorkLoad: jpiglo / size                           ',jpiglo/ size
-     WRITE(*,*) ' Rest    : mod(jpiglo, size)                       ',mod(jpiglo, size)
+     WRITE(*,*) ' WorkLoad: jpiglo / NPE                           ',jpiglo/ NPE
+     WRITE(*,*) ' Rest    : mod(jpiglo, NPE)                       ',mod(jpiglo, NPE)
      WRITE(*,*) ' '
   endif
 
@@ -124,7 +124,7 @@ program MyPnetCDF
   !
   ! PDICERBO version of the domain decomposition:
   ! the domain is divided among the processes into slices
-  ! of size (jpiglo / size, jpjglo)
+  ! of NPE (jpiglo / NPE, jpjglo)
   ! WARNING!!! netcdf stores data in ROW MAJOR order
   ! while here we are reading in column major order.
   ! We have to take into account this simply swapping
@@ -132,8 +132,8 @@ program MyPnetCDF
   !
   !*******************************************
 
-  MyRest = mod(jpiglo, size)
-  MyCount(1) = jpiglo / size
+  MyRest = mod(jpiglo, NPE)
+  MyCount(1) = jpiglo / NPE
   RealOffset = 0
   if (MyId .lt. MyRest) then
      MyCount(1) = MyCount(1) + 1

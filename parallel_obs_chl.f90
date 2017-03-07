@@ -49,9 +49,9 @@ subroutine parallel_obs_chl
   RecBottom(:) = 0
   
   call MPI_Isend(SendTop, grd%jm, MPI_REAL8, ProcTop, MyTag, &
-       MyCommWorld, ReqTop, ierr)
+       Var3DCommunicator, ReqTop, ierr)
   call MPI_Irecv(RecBottom, grd%jm, MPI_REAL8, ProcBottom, MyTag, &
-       MyCommWorld, ReqBottom, ierr)
+       Var3DCommunicator, ReqBottom, ierr)
   
   do j=1,grd%jm
      do i=1,grd%im
@@ -119,9 +119,9 @@ subroutine parallel_obs_chl_ad
   RecBottom(:) = 0
   
   call MPI_Isend(SendTop, grd%jm, MPI_REAL8, ProcTop, MyTag, &
-       MyCommWorld, ReqTop, ierr)
+       Var3DCommunicator, ReqTop, ierr)
   call MPI_Irecv(RecBottom, grd%jm, MPI_REAL8, ProcBottom, MyTag, &
-       MyCommWorld, ReqBottom, ierr)
+       Var3DCommunicator, ReqBottom, ierr)
   
   do j=1,grd%jm
      do i=1,grd%im
@@ -159,9 +159,9 @@ subroutine parallel_obs_chl_ad
   RecTop(:)  = SendTop(:)
   
   call MPI_Isend(SendBottom, grd%jm, MPI_REAL8, ProcBottom, MyTag, &
-       MyCommWorld, ReqBottom, ierr)
+       Var3DCommunicator, ReqBottom, ierr)
   call MPI_Irecv(RecTop, grd%jm, MPI_REAL8, ProcTop, MyTag, &
-       MyCommWorld, ReqTop, ierr)
+       Var3DCommunicator, ReqTop, ierr)
   
   do j=1,grd%jm
      do i=1,grd%im
