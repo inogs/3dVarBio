@@ -54,6 +54,9 @@ subroutine my_3dvar_node()
 
   INTEGER ierr
 
+  CALL mpi_comm_rank(MPI_COMM_WORLD, MyRank,ierr)
+  CALL mpi_comm_size(MPI_COMM_WORLD, size,ierr)  
+
   NumProcI = Size
   NumProcJ = 1
 
