@@ -3,6 +3,8 @@ use filenames
 use mpi_str
 implicit none
 
+integer :: ierr
+
 call SETFILENAMES
 
 ! init of the MPI environment
