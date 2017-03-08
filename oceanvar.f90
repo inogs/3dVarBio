@@ -159,6 +159,5 @@ subroutine oceanvar
   
   !-----------------------------------------------------------------
   if(MyId .eq. 0) close(drv%dia)
-  call mpi_stop
 
 end subroutine oceanvar
