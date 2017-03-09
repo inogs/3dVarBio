@@ -178,6 +178,9 @@ tao_str.o: tao_str.f90
 tao_minimizer.o: tao_minimizer.f90
 	$(CPP) -I$(PETSC_INC) $*.f90 > cpp.$*.f90 ; $(F90) -I$(PETSC_INC) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
 
+mpi_utils.o: mpi_utils.f90
+	$(CPP) -I$(PETSC_INC) $*.f90 > cpp.$*.f90 ; $(F90) -I$(PETSC_INC) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
+
 .DEFAULTS:
 .f90.o :
 	$(CPP) $*.f90 > cpp.$*.f90 ; $(F90) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o

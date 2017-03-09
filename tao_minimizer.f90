@@ -32,12 +32,6 @@ subroutine tao_minimizer
      print*, ''
   endif
 
-  call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-  CHKERRQ(ierr)
-
-  if(drv%Verbose .eq. 1) &
-       print*, 'PetscInitialize(...) done by MyId ', MyId, ctl%n, ctl%n_global
-
   if(MyId .eq. 0) then
      write(drv%dia,*) ''
      write(drv%dia,*) "Within tao_minimizer subroutine!"
@@ -149,7 +143,6 @@ subroutine tao_minimizer
   call VecDestroy(MyState, ierr)
   CHKERRQ(ierr)
 
-  call PetscFinalize(ierr)
   if(MyId .eq. 0) then
      write(drv%dia,*) 'Minimization done with ', drv%MyCounter
      write(drv%dia,*) 'iterations'

@@ -45,7 +45,7 @@ program MyPnetCDF
 
   if(MyID .eq. 0) then
      WRITE(*,*) ' '
-     WRITE(*,*) 'Dom_NPE'
+     WRITE(*,*) 'Dom_size'
      WRITE(*,*) ' '
      WRITE(*,*) ' number of processors following i : jpni   = ', jpni
      WRITE(*,*) ' number of processors following j : jpnj   = ', jpnj

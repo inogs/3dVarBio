@@ -1,9 +1,15 @@
-subroutine my_mpi_init()
+subroutine var3d_mpi_init()
 
+#include "petsc/finclude/petscvecdef.h"
   use mpi_str
+  use drv_str
+  use petscvec
+
   implicit none
 
   integer :: ierr, zero
+  PetscErrorCode  ::   stat
+
 
   CALL mpi_init(ierr)
   CALL mpi_comm_rank(MPI_COMM_WORLD, MyId,ierr)
@@ -12,7 +18,15 @@ subroutine my_mpi_init()
   zero = 0
   call MPI_Comm_split(MPI_COMM_WORLD, zero, MyId, Var3DCommunicator, ierr)
 
-end subroutine my_mpi_init
+  ! initialize PETSc environment
+  PETSC_COMM_WORLD = Var3DCommunicator
+  call PetscInitialize(PETSC_NULL_CHARACTER,stat)
+  CHKERRQ(stat)
+
+  if(drv%Verbose .eq. 1) &
+       print*, 'PetscInitialize(...) done by MyId ', MyId  
+
+end subroutine var3d_mpi_init
 
 subroutine my_3dvar_node()
   ! ---------------------------------------------------------------------
@@ -98,7 +112,7 @@ subroutine my_3dvar_node()
 
   if(MyId .eq. 0) then
      WRITE(*,*) ' '
-     WRITE(*,*) 'Dom_NPE'
+     WRITE(*,*) 'Dom_size'
      WRITE(*,*) ' '
      WRITE(*,*) ' number of processors following i : NumProcI   = ', NumProcI
      WRITE(*,*) ' number of processors following j : NumProcJ   = ', NumProcJ
@@ -122,12 +136,22 @@ end subroutine mpi_sync
 
 subroutine mpi_stop
 
+#include "petsc/finclude/petscvecdef.h"
   use mpi_str
+  use petscvec
 
   implicit none
 
   INTEGER info
 
-  CALL mpi_finalize(info)
+  integer :: ierr
+  PetscErrorCode  ::   stat
+
+
+
+  call PetscFinalize(stat)
+
+  call MPI_Comm_free(Var3DCommunicator, ierr)
+  call mpi_finalize(info)
 
 end subroutine mpi_stop
