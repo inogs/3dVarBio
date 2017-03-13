@@ -10,6 +10,7 @@ character (LEN=1024) :: OBS_FILE    != 'obs_1.dat'
 character (LEN=1024) :: GRID_FILE   != 'grid1.nc'
 !laura
 character (LEN=1024) :: RCORR_FILE  != 'chl_rad_corr.nc'
+character (LEN=1024) :: ARGO_FILE   != 'argo_mis.dat'
 
 
 
@@ -28,6 +29,7 @@ MISFIT_FILE = 'chl_mis.nc'
   GRID_FILE = 'grid1.nc'! 'grid'//cgrd//'.nc'
 !laura
  RCORR_FILE = 'chl_rad_corr.nc'
+  ARGO_FILE = 'argo_mis.dat'
 
 END SUBROUTINE SETFILENAMES
 

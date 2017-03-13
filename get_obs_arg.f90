@@ -33,6 +33,7 @@ subroutine get_obs_arg
   use grd_str
   use obs_str
   use mpi_str
+  use filenames
   
   implicit none
   
@@ -51,7 +52,8 @@ subroutine get_obs_arg
   ! Allocate memory for observations
   if(MyId .eq. 0) then
     ! open(511,file='arg_datnew.dat',form='formatted')
-    open(511,file='arg_mis.dat')
+    ! open(511,file='arg_mis.dat')
+    open(511,file=trim(ARGO_FILE))
     read(511,'(I4)') GlobalArgNum
     write(drv%dia,*)'Number of ARGO observations: ', GlobalArgNum
   endif
