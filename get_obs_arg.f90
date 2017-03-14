@@ -51,8 +51,6 @@ subroutine get_obs_arg
   ! ---
   ! Allocate memory for observations
   if(MyId .eq. 0) then
-    ! open(511,file='arg_datnew.dat',form='formatted')
-    ! open(511,file='arg_mis.dat')
     open(511,file=trim(ARGO_FILE))
     read(511,'(I4)') GlobalArgNum
     write(drv%dia,*)'Number of ARGO observations: ', GlobalArgNum
@@ -75,8 +73,7 @@ subroutine get_obs_arg
   if(MyId .eq. 0) then
     ! process 0 reads all the argo observations
     do k=1,GlobalArgNum
-      read (511,'(I5,I5,F12.5,F12.5,F12.5,F12.5,F12.5,F12.5,I8)') &
-      ! read (511,*) &
+      read (511,*) &
             TmpFlc(k), TmpPar(k), &
             TmpLon(k), TmpLat(k), &
             TmpDpt(k), TmpTim(k), &
