@@ -147,17 +147,15 @@ subroutine get_obs_arg
 ! Vertical interpolation parameters
   do k = 1,arg%no
      if(arg%flg(k).eq.1)then
-        arg%kb(k) = 1 ! grd%km-1
-        Counter = 0
+        arg%kb(k) = grd%km-1
         do kk = 1,grd%km-1
            if( arg%dpt(k).ge.grd%dep(kk) .and. arg%dpt(k).lt.grd%dep(kk+1) ) then
-              Counter = 1
               arg%kb(k) = kk
               arg%rb(k) = (arg%dpt(k) - grd%dep(kk)) / (grd%dep(kk+1) - grd%dep(kk))
+           else if ( arg%dpt(k).ge.0 .and. arg%dpt(k).lt.grd%dep(1)) then
+              arg%kb(k) = 1
            endif
         enddo
-        if(Counter .eq. 0) &
-          arg%kb(k) = grd%km-1
      endif
   enddo
   
