@@ -411,9 +411,10 @@ subroutine CreateMpiWindows
   ! include "mpif.h"
   
   integer :: ierr
-  integer(kind=MPI_ADDRESS_KIND) :: nbytes, lenreal
+  integer(kind=MPI_ADDRESS_KIND) :: nbytes, lenreal, dummy
 
-  lenreal = 8
+  ! lenreal = 8
+  call MPI_Type_get_extent(MPI_REAL8, dummy, lenreal, ierr)
   nbytes = grd%im*grd%jm*grd%km*grd%nchl*lenreal
 
   call MPI_Win_create(grd%chl, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinChl, ierr)

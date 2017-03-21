@@ -29,7 +29,7 @@ MISFIT_FILE = 'chl_mis.nc'
   GRID_FILE = 'grid1.nc'! 'grid'//cgrd//'.nc'
 !laura
  RCORR_FILE = 'chl_rad_corr.nc'
-  ARGO_FILE = 'argo_mis.dat'
+  ARGO_FILE = 'arg_mis.dat'
 
 END SUBROUTINE SETFILENAMES
 
