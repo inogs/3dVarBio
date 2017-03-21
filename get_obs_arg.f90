@@ -41,7 +41,7 @@ subroutine get_obs_arg
   INTEGER(i4)   ::  i1, kk, i
   REAL(r8), ALLOCATABLE, DIMENSION(:) :: TmpFlc, TmpPar, TmpLon, TmpLat
   REAL(r8), ALLOCATABLE, DIMENSION(:) :: TmpDpt, TmpTim, TmpRes, TmpErr, TmpIno 
-  INTEGER(i4)   :: GlobalArgNum, ierr
+  INTEGER(i4)   :: GlobalArgNum, Counter, ierr
   character(len=1024) :: filename
   
   arg%no  = 0
