@@ -1,8 +1,8 @@
-FC      = ifort $(OPENMP_FLAG)
-CC      = icc
-F90     = ifort $(OPENMP_FLAG) 
-F77     = ifort
-CPP     = ifort -cpp -E
+FC      = mpiifort $(OPENMP_FLAG)
+CC      = mpiicc
+F90     = mpiifort $(OPENMP_FLAG)
+F77     = mpiifort
+CPP     = mpiifort -cpp -E
 LD      = $(FC) $(OPENMP_FLAG)
 MPFC    = mpiifort
 MPCC    = mpiicc
@@ -14,9 +14,20 @@ OPT_FLTCONSISTENCY =
 LIBFEXIT  = ./libfexit/
 LIBNCMEDLEV =./libnc-medlevel
 
-FFLAGS  = -O0 -g -traceback -fp-stack-check -check bounds -fpe0 -I$(NETCDF_INC) $(OPT_FLTCONSISTENCY) -c
-CFLAGS  = -O0 -g -I$(NETCDF_INC)
+PREPROC = -D_MERGE_OGSTM
+CPP += $(PREPROC)
 
-LDFLAGS += -L$(NETCDF_LIB) -lnetcdff
+# NETCDF_INC = $(NETCDFF_INC)
+# NETCDF_LIB = $(NETCDFF_LIB)
+
+# FFLAGS  = -ffree-line-length-none -O2 -I$(NETCDF_INC) -I$(NETCDFF_INC) $(OPT_FLTCONSISTENCY) -c
+FFLAGS  = -g -check bound -fpe0 -g -traceback -fp-stack-check -O0 -I$(NETCDF_INC) -I$(NETCDFF_INC) -I$(PNETCDF_INC) $(OPT_FLTCONSISTENCY) -c
+CFLAGS  = -I$(NETCDF_INC)
+
+LDFLAGS += -L$(NETCDF_LIB) -L$(NETCDFF_LIB) -L$(PETSC_LIB) -L$(PNETCDF_LIB) -lnetcdff -lnetcdf -lpetsc -lpnetcdf
 AR      = ar
+
+# Debug options##########
+# FFLAGS = -O0 -g -Wall -Wextra -fbounds-check -fimplicit-none -ffpe-trap=invalid,overflow -pedantic -fbacktrace -c $(OPT_FLTCONSISTENCY)
+#########################
 
