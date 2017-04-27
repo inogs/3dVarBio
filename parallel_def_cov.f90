@@ -140,10 +140,9 @@ subroutine parallel_def_cov
   rcf%dsl = (rcf%dsmx-rcf%dsmn) / (rcf%ntb-1.)
   
   do k=1,grd%km
-     Lmean = mean_rad(k,rcf%Lxyz(:,:,k)) !for each level, mean of Lxyz
+     Lmean = mean_rad(k,rcf%L_x(:,:,k)) !for each level, mean of Lxyz
      do l=1,rcf%ntb
         dst = rcf%dsmn + (l-1.) * rcf%dsl
-        !E = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)  !da capire bene
         E   = (2. * rcf%ntr) * dst**2 / (4. * Lmean**2)
         rcf%al(l) = 1. + E - sqrt(E*(E+2.))
         rcf%alp   = rcf%al(l)
@@ -159,10 +158,8 @@ subroutine parallel_def_cov
         rcf%sc(k,l) = sfct(nspl/2+1)
     enddo
   enddo
-
-  DEALLOCATE ( sfct, jnxx, al, bt ) 
   
-  ! preparing the call to MPI_ALLTOALL
+  ! preparing call to MPI_ALLTOALL
   ALLOCATE(RecBuf1D(GlobalRow*localCol))
   ALLOCATE(DefBuf2D(GlobalRow, localCol))
 
@@ -193,13 +190,11 @@ subroutine parallel_def_cov
      do j=1,localCol
         do i=2,GlobalRow
            dst = (DefBuf2D(i-1,j) + DefBuf2D(i,j)) * 0.5 
-          !  E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i,j+GlobalColOffset,k)**2)
            E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L_x(i,j+GlobalColOffset,k)**2)
            grd%alx(i,j,k) = 1. + E - sqrt(E*(E+2.))
         enddo
         do i=1,GlobalRow-1
            dst = (DefBuf2D(i,j) + DefBuf2D(i+1,j)) * 0.5 
-          !  E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i,j+GlobalColOffset,k)**2)
            E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L_x(i,j+GlobalColOffset,k)**2)
            grd%btx(i,j,k) = 1. + E - sqrt(E*(E+2.))
         enddo
@@ -209,7 +204,6 @@ subroutine parallel_def_cov
   do k=1,grd%km
      do j=1,localCol
         do i=1,GlobalRow
-          !  grd%istp(i,j,k) = int( rcf%Lxyz(i,j+GlobalColOffset,k) * rcf%efc / DefBuf2D(i,j) )+1
            grd%istp(i,j,k) = int( rcf%L_x(i,j+GlobalColOffset,k) * rcf%efc / DefBuf2D(i,j) )+1
         enddo
      enddo
@@ -221,6 +215,28 @@ subroutine parallel_def_cov
   ! grd%dy doesn't require communication 
   ! since it is already well placed
   DEALLOCATE(RecBuf1D, DefBuf2D)
+
+  do k=1,grd%km
+     Lmean = mean_rad(k,rcf%L_y(:,:,k)) !for each level, mean of Lxyz
+     do l=1,rcf%ntb
+        dst = rcf%dsmn + (l-1.) * rcf%dsl
+        E   = (2. * rcf%ntr) * dst**2 / (4. * Lmean**2)
+        rcf%al(l) = 1. + E - sqrt(E*(E+2.))
+        rcf%alp   = rcf%al(l)
+        sfct(:) = 0.
+        al(:) = rcf%al(l)
+        bt(:) = rcf%al(l)
+        do j=1,nspl
+                jnxx(j) = j
+        enddo
+        sfct(nspl/2+1) = 1.
+        call rcfl_y_init    ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
+        call rcfl_y_ad_init ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
+        rcf%sc(k,l) = sfct(nspl/2+1)
+    enddo
+  enddo
+
+  DEALLOCATE ( sfct, jnxx, al, bt ) 
 
   do k=1,grd%km
      do j=1,GlobalCol
@@ -237,7 +253,6 @@ subroutine parallel_def_cov
      do j=2,GlobalCol
         do i=1,localRow
            dst = (grd%dy(i,j-1) + grd%dy(i,j)) * 0.5 
-          !  E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i+GlobalRowOffset,j,k)**2)
            E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L_y(i+GlobalRowOffset,j,k)**2)
            grd%aly(i,j,k) = 1. + E - sqrt(E*(E+2.))
         enddo
@@ -245,7 +260,6 @@ subroutine parallel_def_cov
      do j=1,GlobalCol-1
         do i=1,localRow
            dst = (grd%dy(i,j) + grd%dy(i,j+1)) * 0.5 
-          !  E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i+GlobalRowOffset,j,k)**2)
            E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L_y(i+GlobalRowOffset,j,k)**2)
            grd%bty(i,j,k) = 1. + E - sqrt(E*(E+2.))
         enddo
@@ -264,7 +278,6 @@ subroutine parallel_def_cov
   do k=1,grd%km
      do j=1,GlobalCol
         do i=1,localRow
-          !  grd%jstp(i,j,k) = int( rcf%Lxyz(i+GlobalRowOffset,j,k) * rcf%efc / grd%dy(i,j) )+1
            grd%jstp(i,j,k) = int( rcf%L_y(i+GlobalRowOffset,j,k) * rcf%efc / grd%dy(i,j) )+1
         enddo
      enddo
