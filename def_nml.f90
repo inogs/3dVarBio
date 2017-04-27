@@ -166,10 +166,15 @@ subroutine def_nml
     write(drv%dia,*) ' Biological+physical assimilation bphy     = ', bphy
     write(drv%dia,*) ' Number of phytoplankton species  nchl     = ', nchl
     write(drv%dia,*) ' Minimum depth for chlorophyll    chl_dep  = ', chl_dep
-    write(drv%dia,*) '------------------------------------------------------------'
-    write(drv%dia,*) '------------------------------------------------------------'
-    write(drv%dia,*) ''
 
+  endif
+
+  grd%nchl = nchl
+  chl%dep  = chl_dep
+
+  read(11,params)
+
+  if(MyId .eq. 0) then
 
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) '------------------------------------------------------------'
@@ -188,8 +193,6 @@ subroutine def_nml
 
   close(11)
 
-  grd%nchl = nchl
-  chl%dep  = chl_dep
   drv%sat  = sat
   drv%argo = argo
   drv%uniformL = uniformL
