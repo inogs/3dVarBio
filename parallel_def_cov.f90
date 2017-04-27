@@ -48,29 +48,47 @@ subroutine parallel_def_cov
   INTEGER(8)  :: tmpint
   REAL(r8), allocatable :: RecBuf1D(:), DefBuf2D(:,:)
 
-#ifndef _MERGE_OGSTM
-
-  call parallel_rdrcorr
-
-#else
-
-  ! the following loop is useful in order to initialize
-  ! rcf%Lxyz array to a fixed value; otherwise,
-  ! decomment the line below and issue
-  ! ulimit -s unlimited
-  ! ALLOCATE ( rcf%Lxyz(GlobalRow,GlobalCol,grd%km))
-  ! rcf%Lxyz(:,:,:) = rcf%L/1000. !500. !
 
   ALLOCATE ( rcf%Lxyz(GlobalRow,GlobalCol,grd%km))
-  do k=1,grd%km
-    do j=1,GlobalCol
-      do i=1,GlobalRow
-         rcf%Lxyz(i,j,k) = rcf%L
+  
+  if(drv%uniformL .eq. 1) then
+    call parallel_rdrcorr
+  else
+    ! the following loop initializes
+    ! rcf%Lxyz array to the correlation
+    ! radius provided by namelist
+    do k=1,grd%km
+      do j=1,GlobalCol
+        do i=1,GlobalRow
+          rcf%Lxyz(i,j,k) = rcf%L
+        enddo
       enddo
     enddo
-  enddo
+  endif
 
-#endif
+  ALLOCATE ( rcf%L_x(GlobalRow,GlobalCol,grd%km))
+  ALLOCATE ( rcf%L_y(GlobalRow,GlobalCol,grd%km))
+
+  if(drv%anisL .eq. 1) then
+    call readAnisotropy
+    do k=1,grd%km
+      rcf%L_x(:,:,k) = rcf%L*rcf%rtx
+      rcf%L_y(:,:,k) = rcf%L*rcf%rty
+    end do
+
+    DEALLOCATE(rcf%rtx, rcf%rty)
+  else
+
+    do k=1,grd%km
+      do j=1,GlobalCol
+        do i=1,GlobalRow
+          rcf%L_x(i,j,k) = rcf%Lxyz(i,j,k)
+          rcf%L_y(i,j,k) = rcf%Lxyz(i,j,k)
+        end do
+      end do
+    end do
+
+  endif
 
   nthreads = 1
   threadid = 0
@@ -175,12 +193,14 @@ subroutine parallel_def_cov
      do j=1,localCol
         do i=2,GlobalRow
            dst = (DefBuf2D(i-1,j) + DefBuf2D(i,j)) * 0.5 
-           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i,j+GlobalColOffset,k)**2)
+          !  E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i,j+GlobalColOffset,k)**2)
+           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L_x(i,j+GlobalColOffset,k)**2)
            grd%alx(i,j,k) = 1. + E - sqrt(E*(E+2.))
         enddo
         do i=1,GlobalRow-1
            dst = (DefBuf2D(i,j) + DefBuf2D(i+1,j)) * 0.5 
-           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i,j+GlobalColOffset,k)**2)
+          !  E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i,j+GlobalColOffset,k)**2)
+           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L_x(i,j+GlobalColOffset,k)**2)
            grd%btx(i,j,k) = 1. + E - sqrt(E*(E+2.))
         enddo
      enddo
@@ -189,7 +209,8 @@ subroutine parallel_def_cov
   do k=1,grd%km
      do j=1,localCol
         do i=1,GlobalRow
-           grd%istp(i,j,k) = int( rcf%Lxyz(i,j+GlobalColOffset,k) * rcf%efc / DefBuf2D(i,j) )+1
+          !  grd%istp(i,j,k) = int( rcf%Lxyz(i,j+GlobalColOffset,k) * rcf%efc / DefBuf2D(i,j) )+1
+           grd%istp(i,j,k) = int( rcf%L_x(i,j+GlobalColOffset,k) * rcf%efc / DefBuf2D(i,j) )+1
         enddo
      enddo
   enddo
@@ -216,14 +237,16 @@ subroutine parallel_def_cov
      do j=2,GlobalCol
         do i=1,localRow
            dst = (grd%dy(i,j-1) + grd%dy(i,j)) * 0.5 
-           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i+GlobalRowOffset,j,k)**2)
+          !  E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i+GlobalRowOffset,j,k)**2)
+           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L_y(i+GlobalRowOffset,j,k)**2)
            grd%aly(i,j,k) = 1. + E - sqrt(E*(E+2.))
         enddo
      enddo
      do j=1,GlobalCol-1
         do i=1,localRow
            dst = (grd%dy(i,j) + grd%dy(i,j+1)) * 0.5 
-           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i+GlobalRowOffset,j,k)**2)
+          !  E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%Lxyz(i+GlobalRowOffset,j,k)**2)
+           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L_y(i+GlobalRowOffset,j,k)**2)
            grd%bty(i,j,k) = 1. + E - sqrt(E*(E+2.))
         enddo
      enddo
@@ -241,7 +264,8 @@ subroutine parallel_def_cov
   do k=1,grd%km
      do j=1,GlobalCol
         do i=1,localRow
-           grd%jstp(i,j,k) = int( rcf%Lxyz(i+GlobalRowOffset,j,k) * rcf%efc / grd%dy(i,j) )+1
+          !  grd%jstp(i,j,k) = int( rcf%Lxyz(i+GlobalRowOffset,j,k) * rcf%efc / grd%dy(i,j) )+1
+           grd%jstp(i,j,k) = int( rcf%L_y(i+GlobalRowOffset,j,k) * rcf%efc / grd%dy(i,j) )+1
         enddo
      enddo
   enddo
@@ -379,6 +403,6 @@ subroutine parallel_def_cov
   ALLOCATE ( alp_rcy(localRow,grd%jmax,nthreads)) ; alp_rcy = huge(alp_rcy(1,1,1))
   ALLOCATE ( bta_rcy(localRow,grd%jmax,nthreads)) ; bta_rcy = huge(bta_rcy(1,1,1))
 
-  DEALLOCATE(rcf%Lxyz)
+  DEALLOCATE(rcf%Lxyz, rcf%L_x, rcf%L_y)
   
 end subroutine parallel_def_cov

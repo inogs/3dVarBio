@@ -53,7 +53,8 @@ MODULE drv_str
      INTEGER(i4)           ::  MyCounter    ! Number of iteration done by Tao solver
      INTEGER(i4)           ::  sat          ! Flag for the assimilation of the satellite observations
      INTEGER(i4)           ::  argo         ! Flag for the assimilation of the argo float observations
-     INTEGER(i4)           ::  ReadDomDec   ! Flag for reading the Dom_Dec_jp*.ascii files
+     INTEGER(i4)           ::  uniformL     ! Flag for setting uniform correlation radius (1 = non uniform)
+     INTEGER(i4)           ::  anisL        ! Flag for setting anisotropy on correlation radius (1 = anisotropy)
      INTEGER(i4)           ::  Verbose      ! Flag for printing verbose output
 
   END TYPE drv_t

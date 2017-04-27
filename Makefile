@@ -148,6 +148,7 @@ OBJS    =  \
 	parallel_rdgrds.o\
 	parallel_rdeofs.o\
 	parallel_wrt_dia.o\
+	readAnisotropy.o\
 	parallel_def_cov.o\
 	parallel_ver_hor.o\
 	parallel_rdrcorr.o\

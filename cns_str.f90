@@ -41,6 +41,10 @@ public
         REAL(r8)             ::  L       ! Correlation radius
 !laura
         REAL(r8),POINTER     ::  Lxyz(:,:,:)!Correlation radius from file in km
+        REAL(r8),POINTER     ::  L_x(:,:,:)!Correlation radius from file in km
+        REAL(r8),POINTER     ::  L_y(:,:,:)!Correlation radius from file in km
+        REAL(r8),POINTER     ::  rtx(:,:)!Correlation radius from file in km
+        REAL(r8),POINTER     ::  rty(:,:)!Correlation radius from file in km
 !laura
         REAL(r8)             ::  E       ! Norm
         REAL(r8)             ::  alp     ! Filter weight

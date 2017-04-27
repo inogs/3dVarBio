@@ -51,7 +51,6 @@ subroutine parallel_rdgrd
      WRITE(*,*) ' GlobalRow  : first  dimension of global domain --> i ',GlobalRow
      WRITE(*,*) ' GlobalCol  : second dimension of global domain --> j ',GlobalCol
      WRITE(*,*) ' Depth      : third dimension of global domain --> j ',grd%km
-     WRITE(*,*) ' ReadDomDec : ',drv%ReadDomDec
      WRITE(*,*) ' '
   endif
 

@@ -11,6 +11,7 @@ character (LEN=1024) :: GRID_FILE   != 'grid1.nc'
 !laura
 character (LEN=1024) :: RCORR_FILE  != 'chl_rad_corr.nc'
 character (LEN=1024) :: ARGO_FILE   != 'argo_mis.dat'
+character (LEN=1024) :: ANIS_FILE   != 'gradsal.nc'
 
 
 
@@ -30,6 +31,7 @@ MISFIT_FILE = 'chl_mis.nc'
 !laura
  RCORR_FILE = 'chl_rad_corr.nc'
   ARGO_FILE = 'arg_mis.dat'
+  ANIS_FILE = 'gradsal.nc'
 
 END SUBROUTINE SETFILENAMES
 

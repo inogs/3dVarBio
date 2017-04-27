@@ -46,7 +46,7 @@ subroutine def_nml
   INTEGER(i4)   :: ctl_m
   INTEGER(i4)   :: obs_chl
   INTEGER(i4)   :: obs_vdr, bmd_ncnt
-  INTEGER(i4)   :: biol, bphy, nchl
+  INTEGER(i4)   :: biol, bphy, nchl, uniformL, anisL, verbose
   REAL(r8)      :: rcf_L, ctl_tol, ctl_per, bmd_fc1, bmd_fc2, rcf_efc, chl_dep
   INTEGER(i4)   :: grid (ngrids)
   REAL(r8)      :: ratio(ngrids)
@@ -61,7 +61,8 @@ subroutine def_nml
   NAMELIST /grdlst/ ntr, grid, read_grd, ratio, mask, barmd, divda, divdi, domdec
   NAMELIST /ctllst/ ctl_m, ctl_tol, ctl_per
   NAMELIST /covlst/ neof, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
-  NAMELIST /biolst/ biol, bphy, nchl, chl_dep, sat, argo
+  NAMELIST /biolst/ biol, bphy, nchl, chl_dep
+  NAMELIST /params/ sat, argo, uniformL, anisL, verbose
 
 
 ! -------------------------------------------------------------------
@@ -109,7 +110,6 @@ subroutine def_nml
   ALLOCATE( drv%mask (drv%ntr))      ; drv%mask (1:drv%ntr)    = mask (1:drv%ntr)
   ALLOCATE( drv%dda(drv%ntr))        ; drv%dda  (1:drv%ntr)    = divda(1:drv%ntr)
   ALLOCATE( drv%ddi(drv%ntr))        ; drv%ddi  (1:drv%ntr)    = divdi(1:drv%ntr)
-  drv%ReadDomDec = domdec
 
   drv%ratio(        1)    = 1.0
   if(drv%ntr.gt.1) drv%ratio(2:drv%ntr)    = drv%ratco(1:drv%ntr-1) / drv%ratco(2:drv%ntr)
@@ -166,9 +166,19 @@ subroutine def_nml
     write(drv%dia,*) ' Biological+physical assimilation bphy     = ', bphy
     write(drv%dia,*) ' Number of phytoplankton species  nchl     = ', nchl
     write(drv%dia,*) ' Minimum depth for chlorophyll    chl_dep  = ', chl_dep
+    write(drv%dia,*) '------------------------------------------------------------'
+    write(drv%dia,*) '------------------------------------------------------------'
+    write(drv%dia,*) ''
+
+
+    write(drv%dia,*) '------------------------------------------------------------'
+    write(drv%dia,*) '------------------------------------------------------------'
+    write(drv%dia,*) ' PARAMETERS NAMELIST INPUT: '
     write(drv%dia,*) ' Read Satellite observations      sat      = ', sat    
     write(drv%dia,*) ' Read ARGO float observations     argo     = ', argo
-
+    write(drv%dia,*) ' Set uniform correlation radius   uniformL = ', uniformL
+    write(drv%dia,*) ' Set anisotropy on corr radius    anisL    = ', anisL
+    write(drv%dia,*) ' Add verbose on standard output   verbose  = ', verbose
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) ''
@@ -180,9 +190,10 @@ subroutine def_nml
 
   grd%nchl = nchl
   chl%dep  = chl_dep
-  drv%ReadDomDec = 0
   drv%sat  = sat
   drv%argo = argo
-  drv%Verbose = 0
+  drv%uniformL = uniformL
+  drv%anisL = anisL
+  drv%Verbose = verbose
 
 end subroutine def_nml
