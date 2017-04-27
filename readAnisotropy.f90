@@ -48,7 +48,7 @@ subroutine readAnisotropy
     if (stat /= nf90_noerr) call netcdf_err(stat)
 
 ! Check on dimensions
-    if ((imr .ne. grd%im).OR.(jmr.ne.grd%jm)) then
+    if ((imr .ne. GlobalRow).OR.(jmr.ne.GlobalCol)) then
        write(drv%dia,*)'Error: dimensions of rcorr different from grid ones'
        call f_exit(24)
     endif
