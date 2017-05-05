@@ -6,7 +6,6 @@ subroutine tao_minimizer
   use ctl_str
   use mpi_str
   use petscvec
-  use tao_str
 
   implicit none
 
@@ -40,7 +39,6 @@ subroutine tao_minimizer
   ! Allocate working arrays
   n = ctl%n
   M = ctl%n_global
-  NewCtl%n_global = ctl%n_global
 
   ALLOCATE(loc(n), MyValues(n))
 
@@ -169,10 +167,8 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   use set_knd
   use drv_str
   use ctl_str
-  use tao_str
   use petscvec
   use mpi_str
-  use tao_str
 
   implicit none
 

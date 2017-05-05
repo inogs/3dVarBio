@@ -59,7 +59,6 @@ OBJSTR  =  \
 	eof_str.o\
 	ctl_str.o\
 	rcfl_mod.o\
-	tao_str.o\
 	mpi_str.o
 
 PHYSOBS  =  \
@@ -172,9 +171,6 @@ $(EXEC) : $(LIBDEP)	$(KNDSTR) $(OBJSTR) $(OBJS) $(MAINEXE)
 
 $(LIB)  :       $(KNDSTR) $(OBJSTR) $(OBJS)
 	ar -r $(LIB) $(KNDSTR) $(OBJSTR) $(OBJS)
-
-tao_str.o: tao_str.f90
-	$(CPP) -I$(PETSC_INC) $*.f90 > cpp.$*.f90 ; $(F90) -I$(PETSC_INC) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
 
 tao_minimizer.o: tao_minimizer.f90
 	$(CPP) -I$(PETSC_INC) $*.f90 > cpp.$*.f90 ; $(F90) -I$(PETSC_INC) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
