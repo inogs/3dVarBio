@@ -70,7 +70,7 @@ subroutine parallel_def_cov
   ALLOCATE ( rcf%L_y(GlobalRow,GlobalCol,grd%km))
 
   if(drv%anisL .eq. 1) then
-    call readAnisotropy
+    call parallel_readAnisotropy
     do k=1,grd%km
       rcf%L_x(:,:,k) = rcf%L*rcf%rtx
       rcf%L_y(:,:,k) = rcf%L*rcf%rty

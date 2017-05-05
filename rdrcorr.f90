@@ -75,5 +75,7 @@ subroutine rdrcorr
     end where
      rcf%Lxyz= rcf%Lxyz*1000  !from km to meter
 
+     stat = nf90_close(ncid)
+
 end subroutine rdrcorr
 

@@ -68,7 +68,7 @@ subroutine readAnisotropy
       stat = nf90_get_var (ncid,idvar,rcf%rty)
     if (stat /= nf90_noerr) call netcdf_err(stat)
 
-
+    stat = nf90_close(ncid)
 
 
 end subroutine readAnisotropy

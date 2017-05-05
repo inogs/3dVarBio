@@ -60,6 +60,9 @@ subroutine parallel_rdrcorr
   end where
     rcf%Lxyz= rcf%Lxyz*1000  !from km to meter
 
+  stat = nf90mpi_close(ncid)
+  if (stat /= nf90_noerr) call handle_err("nf90mpi_close", stat)
+
   DEALLOCATE(x3)
 
 end subroutine parallel_rdrcorr
