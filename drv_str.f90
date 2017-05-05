@@ -23,7 +23,7 @@ MODULE drv_str
   
   !-----------------------------------------------------------------------
   !                                                                      !
-  ! Structure for the driver of the outer loop                           !
+  ! Structure for the driver and assimilation flags                      !
   !                                                                      !
   ! Version 1: S.Dobricic 2006                                           !
   !-----------------------------------------------------------------------
@@ -37,18 +37,6 @@ MODULE drv_str
   TYPE drv_t
      
      INTEGER(i4)           ::  dia          ! No. of diagnostic output file
-     INTEGER(i4)           ::  ntr          ! No. of outer iterations 
-     INTEGER(i4)           ::  ktr          ! Outer iteration
-     INTEGER(i4)           ::  im           ! Dimension of the coarse grid
-     INTEGER(i4)           ::  jm           ! Dimension of the coarse grid
-     INTEGER(i4), POINTER  ::  grid(:)      ! grid number for the current iterration
-     REAL(r8),    POINTER  ::  ratco(:)     ! Ratio between model grid and the current grid
-     REAL(r8),    POINTER  ::  ratio(:)     ! Ratio between successive grids
-     INTEGER(i4), POINTER  ::  mask(:)      ! Mask used for horizontal covariances
-     INTEGER(i4), POINTER  ::  dda(:)       ! 1 - divergence damping in analysis, else no filter
-     INTEGER(i4), POINTER  ::  ddi(:)       ! 1 - divergence damping in initialisation, else no filter
-     REAL(r8),    POINTER  ::  ro(:,:,:)    ! Vector v
-     REAL(r8),    POINTER  ::  msk(:,:)     ! Mask of the old grid
      
      INTEGER(i4)           ::  MyCounter    ! Number of iteration done by Tao solver
      INTEGER(i4)           ::  sat          ! Flag for the assimilation of the satellite observations

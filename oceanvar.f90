@@ -41,7 +41,6 @@ subroutine oceanvar
   
   implicit none
   
-  INTEGER(i4)   ::  ktr
   REAL(r8)      ::  tstart, tend
   
   call my_3dvar_node
@@ -49,112 +48,62 @@ subroutine oceanvar
   ! ---
   ! Initialize diagnostics and read namelists
   call def_nml
+
   ! ---
-  ! Outer loop - multigrid
-  do ktr = 1,drv%ntr
-     drv%ktr = ktr
-     
-     ! ---
-     ! Define grid parameters
-     if( ktr.eq.1 .or. drv%ratio(ktr).ne.1.0 )then
-
-        call parallel_def_grd
-        
-        if(MyId .eq. 0) write(drv%dia,*) 'out of def_grd '           
-
-     endif
-     
-     ! ---
-     ! Get observations
-     if(ktr.eq.1) call get_obs
-     
-     if(MyId .eq. 0) write(drv%dia,*) 'out of get_obs'
-     
-     ! ---
-     ! Define interpolation parameters
-     call int_par
-     
-     if(MyId .eq. 0) write(drv%dia,*) 'out of int_par'
-             
-     ! ---
-     ! Define observational vector
-     call obs_vec
-     
-     if(MyId .eq. 0) write(drv%dia,*) 'out of obs_vec'
-             
-     ! ---
-     ! Define constants for background covariances
-     if( ktr.eq.1 .or. drv%ratio(ktr).ne.1.0 ) then
-        
-        call parallel_def_cov
-        if(MyId .eq. 0) write(drv%dia,*) 'out of def_cov '
-
-     endif
-     
-     ! ---
-     ! Initialize cost function and its gradient
-     call ini_cfn
-
-     if(MyId .eq. 0) write(drv%dia,*) 'out of ini_cfn'
-
-     ! ---
-     ! Calculate the initial norm the gradient
-     if( ktr.gt.1 ) then
-        call ini_nrm
-        
-        if(MyId .eq. 0) write(drv%dia,*) 'out of ini_nrm '
-     endif
-           
-     ! ---
-     ! Initialise from old iterration
-     if( ktr.gt.1 .and. drv%ratio(ktr).ne.1.0 ) then
-        call ini_itr
-        
-        if(MyId .eq. 0) write(drv%dia,*) 'out of ini_itr '
-           
-     endif
-     
-     ! ---
-     ! Minimize the cost function (inner loop)
-     tstart = MPI_Wtime()
-     call tao_minimizer
-     tend = MPI_Wtime()
-     if(MyId .eq. 0) then
-        write(drv%dia,*) 'out of tao_minimizer'
-        write(drv%dia,*) 'minimization executed in', tend-tstart,'sec'
-        write(drv%dia,*) 'time/iteration = ', (tend-tstart)/drv%MyCounter,'sec'
-        write(*,*) 'minimization executed in', tend-tstart,'sec'
-        write(*,*) 'time/iteration = ', (tend-tstart)/drv%MyCounter,'sec'
-     endif
-        
-     if(ktr.eq.drv%ntr)then
-        ! ---
-        ! Convert to innovations
-        call cnv_inn
-        ! ---
-        ! Write outputs and diagnostics
-        call parallel_wrt_dia
-
-     endif
-     
-     ! ---
-     ! Save old iterration
-     !   if( ktr.ne.drv%ntr)then
-     !    if(drv%ratio(ktr+1).ne.1.0 ) then
-     call sav_itr
-     
-     if(MyId .eq. 0) write(drv%dia,*) 'out of sav_itr '
-        
-     !    endif
-     !   endif
-     
-     ! ---
-     ! End of outer loop
-     
-  enddo
-  !-----------------------------------------------------------------
+  ! Define grid parameters
+  call parallel_def_grd
+  if(MyId .eq. 0) write(drv%dia,*) 'out of def_grd '           
   
-  ! completely clean memory
+  ! ---
+  ! Get observations
+  call get_obs
+  if(MyId .eq. 0) write(drv%dia,*) 'out of get_obs'
+     
+  ! ---
+  ! Define interpolation parameters
+  call int_par
+  if(MyId .eq. 0) write(drv%dia,*) 'out of int_par'
+             
+  ! ---
+  ! Define observational vector
+  call obs_vec
+  if(MyId .eq. 0) write(drv%dia,*) 'out of obs_vec'
+             
+  ! ---
+  ! Define constants for background covariances
+  call parallel_def_cov
+  if(MyId .eq. 0) write(drv%dia,*) 'out of def_cov '
+     
+  ! ---
+  ! Initialize cost function and its gradient
+  call ini_cfn
+  if(MyId .eq. 0) write(drv%dia,*) 'out of ini_cfn'
+
+  ! ---
+  ! Minimize the cost function (inner loop)
+  tstart = MPI_Wtime()
+  call tao_minimizer
+  tend = MPI_Wtime()
+  if(MyId .eq. 0) then
+    write(drv%dia,*) 'out of tao_minimizer'
+    write(drv%dia,*) 'minimization executed in', tend-tstart,'sec'
+    write(drv%dia,*) 'time/iteration = ', (tend-tstart)/drv%MyCounter,'sec'
+
+    write(*,*) 'minimization executed in', tend-tstart,'sec'
+    write(*,*) 'time/iteration = ', (tend-tstart)/drv%MyCounter,'sec'
+  endif
+        
+  ! ---
+  ! Convert to innovations
+  call cnv_inn
+  ! ---
+  ! Write outputs and diagnostics
+  call parallel_wrt_dia
+
+  call sav_itr
+  if(MyId .eq. 0) write(drv%dia,*) 'out of sav_itr '
+  
+  ! clean memory
   call clean_mem
   
   !-----------------------------------------------------------------

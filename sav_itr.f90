@@ -42,17 +42,7 @@ subroutine sav_itr
 
   implicit none
   
-  ! ---
-  ! Save grid dimensions
-  
-  drv%im = grd%im
-  drv%jm = grd%jm
-  ! Save eigenvalues
-  if (1.eq.0) then ! We do not know the reason of these lines
-     ALLOCATE ( drv%ro(drv%im,drv%jm,ros%neof))    ; drv%ro   (:,:,:) = grd%ro   (:,:,:)
-     ! ALLOCATE ( drv%msk(drv%im,drv%jm))            ; drv%msk  (:,:)   = grd%msr  (:,:,1)
-  endif
-
+  ! free MPI RMA Windows
   call FreeWindows
 
   ! ---

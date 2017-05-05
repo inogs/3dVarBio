@@ -39,26 +39,13 @@ subroutine def_nml
 
   implicit none
 
-  INTEGER(i4), PARAMETER    :: ngrids = 3
-
   LOGICAL       :: read_eof
-  INTEGER(i4)   :: neof, nreg, rcf_ntr, ntr
+  INTEGER(i4)   :: neof, nreg, rcf_ntr
   INTEGER(i4)   :: ctl_m
-  INTEGER(i4)   :: obs_chl
-  INTEGER(i4)   :: obs_vdr, bmd_ncnt
   INTEGER(i4)   :: biol, bphy, nchl, uniformL, anisL, verbose
-  REAL(r8)      :: rcf_L, ctl_tol, ctl_per, bmd_fc1, bmd_fc2, rcf_efc, chl_dep
-  INTEGER(i4)   :: grid (ngrids)
-  REAL(r8)      :: ratio(ngrids)
-  INTEGER(i4)   :: mask (ngrids)
-  INTEGER(i4)   :: barmd(ngrids)
-  INTEGER(i4)   :: divda(ngrids)
-  INTEGER(i4)   :: divdi(ngrids)
-  INTEGER(i4)   :: Argo, DomDec, sat
-  LOGICAL       :: read_grd(ngrids)
-
-
-  NAMELIST /grdlst/ ntr, grid, read_grd, ratio, mask, barmd, divda, divdi, domdec
+  REAL(r8)      :: rcf_L, ctl_tol, ctl_per, rcf_efc, chl_dep
+  INTEGER(i4)   :: argo, sat
+  
   NAMELIST /ctllst/ ctl_m, ctl_tol, ctl_per
   NAMELIST /covlst/ neof, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
   NAMELIST /biolst/ biol, bphy, nchl, chl_dep
@@ -82,7 +69,7 @@ subroutine def_nml
   open(11,file='var_3d_nml',form='formatted')
 
   ! ---
-  read(11,grdlst)
+  read(11,ctllst)
 
   if(MyId .eq. 0) then
 
@@ -91,34 +78,6 @@ subroutine def_nml
     write(drv%dia,*) '                      NAMELISTS: '
     write(drv%dia,*) '  '
     write(drv%dia,*) '------------------------------------------------------------'
-    write(drv%dia,*) ' GRID NAMELIST INPUT: '
-    write(drv%dia,*) ' Multigrid iterrations:                  ntr    = ', ntr
-    write(drv%dia,*) ' Grids:                                 grid    = ', grid (1:ntr)
-    write(drv%dia,*) ' Read grids from a file:               read_grd = ', read_grd
-    write(drv%dia,*) ' Ratio:                                ratio    = ', ratio(1:ntr)
-    write(drv%dia,*) ' Masks:                                 mask    = ',  mask(1:ntr)
-    write(drv%dia,*) ' Run barotropic model:                 barmd    = ', barmd(1:ntr)
-    write(drv%dia,*) ' Divergence damping in analysis:       divda    = ', divda(1:ntr)
-    write(drv%dia,*) ' Divergence damping in initialisation: divdi    = ', divdi(1:ntr)
-
-  endif
-
-  drv%ntr = ntr
-  ALLOCATE( drv%grid (drv%ntr))      ; drv%grid (1:drv%ntr)    = grid (1:drv%ntr)
-  ALLOCATE( drv%ratco(drv%ntr))      ; drv%ratco(1:drv%ntr)    = ratio(1:drv%ntr)
-  ALLOCATE( drv%ratio(drv%ntr))      ; drv%ratio               = huge(drv%ratio(1))
-  ALLOCATE( drv%mask (drv%ntr))      ; drv%mask (1:drv%ntr)    = mask (1:drv%ntr)
-  ALLOCATE( drv%dda(drv%ntr))        ; drv%dda  (1:drv%ntr)    = divda(1:drv%ntr)
-  ALLOCATE( drv%ddi(drv%ntr))        ; drv%ddi  (1:drv%ntr)    = divdi(1:drv%ntr)
-
-  drv%ratio(        1)    = 1.0
-  if(drv%ntr.gt.1) drv%ratio(2:drv%ntr)    = drv%ratco(1:drv%ntr-1) / drv%ratco(2:drv%ntr)
-
-! ---
-  read(11,ctllst)
-
-  if(MyId .eq. 0) then
-
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) ' MINIMIZER NAMELIST INPUT: '
     write(drv%dia,*) ' Number of saved vectors:         ctl_m    = ', ctl_m
@@ -136,6 +95,7 @@ subroutine def_nml
 
   if(MyId .eq. 0) then
 
+    write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) ' COVARIANCE NAMELIST INPUT: '
     write(drv%dia,*) ' Number of EOFs:                  neof     = ', neof

@@ -40,26 +40,23 @@ subroutine ini_cfn
   
   INTEGER(i4)  :: i, ierr
   
-  if( drv%ktr.eq.1 .or. drv%ratio(drv%ktr).ne.1.0 ) then
-     
-     ! ---
-     ! Allocate memory for optimization arrays
-     
-     ctl%n = nSurfaceWaterPoints * ros%neof
-     call MPI_Allreduce(ctl%n, ctl%n_global, 1, MPI_INT, MPI_SUM, Var3DCommunicator, ierr)
+  ! ---
+  ! Allocate memory for optimization arrays
 
-     if (MyId .eq. 0) write(drv%dia,*) 'size of the control vector: ',ctl%n_global
+  ctl%n = nSurfaceWaterPoints * ros%neof
+  call MPI_Allreduce(ctl%n, ctl%n_global, 1, MPI_INT, MPI_SUM, Var3DCommunicator, ierr)
+
+  if (MyId .eq. 0) write(drv%dia,*) 'size of the control vector: ',ctl%n_global
 
 
-     ALLOCATE( ctl%x_c(ctl%n)) ; ctl%x_c = huge(ctl%x_c(1))
-     ALLOCATE( ctl%g_c(ctl%n)) ; ctl%g_c = huge(ctl%g_c(1))
+  ALLOCATE( ctl%x_c(ctl%n)) ; ctl%x_c = huge(ctl%x_c(1))
+  ALLOCATE( ctl%g_c(ctl%n)) ; ctl%g_c = huge(ctl%g_c(1))
 
      
-     do i=1,ctl%n
-        ctl%x_c(i)= 0.0d0
-     enddo
+  do i=1,ctl%n
+    ctl%x_c(i)= 0.0d0
+  enddo
      
-  endif
   ctl%f_c = 0.0
   
 end subroutine ini_cfn

@@ -100,11 +100,9 @@ PHYSOBS  =  \
 	invrt_ad.o
 
 OBJS    =  \
-	routines.o\
 	def_nml.o\
 	def_grd.o\
 	sav_itr.o\
-	ini_itr.o\
 	rdeofs.o\
     rdrcorr.o\
     mean_rdr.o\
@@ -116,7 +114,6 @@ OBJS    =  \
 	int_par.o\
 	obs_vec.o\
 	ini_cfn.o\
-	ini_nrm.o\
 	cnv_ctv.o\
 	ver_hor.o\
 	rcfl_x.o\

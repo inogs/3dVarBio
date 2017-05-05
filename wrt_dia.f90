@@ -42,8 +42,6 @@ subroutine parallel_wrt_dia
   implicit none
   
   INTEGER(i4)  :: l,i,j,k
-  ! REAL         :: Dump_chl(grd%im,grd%jm,grd%km)
-  ! REAL         :: Dump_vip(grd%im,grd%jm,ros%neof)
   CHARACTER    :: fgrd
   integer status
   integer            :: ncid,xid,yid,depid,idchl
@@ -55,8 +53,6 @@ subroutine parallel_wrt_dia
   if(MyId .eq. 0) &
      write(drv%dia,*) 'writes to corrections.dat !!!!!!!!!!!!!!!!!!!!!!!!!'     
 
-  write(fgrd,'(i1)')drv%ktr
-  
   do l=1,grd%nchl
      do k=1,grd%km
         do j=1,grd%jm

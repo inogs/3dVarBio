@@ -44,10 +44,6 @@ subroutine clean_mem
 
   integer :: ierr
   
-  ! Deallocate everithing related to the old grid
-  DEALLOCATE ( drv%grid, drv%ratco, drv%ratio)
-  DEALLOCATE ( drv%mask, drv%dda, drv%ddi)
-
   if (drv%argo .eq. 1) then
      ! deallocate argo arrays
      DEALLOCATE ( arg%flc)

@@ -38,8 +38,6 @@ subroutine cnv_inn
   
   implicit none
   
-  drv%dda(drv%ktr) = drv%ddi(drv%ktr)
-  
   ! --------
   ! Convert the control vector to v
   call cnv_ctv
