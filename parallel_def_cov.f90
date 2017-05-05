@@ -35,29 +35,68 @@ subroutine parallel_def_cov
   use cns_str
   use rcfl
   use mpi_str
-  use mpi
   
   implicit none
   
-  INTEGER(i4)                 :: k, nspl, i, j, kk
-  REAL(r8)                    :: E, dst
+  INTEGER(i4)                 :: k, nspl, i, j, kk, l
+  REAL(r8)                    :: E, dst, Lmean, mean_rad
   REAL(r8)    , ALLOCATABLE   :: sfct(:), al(:), bt(:)
   INTEGER(i4) , ALLOCATABLE   :: jnxx(:)
   INTEGER nthreads, threadid
   INTEGER :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
   INTEGER(i8) :: ierr, iProc
-  REAL(r8), allocatable :: SendBuf2D(:,:), RecBuf2D(:,:), DefBuf2D(:,:)
-  REAL(r8), allocatable :: SendBuf1D(:), RecBuf1D(:), TmpBuf1D(:), DefBuf1D(:)
-  REAL(r8), allocatable :: SendBuf3D(:,:,:), RecBuf3D(:,:,:), DefBuf3D(:,:,:)
-  REAL(r8), allocatable :: ColBuf3D(:,:,:)
+  INTEGER(8)  :: tmpint
+  REAL(r8), allocatable :: RecBuf1D(:), DefBuf2D(:,:)
+
+
+  ALLOCATE ( rcf%Lxyz(GlobalRow,GlobalCol,grd%km))
   
+  if(drv%uniformL .eq. 1) then
+    call parallel_rdrcorr
+  else
+    ! the following loop initializes
+    ! rcf%Lxyz array to the correlation
+    ! radius provided by namelist
+    do k=1,grd%km
+      do j=1,GlobalCol
+        do i=1,GlobalRow
+          rcf%Lxyz(i,j,k) = rcf%L
+        enddo
+      enddo
+    enddo
+  endif
+
+  ALLOCATE ( rcf%L_x(GlobalRow,GlobalCol,grd%km))
+  ALLOCATE ( rcf%L_y(GlobalRow,GlobalCol,grd%km))
+
+  if(drv%anisL .eq. 1) then
+    call readAnisotropy
+    do k=1,grd%km
+      rcf%L_x(:,:,k) = rcf%L*rcf%rtx
+      rcf%L_y(:,:,k) = rcf%L*rcf%rty
+    end do
+
+    DEALLOCATE(rcf%rtx, rcf%rty)
+  else
+
+    do k=1,grd%km
+      do j=1,GlobalCol
+        do i=1,GlobalRow
+          rcf%L_x(i,j,k) = rcf%Lxyz(i,j,k)
+          rcf%L_y(i,j,k) = rcf%Lxyz(i,j,k)
+        end do
+      end do
+    end do
+
+  endif
+
   nthreads = 1
   threadid = 0
   !$OMP PARALLEL
   !$ nthreads = OMP_GET_NUM_THREADS()
   !$ threadid = OMP_GET_THREAD_NUM()
   if(threadid.eq.0) then
-     if(MyRank .eq. 0) &
+     if(MyId .eq. 0) &
           write(*,*) "OMP version with threads = ", nthreads
   endif
   !$OMP END PARALLEL
@@ -81,7 +120,7 @@ subroutine parallel_def_cov
   !
   
   ALLOCATE ( rcf%al(rcf%ntb)) ; rcf%al = huge(rcf%al(1))
-  ALLOCATE ( rcf%sc(rcf%ntb)) ; rcf%sc = huge(rcf%sc(1))
+  ALLOCATE ( rcf%sc(grd%km,rcf%ntb)) ; rcf%sc = huge(rcf%sc(1,1))
   
   rcf%dsmn =  1.e20
   rcf%dsmx = -1.e20
@@ -93,38 +132,39 @@ subroutine parallel_def_cov
   enddo
 
   ! Computes the global maximum and minimum
-  call MPI_Allreduce(MPI_IN_PLACE, rcf%dsmx, 1, MPI_REAL8, MPI_MAX, MPI_COMM_WORLD, ierr)
-  call MPI_Allreduce(MPI_IN_PLACE, rcf%dsmn, 1, MPI_REAL8, MPI_MIN, MPI_COMM_WORLD, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, rcf%dsmx, 1, MPI_REAL8, MPI_MAX, Var3DCommunicator, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, rcf%dsmn, 1, MPI_REAL8, MPI_MIN, Var3DCommunicator, ierr)
   
   rcf%dsmx = rcf%dsmx + max(1.d0,(rcf%dsmx-rcf%dsmn)/(rcf%ntb-2.))
   
   rcf%dsl = (rcf%dsmx-rcf%dsmn) / (rcf%ntb-1.)
   
-  do k=1,rcf%ntb
-     dst = rcf%dsmn + (k-1.) * rcf%dsl
-     E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)
-     rcf%al(k) = 1. + E - sqrt(E*(E+2.))
-     rcf%alp   = rcf%al(k)
-     sfct(:) = 0.
-     al(:) = rcf%al(k)
-     bt(:) = rcf%al(k)
-     do j=1,nspl
-        jnxx(j) = j
-     enddo
-     sfct(nspl/2+1) = 1.
-     call rcfl_y_init    ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
-     call rcfl_y_ad_init ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
-     rcf%sc(k) = sfct(nspl/2+1)
+  do k=1,grd%km
+     Lmean = mean_rad(k,rcf%L_x(:,:,k)) !for each level, mean of Lxyz
+     do l=1,rcf%ntb
+        dst = rcf%dsmn + (l-1.) * rcf%dsl
+        E   = (2. * rcf%ntr) * dst**2 / (4. * Lmean**2)
+        rcf%al(l) = 1. + E - sqrt(E*(E+2.))
+        rcf%alp   = rcf%al(l)
+        sfct(:) = 0.
+        al(:) = rcf%al(l)
+        bt(:) = rcf%al(l)
+        do j=1,nspl
+                jnxx(j) = j
+        enddo
+        sfct(nspl/2+1) = 1.
+        call rcfl_y_init    ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
+        call rcfl_y_ad_init ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
+        rcf%sc(k,l) = sfct(nspl/2+1)
+    enddo
   enddo
   
-  DEALLOCATE ( sfct, jnxx, al, bt ) 
-  
-  ! preparing the call to MPI_ALLTOALL
+  ! preparing call to MPI_ALLTOALL
   ALLOCATE(RecBuf1D(GlobalRow*localCol))
   ALLOCATE(DefBuf2D(GlobalRow, localCol))
 
   call MPI_Alltoallv(grd%dx, SendCountX2D, SendDisplX2D, MPI_REAL8, &
-       RecBuf1D, RecCountX2D, RecDisplX2D, MPI_REAL8, CommSliceX, ierr)
+       RecBuf1D, RecCountX2D, RecDisplX2D, MPI_REAL8, Var3DCommunicator, ierr)
 
   do j=1, localCol
      do iProc=0, NumProcI-1
@@ -135,204 +175,160 @@ subroutine parallel_def_cov
      end do
   end do
 
-  do j=1,localCol
-     do i=1,GlobalRow
-        dst = ( DefBuf2D(i,j) - rcf%dsmn )/rcf%dsl
-        k = int(dst) + 1
-        dst = dst - real(k-1)
-        grd%scx(i,j) = sqrt( 1./ (rcf%sc(k)*(1.-dst) + rcf%sc(k+1)*dst) ) 
+  do k=1,grd%km
+     do j=1,localCol
+        do i=1,GlobalRow
+           dst = ( DefBuf2D(i,j) - rcf%dsmn )/rcf%dsl
+           l = int(dst) + 1
+           dst = dst - real(l-1)
+           grd%scx(i,j,k) = sqrt( 1./ (rcf%sc(k,l)*(1.-dst) + rcf%sc(k,l+1)*dst) ) 
+        enddo
      enddo
   enddo
 
-  do j=1,localCol
-     do i=2,GlobalRow
-        dst = (DefBuf2D(i-1,j) + DefBuf2D(i,j)) * 0.5 
-        E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)
-        grd%alx(i,j) = 1. + E - sqrt(E*(E+2.))
-     enddo
-     do i=1,GlobalRow-1
-        dst = (DefBuf2D(i,j) + DefBuf2D(i+1,j)) * 0.5 
-        E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)
-        grd%btx(i,j) = 1. + E - sqrt(E*(E+2.))
+  do k=1,grd%km
+     do j=1,localCol
+        do i=2,GlobalRow
+           dst = (DefBuf2D(i-1,j) + DefBuf2D(i,j)) * 0.5 
+           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L_x(i,j+GlobalColOffset,k)**2)
+           grd%alx(i,j,k) = 1. + E - sqrt(E*(E+2.))
+        enddo
+        do i=1,GlobalRow-1
+           dst = (DefBuf2D(i,j) + DefBuf2D(i+1,j)) * 0.5 
+           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L_x(i,j+GlobalColOffset,k)**2)
+           grd%btx(i,j,k) = 1. + E - sqrt(E*(E+2.))
+        enddo
      enddo
   enddo
 
-  grd%istp = int( rcf%L * rcf%efc / DefBuf2D(:,:) )+1
+  do k=1,grd%km
+     do j=1,localCol
+        do i=1,GlobalRow
+           grd%istp(i,j,k) = int( rcf%L_x(i,j+GlobalColOffset,k) * rcf%efc / DefBuf2D(i,j) )+1
+        enddo
+     enddo
+  enddo
 
 
 
-  ! MPI_ALLTOALL SECTION
+  ! Ending first MPI_ALLTOALL SECTION
+  ! grd%dy doesn't require communication 
+  ! since it is already well placed
   DEALLOCATE(RecBuf1D, DefBuf2D)
-  ALLOCATE(SendBuf2D(grd%jm, grd%im))
-  ALLOCATE( RecBuf1D(localRow*GlobalCol))
-  ALLOCATE( DefBuf2D(localRow, GlobalCol))
 
-  do j=1,grd%jm
-     do i=1,grd%im
-        SendBuf2D(j,i) = grd%dy(i,j)
-     end do
-  end do
+  do k=1,grd%km
+     Lmean = mean_rad(k,rcf%L_y(:,:,k)) !for each level, mean of Lxyz
+     do l=1,rcf%ntb
+        dst = rcf%dsmn + (l-1.) * rcf%dsl
+        E   = (2. * rcf%ntr) * dst**2 / (4. * Lmean**2)
+        rcf%al(l) = 1. + E - sqrt(E*(E+2.))
+        rcf%alp   = rcf%al(l)
+        sfct(:) = 0.
+        al(:) = rcf%al(l)
+        bt(:) = rcf%al(l)
+        do j=1,nspl
+                jnxx(j) = j
+        enddo
+        sfct(nspl/2+1) = 1.
+        call rcfl_y_init    ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
+        call rcfl_y_ad_init ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
+        rcf%sc(k,l) = sfct(nspl/2+1)
+    enddo
+  enddo
 
-  call MPI_Alltoallv(SendBuf2D, SendCountY2D, SendDisplY2D, MPI_REAL8, &
-       RecBuf1D, RecCountY2D, RecDisplY2D, MPI_REAL8, CommSliceY, ierr)
+  DEALLOCATE ( sfct, jnxx, al, bt ) 
 
-  do i=1, localRow
-     do iProc=0, NumProcJ-1
-        do j=1, RecCountY2D(iProc+1)/localRow
-           DefBuf2D(i, j + RecDisplY2D(iProc+1)/localRow) = &
-                RecBuf1D(j + (i-1)*RecCountY2D(iProc+1)/localRow + RecDisplY2D(iProc+1))
-        end do
-     end do
-  end do
-
-  do j=1,GlobalCol
-     do i=1,localRow
-        dst = ( DefBuf2D(i,j) - rcf%dsmn )/rcf%dsl
-        k = int(dst) + 1
-        dst = dst - real(k-1)
-        grd%scy(i,j) = sqrt( 1./ (rcf%sc(k)*(1.-dst) + rcf%sc(k+1)*dst) ) 
+  do k=1,grd%km
+     do j=1,GlobalCol
+        do i=1,localRow
+           dst = ( grd%dy(i,j) - rcf%dsmn )/rcf%dsl
+           l = int(dst) + 1
+           dst = dst - real(l-1)
+           grd%scy(i,j,k) = sqrt( 1./ (rcf%sc(k,l)*(1.-dst) + rcf%sc(k,l+1)*dst) ) 
+        enddo
      enddo
   enddo
 
-  do j=2,GlobalCol
-     do i=1,localRow
-        dst = (DefBuf2D(i,j-1) + DefBuf2D(i,j)) * 0.5 
-        E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)
-        grd%aly(i,j) = 1. + E - sqrt(E*(E+2.))
+  do k=1,grd%km
+     do j=2,GlobalCol
+        do i=1,localRow
+           dst = (grd%dy(i,j-1) + grd%dy(i,j)) * 0.5 
+           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L_y(i+GlobalRowOffset,j,k)**2)
+           grd%aly(i,j,k) = 1. + E - sqrt(E*(E+2.))
+        enddo
      enddo
-  enddo
-  do j=1,GlobalCol-1
-     do i=1,localRow
-        dst = (DefBuf2D(i,j) + DefBuf2D(i,j+1)) * 0.5 
-        E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L**2)
-        grd%bty(i,j) = 1. + E - sqrt(E*(E+2.))
+     do j=1,GlobalCol-1
+        do i=1,localRow
+           dst = (grd%dy(i,j) + grd%dy(i,j+1)) * 0.5 
+           E   = (2. * rcf%ntr) * dst**2 / (4. * rcf%L_y(i+GlobalRowOffset,j,k)**2)
+           grd%bty(i,j,k) = 1. + E - sqrt(E*(E+2.))
+        enddo
      enddo
   enddo
   
-  grd%alx(     1,:) = grd%alx(       2,:)
-  grd%btx(GlobalRow,:) = grd%btx(GlobalRow-1,:)
-  grd%aly(:,     1) = grd%aly(:,       2)
-  grd%bty(:,GlobalCol) = grd%bty(:,GlobalCol-1)
+  do k=1,grd%km
+     grd%alx(     1,   :,   k) = grd%alx(       2,   :,    k)
+     grd%btx(GlobalRow,:,   k) = grd%btx(GlobalRow-1,:,    k)
+     grd%aly(   :     ,1,   k) = grd%aly(  :  ,   2   ,    k)
+     grd%bty(   :,GlobalCol,k) = grd%bty(  :  ,GlobalCol-1,k)
+  enddo
   
   !---
   ! Define extended grids
-  grd%jstp = int( rcf%L * rcf%efc / DefBuf2D(:,:) )+1
+  do k=1,grd%km
+     do j=1,GlobalCol
+        do i=1,localRow
+           grd%jstp(i,j,k) = int( rcf%L_y(i+GlobalRowOffset,j,k) * rcf%efc / grd%dy(i,j) )+1
+        enddo
+     enddo
+  enddo
   grd%imax   = 0
   grd%jmax   = 0
-
-  DEALLOCATE(RecBuf1D)
-  ALLOCATE(SendBuf3D(grd%km,grd%jm,grd%im))
-  ALLOCATE( RecBuf1D(localRow*GlobalCol*grd%km))
-  ALLOCATE( DefBuf3D(localRow, GlobalCol, grd%km))
-
-  !************* HORIZONTAL SLICING *************!
-  do k=1,grd%km
-     do j=1,grd%jm
-        do i=1,grd%im
-           SendBuf3D(k,j,i) = grd%msr(i,j,k)
-        end do
-     end do
-  end do
-
-  call MPI_Alltoallv(SendBuf3D, SendCountY4D, SendDisplY4D, MPI_REAL8, &
-       RecBuf1D, RecCountY4D, RecDisplY4D, MPI_REAL8, CommSliceY, ierr)
-  
-  ! Reordering data
-  do i=1, localRow
-     do iProc=0, NumProcJ-1
-        do j=1, RecCountY4D(iProc+1)/(localRow*grd%km)
-           do k=1, grd%km
-              DefBuf3D(i,j+RecDisplY4D(iProc+1)/(localRow*grd%km),k) = &
-                   RecBuf1D(k + (j-1)*grd%km + (i-1)*RecCountY4D(iProc+1)/localRow + RecDisplY4D(iProc+1))
-           end do
-        end do
-     end do
-  end do
-
-  ! ! debug
-  ! print*, "DEBUGGING", MyRank, localRow, RecCountY4D(1)/(localRow*grd%km), grd%km
-  if(size .eq. 1) then
-     do k=1,grd%km
-        do j=1,grd%jm
-           do i=1,grd%im
-              DefBuf3D(i,j,k) = grd%msr(i,j,k)
-           end do
-        end do
-     end do
-  end if
-
-  !************* VERTICAL SLICING *************!
-  DEALLOCATE(SendBuf3D, RecBuf1D)
-  ALLOCATE(SendBuf3D(grd%km, grd%im, grd%jm))
-  ALLOCATE( RecBuf1D(GlobalRow*localCol*grd%km))
-  ALLOCATE( ColBuf3D(GlobalRow, localCol, grd%km))
-
-  do k=1,grd%km
-     do j=1,grd%jm
-        do i=1,grd%im
-           SendBuf3D(k,i,j) = grd%msr(i,j,k)
-        end do
-     end do
-  end do
-
-  call MPI_Alltoallv(SendBuf3D, SendCountX4D, SendDisplX4D, MPI_REAL8, &
-       RecBuf1D, RecCountX4D, RecDisplX4D, MPI_REAL8, CommSliceX, ierr)
-
-  do j=1, localCol
-     do iProc=0, NumProcI-1
-        do i=1, RecCountX4D(iProc+1)/(localCol*grd%km)
-           do k=1, grd%km
-              ColBuf3D(i + RecDisplX4D(iProc+1)/(localCol*grd%km), j, k) = &
-                   RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX4D(iProc+1)/localCol + RecDisplX4D(iProc+1))
-           end do
-        end do
-     end do
-  end do
 
   do k = 1, grd%km
      
      grd%imx(k) = 0
      do j = 1, localCol
-        kk = grd%istp(1,j)
-        if( ColBuf3D(1,j,k).eq.1. ) kk = kk + 1
+        kk = grd%istp(1,j,k)
+        if( grd%global_msk(1,j+GlobalColOffset,k).eq.1. ) kk = kk + 1
         grd%inx(1,j,k) = kk
         do i = 2, GlobalRow
-           if( ColBuf3D(i,j,k).eq.0. .and. ColBuf3D(i-1,j,k).eq.1. ) then
-              kk = kk + grd%istp(i,j)
-           else if( ColBuf3D(i,j,k).eq.1. .and. ColBuf3D(i-1,j,k).eq.0. ) then
-              kk = kk + grd%istp(i,j) + 1
-           else if( ColBuf3D(i,j,k).eq.1. ) then
+           if( grd%global_msk(i,j+GlobalColOffset,k).eq.0. .and. grd%global_msk(i-1,j+GlobalColOffset,k).eq.1. ) then
+              kk = kk + grd%istp(i,j,k)
+           else if( grd%global_msk(i,j+GlobalColOffset,k).eq.1. .and. grd%global_msk(i-1,j+GlobalColOffset,k).eq.0. ) then
+              kk = kk + grd%istp(i,j,k) + 1
+           else if( grd%global_msk(i,j+GlobalColOffset,k).eq.1. ) then
               kk = kk + 1
            endif
            grd%inx(i,j,k) = kk
         enddo
-        grd%imx(k) = max( grd%imx(k), kk+grd%istp(GlobalRow,j))
+        grd%imx(k) = max( grd%imx(k), kk+grd%istp(GlobalRow,j,k))
      enddo
      grd%imax   = max( grd%imax, grd%imx(k))
      
      grd%jmx(k) = 0
      do i = 1, localRow
-        kk = grd%jstp(i,1)
-        if( DefBuf3D(i,1,k).eq.1. ) kk = kk + 1
+        kk = grd%jstp(i,1,k)
+        if( grd%global_msk(i+GlobalRowOffset,1,k).eq.1. ) kk = kk + 1
         grd%jnx(i,1,k) = kk
         do j = 2, GlobalCol
-           if( DefBuf3D(i,j,k).eq.0. .and. DefBuf3D(i,j-1,k).eq.1. ) then
-              kk = kk + grd%jstp(i,j)
-           else if( DefBuf3D(i,j,k).eq.1. .and. DefBuf3D(i,j-1,k).eq.0. ) then
-              kk = kk + grd%jstp(i,j) + 1
-           else if( DefBuf3D(i,j,k).eq.1. ) then
+           if( grd%global_msk(i+GlobalRowOffset,j,k).eq.0. .and. grd%global_msk(i+GlobalRowOffset,j-1,k).eq.1. ) then
+              kk = kk + grd%jstp(i,j,k)
+           else if( grd%global_msk(i+GlobalRowOffset,j,k).eq.1. .and. grd%global_msk(i+GlobalRowOffset,j-1,k).eq.0. ) then
+              kk = kk + grd%jstp(i,j,k) + 1
+           else if( grd%global_msk(i+GlobalRowOffset,j,k).eq.1. ) then
               kk = kk + 1
            endif
            grd%jnx(i,j,k) = kk
         enddo
-        grd%jmx(k) = max( grd%jmx(k), kk+grd%jstp(i,GlobalCol))
+        grd%jmx(k) = max( grd%jmx(k), kk+grd%jstp(i,GlobalCol,k))
      enddo
      grd%jmax   = max( grd%jmax, grd%jmx(k))
      
   enddo
 
-  ! call MPI_Allreduce(MPI_IN_PLACE, grd%imax, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD, ierr)
-  ! call MPI_Allreduce(MPI_IN_PLACE, grd%jmax, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, grd%imax, 1, MPI_INT, MPI_MAX, Var3DCommunicator, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, grd%jmax, 1, MPI_INT, MPI_MAX, Var3DCommunicator, ierr)
   
   ALLOCATE( grd%aex(localCol,grd%imax,grd%km)) ; grd%aex(:,:,:) = 0.0
   ALLOCATE( grd%bex(localCol,grd%imax,grd%km)) ; grd%bex(:,:,:) = 0.0
@@ -343,66 +339,53 @@ subroutine parallel_def_cov
   do k = 1, grd%km
         
      do j = 1, localCol
-        kk = grd%istp(1,j)
-        if( ColBuf3D(1,j,k).eq.1. ) then
+        kk = grd%istp(1,j,k)
+        if( grd%global_msk(1,j+GlobalColOffset,k).eq.1. ) then
            kk = kk + 1
-           grd%aex(j,1:kk,k) = grd%alx(1,j)
-           grd%bex(j,1:kk,k) = grd%btx(1,j)
+           grd%aex(j,1:kk,k) = grd%alx(1,j,k)
+           grd%bex(j,1:kk,k) = grd%btx(1,j,k)
         endif
         do i = 2, GlobalRow
-           if( ColBuf3D(i,j,k).eq.0. .and. ColBuf3D(i-1,j,k).eq.1. ) then
-              grd%aex(j,kk+1:kk+grd%istp(i,j),k) = grd%alx(i,j)
-              grd%bex(j,kk+1:kk+grd%istp(i,j),k) = grd%btx(i,j)
-              kk = kk + grd%istp(i,j)
-           else if( ColBuf3D(i,j,k).eq.1. .and. ColBuf3D(i-1,j,k).eq.0. ) then
-              grd%aex(j,kk+1:kk+grd%istp(i,j)+1,k) = grd%alx(i,j)
-              grd%bex(j,kk+1:kk+grd%istp(i,j)+1,k) = grd%btx(i,j)
-              kk = kk + grd%istp(i,j) + 1
-           else if( ColBuf3D(i,j,k).eq.1. ) then
-              grd%aex(j,kk+1,k) = grd%alx(i,j)
-              grd%bex(j,kk+1,k) = grd%btx(i,j)
+           if( grd%global_msk(i,j+GlobalColOffset,k).eq.0. .and. grd%global_msk(i-1,j+GlobalColOffset,k).eq.1. ) then
+              grd%aex(j,kk+1:kk+grd%istp(i,j,k),k) = grd%alx(i,j,k)
+              grd%bex(j,kk+1:kk+grd%istp(i,j,k),k) = grd%btx(i,j,k)
+              kk = kk + grd%istp(i,j,k)
+           else if( grd%global_msk(i,j+GlobalColOffset,k).eq.1. .and. grd%global_msk(i-1,j+GlobalColOffset,k).eq.0. ) then
+              grd%aex(j,kk+1:kk+grd%istp(i,j,k)+1,k) = grd%alx(i,j,k)
+              grd%bex(j,kk+1:kk+grd%istp(i,j,k)+1,k) = grd%btx(i,j,k)
+              kk = kk + grd%istp(i,j,k) + 1
+           else if( grd%global_msk(i,j+GlobalColOffset,k).eq.1. ) then
+              grd%aex(j,kk+1,k) = grd%alx(i,j,k)
+              grd%bex(j,kk+1,k) = grd%btx(i,j,k)
               kk = kk + 1
            endif
         enddo
      enddo
      
      do i = 1, localRow
-        kk = grd%jstp(i,1)
-        if( DefBuf3D(i,1,k).eq.1. ) then
+        kk = grd%jstp(i,1,k)
+        if( grd%global_msk(i+GlobalRowOffset,1,k).eq.1. ) then
            kk = kk + 1
-           grd%aey(i,1:kk,k) = grd%aly(i,1)
-           grd%bey(i,1:kk,k) = grd%bty(i,1)
+           grd%aey(i,1:kk,k) = grd%aly(i,1,k)
+           grd%bey(i,1:kk,k) = grd%bty(i,1,k)
         endif
         do j = 2, GlobalCol
-           if( DefBuf3D(i,j,k).eq.0. .and. DefBuf3D(i,j-1,k).eq.1. ) then
-              grd%aey(i,kk+1:kk+grd%jstp(i,j),k) = grd%aly(i,j)
-              grd%bey(i,kk+1:kk+grd%jstp(i,j),k) = grd%bty(i,j)
-              kk = kk + grd%jstp(i,j)
-           else if( DefBuf3D(i,j,k).eq.1. .and. DefBuf3D(i,j-1,k).eq.0. ) then
-              grd%aey(i,kk+1:kk+grd%jstp(i,j)+1,k) = grd%aly(i,j)
-              grd%bey(i,kk+1:kk+grd%jstp(i,j)+1,k) = grd%bty(i,j)
-              kk = kk + grd%jstp(i,j) + 1
-           else if( DefBuf3D(i,j,k).eq.1. ) then
-              grd%aey(i,kk+1,k) = grd%aly(i,j)
-              grd%bey(i,kk+1,k) = grd%bty(i,j)
+           if( grd%global_msk(i+GlobalRowOffset,j,k).eq.0. .and. grd%global_msk(i+GlobalRowOffset,j-1,k).eq.1. ) then
+              grd%aey(i,kk+1:kk+grd%jstp(i,j,k),k) = grd%aly(i,j,k)
+              grd%bey(i,kk+1:kk+grd%jstp(i,j,k),k) = grd%bty(i,j,k)
+              kk = kk + grd%jstp(i,j,k)
+           else if( grd%global_msk(i+GlobalRowOffset,j,k).eq.1. .and. grd%global_msk(i+GlobalRowOffset,j-1,k).eq.0. ) then
+              grd%aey(i,kk+1:kk+grd%jstp(i,j,k)+1,k) = grd%aly(i,j,k)
+              grd%bey(i,kk+1:kk+grd%jstp(i,j,k)+1,k) = grd%bty(i,j,k)
+              kk = kk + grd%jstp(i,j,k) + 1
+           else if( grd%global_msk(i+GlobalRowOffset,j,k).eq.1. ) then
+              grd%aey(i,kk+1,k) = grd%aly(i,j,k)
+              grd%bey(i,kk+1,k) = grd%bty(i,j,k)
               kk = kk + 1
            endif
         enddo
      enddo
      
-  enddo
-  
-  do k=1,grd%km
-     do j=1,grd%jm
-        do i=1,grd%im
-           !!!!!!!! *** WARNING HERE *** msr and msk MUST to be equal !!!!!!!!
-           if(grd%msk(i,j,k).eq.1.0)then
-              grd%fct(i,j,k) = 1.0  
-           else
-              grd%fct(i,j,k) = 0.0
-           endif
-        enddo
-     enddo
   enddo
 
   ! ---
@@ -416,25 +399,23 @@ subroutine parallel_def_cov
   ALLOCATE ( grd%ro_ad( grd%im, grd%jm, ros%neof))   ; grd%ro_ad = 0.0
   ALLOCATE ( Dump_vip ( grd%im, grd%jm, ros%neof))   ; Dump_vip  = 0.0
   
-  if(MyRank .eq. 0) &
-       write(*,*) 'rcfl allocation :', grd%jm, grd%imax, nthreads
-  ALLOCATE ( a_rcx(grd%jm,grd%imax,nthreads)) ; a_rcx = huge(a_rcx(1,1,1))
-  ALLOCATE ( b_rcx(grd%jm,grd%imax,nthreads)) ; b_rcx = huge(b_rcx(1,1,1))
-  ALLOCATE ( c_rcx(grd%jm,grd%imax,nthreads)) ; c_rcx = huge(c_rcx(1,1,1))
+  if(MyId .eq. 0) &
+       write(*,*) 'rcfl allocation :', grd%jmax, grd%imax, nthreads
+  ALLOCATE ( a_rcx(localCol,grd%imax,nthreads)) ; a_rcx = huge(a_rcx(1,1,1))
+  ALLOCATE ( b_rcx(localCol,grd%imax,nthreads)) ; b_rcx = huge(b_rcx(1,1,1))
+  ALLOCATE ( c_rcx(localCol,grd%imax,nthreads)) ; c_rcx = huge(c_rcx(1,1,1))
   
-  ALLOCATE ( a_rcy(grd%im,grd%jmax,nthreads)) ; a_rcy = huge(a_rcy(1,1,1))
-  ALLOCATE ( b_rcy(grd%im,grd%jmax,nthreads)) ; b_rcy = huge(b_rcy(1,1,1))
-  ALLOCATE ( c_rcy(grd%im,grd%jmax,nthreads)) ; c_rcy = huge(c_rcy(1,1,1))
+  ALLOCATE ( a_rcy(localRow,grd%jmax,nthreads)) ; a_rcy = huge(a_rcy(1,1,1))
+  ALLOCATE ( b_rcy(localRow,grd%jmax,nthreads)) ; b_rcy = huge(b_rcy(1,1,1))
+  ALLOCATE ( c_rcy(localRow,grd%jmax,nthreads)) ; c_rcy = huge(c_rcy(1,1,1))
   
   
-  ALLOCATE ( alp_rcx(grd%jm,grd%imax,nthreads)) ; alp_rcx = huge(alp_rcx(1,1,1))
-  ALLOCATE ( bta_rcx(grd%jm,grd%imax,nthreads)) ; bta_rcx = huge(bta_rcx(1,1,1))
+  ALLOCATE ( alp_rcx(localCol,grd%imax,nthreads)) ; alp_rcx = huge(alp_rcx(1,1,1))
+  ALLOCATE ( bta_rcx(localCol,grd%imax,nthreads)) ; bta_rcx = huge(bta_rcx(1,1,1))
   
-  ALLOCATE ( alp_rcy(grd%im,grd%jmax,nthreads)) ; alp_rcy = huge(alp_rcy(1,1,1))
-  ALLOCATE ( bta_rcy(grd%im,grd%jmax,nthreads)) ; bta_rcy = huge(bta_rcy(1,1,1))
+  ALLOCATE ( alp_rcy(localRow,grd%jmax,nthreads)) ; alp_rcy = huge(alp_rcy(1,1,1))
+  ALLOCATE ( bta_rcy(localRow,grd%jmax,nthreads)) ; bta_rcy = huge(bta_rcy(1,1,1))
 
-  DEALLOCATE(SendBuf2D, RecBuf1D, DefBuf2D)
-  DEALLOCATE(SendBuf3D)
-  DEALLOCATE(ColBuf3D,  DefBuf3D)
+  DEALLOCATE(rcf%Lxyz, rcf%L_x, rcf%L_y)
   
 end subroutine parallel_def_cov

@@ -38,9 +38,8 @@ subroutine sav_itr
   use ctl_str
   use cns_str
   use rcfl
-#ifdef _USE_MPI
   use mpi_str
-#endif
+
   implicit none
   
   ! ---
@@ -51,8 +50,11 @@ subroutine sav_itr
   ! Save eigenvalues
   if (1.eq.0) then ! We do not know the reason of these lines
      ALLOCATE ( drv%ro(drv%im,drv%jm,ros%neof))    ; drv%ro   (:,:,:) = grd%ro   (:,:,:)
-     ALLOCATE ( drv%msk(drv%im,drv%jm))            ; drv%msk  (:,:)   = grd%msr  (:,:,1)
+     ! ALLOCATE ( drv%msk(drv%im,drv%jm))            ; drv%msk  (:,:)   = grd%msr  (:,:,1)
   endif
+
+  call FreeWindows
+
   ! ---
   ! Grid structure
   DEALLOCATE ( grd%reg)
@@ -65,50 +67,30 @@ subroutine sav_itr
   DEALLOCATE ( grd%bty )
   DEALLOCATE ( grd%scx )
   DEALLOCATE ( grd%scy )
-  DEALLOCATE ( grd%msr )
   DEALLOCATE ( grd%imx, grd%jmx)
   DEALLOCATE ( grd%istp, grd%jstp)
   DEALLOCATE ( grd%inx, grd%jnx)
-  DEALLOCATE ( grd%fct)
   DEALLOCATE ( grd%aex)
   DEALLOCATE ( grd%aey)
   DEALLOCATE ( grd%bex)
   DEALLOCATE ( grd%bey)
+ 
   ! Biological vectors
   DEALLOCATE ( grd%chl)
   DEALLOCATE ( grd%chl_ad)
+ 
   ! Observational vector
   DEALLOCATE ( obs%inc, obs%amo, obs%res)
   DEALLOCATE ( obs%err, obs%gra)
+ 
   ! Covariances structure
   DEALLOCATE ( grd%ro)
   DEALLOCATE ( grd%ro_ad)
   DEALLOCATE ( ros%evc, ros%eva )
 
-  if (drv%argo .eq. 1) then
-     DEALLOCATE(grd%lon, grd%lat)
-     ! deallocate argo arrays
-     DEALLOCATE ( arg%ino, arg%flg, arg%flc, arg%par)
-     DEALLOCATE ( arg%lon, arg%lat, arg%dpt, arg%tim)
-     DEALLOCATE ( arg%inc)
-     DEALLOCATE ( arg%err)
-     DEALLOCATE ( arg%res)
-     DEALLOCATE ( arg%ib, arg%jb, arg%kb)
-     DEALLOCATE ( arg%pb, arg%qb, arg%rb)
-     DEALLOCATE ( arg%pq1, arg%pq2, arg%pq3, arg%pq4)
-     DEALLOCATE ( arg%pq5, arg%pq6, arg%pq7, arg%pq8)
-  endif
-
   ! Control structure
-  DEALLOCATE( ctl%x_c, ctl%g_c)
-  DEALLOCATE( ctl%l_c, ctl%u_c)
-#ifndef _USE_MPI
-  DEALLOCATE( ctl%nbd, ctl%iwa)
-  DEALLOCATE( ctl%wa, ctl%ws, ctl%wy)
-  DEALLOCATE( ctl%sy, ctl%ss)
-  DEALLOCATE( ctl%wt, ctl%wn, ctl%snd)
-  DEALLOCATE( ctl%z_c, ctl%r_c, ctl%d_c, ctl%t_c)
-#endif
+  DEALLOCATE ( ctl%x_c, ctl%g_c)
+
   DEALLOCATE (SurfaceWaterPoints)  
   
   DEALLOCATE ( a_rcx)
@@ -123,9 +105,20 @@ subroutine sav_itr
   DEALLOCATE ( bta_rcy)
   DEALLOCATE (Dump_chl, Dump_vip, Dump_msk)
   
-#ifdef _USE_MPI
-  if(MyRank .eq. 0) &
-#endif
-       write(*,*) ' DEALLOCATION DONE'
+  if(MyId .eq. 0) write(*,*) ' DEALLOCATION DONE'
   
 end subroutine sav_itr
+
+subroutine FreeWindows
+
+  use grd_str
+  use mpi_str
+
+  implicit none
+
+  integer ierr
+
+  call MPI_Win_free(MpiWinChl, ierr)
+  call MPI_Win_free(MpiWinChlAd, ierr)
+
+end subroutine FreeWindows

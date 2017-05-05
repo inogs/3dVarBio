@@ -103,13 +103,12 @@ PHYSOBS  =  \
 OBJS    =  \
 	routines.o\
 	def_nml.o\
-	def_grd.o\
 	parallel_def_grd.o\
-	parallel_def_cov.o\
 	sav_itr.o\
 	ini_itr.o\
-	rdgrds.o\
 	rdeofs.o\
+    rdrcorr.o\
+    mean_rdr.o\
 	netcdf_err.o\
 	get_obs.o\
 	get_obs_arg.o\
@@ -117,10 +116,8 @@ OBJS    =  \
 	parallel_get_obs_chl.o\
 	int_par.o\
 	obs_vec.o\
-	def_cov.o\
 	ini_cfn.o\
 	ini_nrm.o\
-	min_cfn.o\
 	costf.o\
 	cnv_ctv.o\
 	ver_hor.o\
@@ -147,11 +144,16 @@ OBJS    =  \
 	clean_mem.o\
 	mpi_utils.o\
 	parallel_costf.o\
+	parallel_obs_chl.o\
 	parallel_rdgrds.o\
 	parallel_rdeofs.o\
 	parallel_wrt_dia.o\
-	parallel_obs_chl.o\
+	readAnisotropy.o\
+	parallel_def_cov.o\
 	parallel_ver_hor.o\
+	parallel_rdrcorr.o\
+	parallel_obs_arg.o\
+	oneside_chl.o\
 	tao_minimizer.o\
     oceanvar.o
 
@@ -175,6 +177,9 @@ tao_str.o: tao_str.f90
 	$(CPP) -I$(PETSC_INC) $*.f90 > cpp.$*.f90 ; $(F90) -I$(PETSC_INC) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
 
 tao_minimizer.o: tao_minimizer.f90
+	$(CPP) -I$(PETSC_INC) $*.f90 > cpp.$*.f90 ; $(F90) -I$(PETSC_INC) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
+
+mpi_utils.o: mpi_utils.f90
 	$(CPP) -I$(PETSC_INC) $*.f90 > cpp.$*.f90 ; $(F90) -I$(PETSC_INC) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
 
 .DEFAULTS:

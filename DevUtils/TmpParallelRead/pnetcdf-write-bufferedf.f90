@@ -16,14 +16,14 @@
       integer(kind=MPI_OFFSET_KIND) count(2)
       integer(kind=MPI_OFFSET_KIND) stride(2)
       integer(kind=MPI_OFFSET_KIND) imap(2)
-      integer(kind=MPI_OFFSET_KIND) bufsize
-      integer(kind=MPI_OFFSET_KIND) put_size
+      integer(kind=MPI_OFFSET_KIND) bufNPE
+      integer(kind=MPI_OFFSET_KIND) put_NPE
       real  var(6,4)
       character(len=256) filename
 
       call MPI_INIT(err)
       call MPI_COMM_RANK(MPI_COMM_WORLD, rank, err)
-      call MPI_COMM_SIZE(MPI_COMM_WORLD, nprocs, err)
+      call MPI_COMM_NPE(MPI_COMM_WORLD, nprocs, err)
 
       filename = "testfile.nc"
       cmode = IOR(NF90_CLOBBER, NF90_64BIT_DATA)
@@ -63,9 +63,9 @@
          enddo
       enddo
 
-      ! bufsize must be max of data type converted before and after
-      bufsize = 4*6*8
-      err = nf90mpi_buffer_attach(ncid, bufsize)
+      ! bufNPE must be max of data type converted before and after
+      bufNPE = 4*6*8
+      err = nf90mpi_buffer_attach(ncid, bufNPE)
       if (err < NF90_NOERR) print*,'Error at nf90mpi_buffer_attach ', &
                                    nf90mpi_strerror(err)
 
@@ -133,10 +133,10 @@
       !
       ! note that the display of ncmpidump is in C array dimensional order
 
-      err = nf90mpi_inq_put_size(ncid, put_size)
-      if (err < NF90_NOERR) print*,'Error at nf90mpi_inq_put_size ', &
+      err = nf90mpi_inq_put_NPE(ncid, put_NPE)
+      if (err < NF90_NOERR) print*,'Error at nf90mpi_inq_put_NPE ', &
                                    nf90mpi_strerror(err)
-      ! print*,'pnetcdf reports total put size by this proc =', put_size
+      ! print*,'pnetcdf reports total put NPE by this proc =', put_NPE
 
       err = nf90mpi_close(ncid)
       if (err < NF90_NOERR) print*,'Error at nf90mpi_close ', &

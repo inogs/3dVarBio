@@ -33,10 +33,7 @@ subroutine obs_vec
   use set_knd
   use drv_str
   use obs_str
-
-#ifdef _USE_MPI
   use mpi_str
-#endif
   
   implicit none
   
@@ -47,9 +44,7 @@ subroutine obs_vec
   
   obs%no = chl%nc + arg%no
 
-#ifdef _USE_MPI
-  if(MyRank .eq. 0) &
-#endif
+  if(MyId .eq. 0) &
        write(drv%dia,*) ' Total number of observations: ', obs%no
 
   ALLOCATE ( obs%inc(obs%no)) ; obs%inc = huge(obs%inc(1))
@@ -70,16 +65,24 @@ subroutine obs_vec
           obs%err(k) = arg%err(i)
        endif
     enddo
+
+    DEALLOCATE(arg%res, arg%err)
+    
  endif
  
  ! Observations of chlorophyll
- do i=1,chl%no
+ if(drv%sat .eq. 1) then
+  do i=1,chl%no
     if(chl%flc(i).eq.1)then
        k=k+1
        obs%res(k) = chl%res(i)
        obs%err(k) = chl%err(i)
     endif
- enddo
+  enddo
+  
+  DEALLOCATE(chl%res, chl%err)
+
+ endif
  
  
 end subroutine obs_vec

@@ -27,14 +27,12 @@ subroutine tao_minimizer
 
   external MyFuncAndGradient, MyBounds, MyConvTest
 
-  if(MyRank .eq. 0) print*,'Initialize Petsc and Tao stuffs'
+  if(MyId .eq. 0) then
+     print*,'PETSc-TAO lmvm minimizer configuration'
+     print*, ''
+  endif
 
-  call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-  CHKERRQ(ierr)
-
-  print*, 'PetscInitialize(...) done by MyRank ', MyRank, ctl%n, ctl%n_global
-
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
      write(drv%dia,*) ''
      write(drv%dia,*) "Within tao_minimizer subroutine!"
   endif
@@ -47,10 +45,11 @@ subroutine tao_minimizer
   ALLOCATE(loc(n), MyValues(n))
 
   ! Create MyState array and fill it
-  call VecCreateMPI(MPI_COMM_WORLD, n, M, MyState, ierr)
+  call VecCreateMPI(Var3DCommunicator, n, M, MyState, ierr)
   call VecGetOwnershipRange(MyState, GlobalStart, MyEnd, ierr)
 
-  print*, "MyState initialization by MyRank ", MyRank, "with indices: ", GlobalStart, MyEnd
+  if(drv%Verbose .eq. 1) &
+       print*, "MyState initialization by MyId ", MyId, "with indices: ", GlobalStart, MyEnd
 
   if( ctl%n .ne. MyEnd - GlobalStart ) then
      print*, ""
@@ -70,11 +69,7 @@ subroutine tao_minimizer
   end do
 
   ! Setting only local values (since each process can access at all entries of MyState)
-  do j=1, ctl%n
-     call VecSetValues(MyState, 1, loc(j), MyValues(j), INSERT_VALUES, ierr)
-  end do
-
-  ! call VecSetValues(MyState, ctl%n, loc, MyValues, INSERT_VALUES, ierr)
+  call VecSetValues(MyState, ctl%n, loc, MyValues, INSERT_VALUES, ierr)
   call VecAssemblyBegin(MyState, ierr)
   call VecAssemblyEnd(MyState, ierr)
 
@@ -82,7 +77,7 @@ subroutine tao_minimizer
   drv%MyCounter = 0
 
   ! Create Tao object and set type BLMVM (ones that use BFGS minimization algorithm)
-  call TaoCreate(MPI_COMM_WORLD, tao, ierr)
+  call TaoCreate(Var3DCommunicator, tao, ierr)
   CHKERRQ(ierr)
   ! call TaoSetType(tao,"blmvm",ierr)
   call TaoSetType(tao,"lmvm",ierr)
@@ -103,24 +98,22 @@ subroutine tao_minimizer
      MaxGrad = max(MaxGrad, abs(ctl%g_c(j)))
   end do
 
-  call MPI_Allreduce(MPI_IN_PLACE, MaxGrad, 1, MPI_REAL8, MPI_MAX, MPI_COMM_WORLD, ierr)
+  call MPI_Allreduce(MPI_IN_PLACE, MaxGrad, 1, MPI_REAL8, MPI_MAX, Var3DCommunicator, ierr)
   MyTolerance = ctl%pgper * MaxGrad
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
      print*, "Setting MyTolerance", MyTolerance
+     print*, ""
      write(drv%dia,*) "Setting MyTolerance", MyTolerance
   endif
 
-  call TaoSetTolerances(tao, MyTolerance, 1.0d-4, ctl%pgper, ierr) !PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr) !
+  call TaoSetTolerances(tao, MyTolerance, 1.d-4, ctl%pgper, ierr) !PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr) !
   CHKERRQ(ierr)
-
-  ! call TaoSetConvergenceTest(tao, MyConvTest, PETSC_NULL_OBJECT, ierr)
-  ! CHKERRQ(ierr)
 
   ! Perform minimization
   call TaoSolve(tao, ierr)
   CHKERRQ(ierr)
 
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
      print*, ''
      print*, 'Tao Solver Info:'
      print*, ''
@@ -150,8 +143,7 @@ subroutine tao_minimizer
   call VecDestroy(MyState, ierr)
   CHKERRQ(ierr)
 
-  call PetscFinalize(ierr)
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
      write(drv%dia,*) 'Minimization done with ', drv%MyCounter
      write(drv%dia,*) 'iterations'
      write(drv%dia,*) ''
@@ -230,123 +222,3 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   ierr = 0
 
 end subroutine MyFuncAndGradient
-
-!-------------------------------------------------!
-! Subroutine that sets upper and lower            !
-! bounds of the solution state array              !
-! This routine is called only one time at the     !
-! beginning of the iteration                      !
-!-------------------------------------------------!
-
-subroutine MyBounds(tao, lb, ub, dummy, ierr)
-#include "petsc/finclude/petscvecdef.h"
-
-  use ctl_str
-  use tao_str
-  use petscvec
-  use tao_str
-
-  implicit none
-
-#include "petsc/finclude/petsctao.h"
-
-  Tao        :: tao
-  Vec        :: lb, ub
-  integer    :: dummy, ierr, j
-
-  PetscInt, allocatable, dimension(:)       :: loc
-  PetscScalar, allocatable, dimension(:)    :: lbound, ubound
-  PetscInt                                  :: GlobalStart, MyEnd
-
-  ALLOCATE(loc(ctl%n), lbound(ctl%n), ubound(ctl%n))
-  call VecGetOwnershipRange(lb, GlobalStart, MyEnd, ierr)
-  do j = 1, ctl%n
-     loc(j) = GlobalStart + j - 1
-     lbound(j) = ctl%l_c(j)
-     ubound(j) = ctl%u_c(j)
-  end do
-
-  call VecSetValues(lb, ctl%n, loc, lbound, INSERT_VALUES, ierr)
-  CHKERRQ(ierr)
-  call VecAssemblyBegin(lb, ierr)
-  CHKERRQ(ierr)
-  call VecAssemblyEnd(lb, ierr)
-  CHKERRQ(ierr)
-
-  call VecSetValues(ub, ctl%n, loc, ubound, INSERT_VALUES, ierr)
-  CHKERRQ(ierr)
-  call VecAssemblyBegin(ub, ierr)
-  CHKERRQ(ierr)
-  call VecAssemblyEnd(ub, ierr)
-  CHKERRQ(ierr)
-
-  DEALLOCATE(loc, lbound, ubound)
-
-end subroutine MyBounds
-
-
-!-------------------------------------------------!
-! subroutine that performs the computation of     !
-! the infinity norm of the gradient. If that norm !
-! is less than the provided tolerance             !
-! the solution is convergent                      !
-!-------------------------------------------------!
-
-subroutine MyConvTest(tao, dummy, ierr)
-
-#include "petsc/finclude/petscvecdef.h"
-
-  use ctl_str
-  use tao_str
-  use petscvec
-  use mpi
-
-  implicit none
-
-#include "petsc/finclude/petsctao.h"
-
-  Tao                  :: tao
-  integer              :: dummy, ierr, j, n, M, CheckVal, TmpVal
-  Vec                  :: TmpGrad
-  PetscScalar, pointer :: ReadGrad(:)
-  PetscScalar          :: MyTol, grtol, gttol
-
-  ! set useful variables
-  n = ctl%n
-  M = ctl%n_global
-  CheckVal = 0
-
-  ! taking tolerance value (skipping useless values)
-  call TaoGetTolerances(tao, MyTol, PETSC_NULL_REAL, PETSC_NULL_REAL, ierr)
-  CHKERRQ(ierr)
-
-  call TaoGetGradientVector(tao, TmpGrad, ierr)
-  CHKERRQ(ierr)
-
-  call VecGetArrayReadF90(TmpGrad, ReadGrad, ierr)
-  CHKERRQ(ierr)
-
-  ! check with infinity norm of gradient...
-  do j=1, ctl%n
-     if( ReadGrad(j) .gt. MyTol ) then
-        CheckVal = 1
-        EXIT
-     end if
-  end do
-
-  call VecRestoreArrayReadF90(TmpGrad, ReadGrad, ierr)
-  CHKERRQ(ierr)
-
-  ! Do I really need this?
-  TmpVal = CheckVal
-  call MPI_Allreduce(TmpVal, CheckVal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD, ierr)
-
-  if( CheckVal .gt. 0) then
-     call TaoSetConvergedReason(tao, TAO_CONTINUE_ITERATING, ierr)
-     CHKERRQ(ierr)
-  else
-     call TaoSetConvergedReason(tao, TAO_CONVERGED_USER, ierr)
-     CHKERRQ(ierr)
-  end if
-
-end subroutine MyConvTest

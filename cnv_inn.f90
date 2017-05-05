@@ -43,10 +43,7 @@ subroutine cnv_inn
   ! --------
   ! Convert the control vector to v
   call cnv_ctv
-#ifdef _USE_MPI
+
   call parallel_ver_hor
-#else
-  call ver_hor
-#endif
   
 end subroutine cnv_inn

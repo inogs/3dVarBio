@@ -176,10 +176,7 @@ subroutine int_par_chl
   use drv_str
   use grd_str
   use obs_str
-
-#ifdef _USE_MPI
   use mpi_str
-#endif
   
   implicit none
   
@@ -188,14 +185,8 @@ subroutine int_par_chl
   real(r8)      ::  p1, q1
   real(r8)      ::  div_x, div_y
 
-#ifdef _USE_MPI
-  if(MyRank .eq. 0) &
+  if(MyId .eq. 0) &
        write(drv%dia,*) 'Number of CHL observations:  >>>>>>>>>>>>>',chl%nc_global
-#else  
-
-  write(drv%dia,*) 'Number of CHL observations:  >>>>>>>>>>>>>',chl%nc
-
-#endif     
 
   if(chl%nc.gt.0) then
      
@@ -224,24 +215,24 @@ subroutine int_par_chl
            j1=chl%jb(k)
            q1=chl%qb(k)
            
-           div_y =  (1.-q1) * max(grd%msk(i1,j1  ,1),grd%msk(i1+1,j1  ,1))     &
-                +    q1  * max(grd%msk(i1,j1+1,1),grd%msk(i1+1,j1+1,1))
-           div_x =  (1.-p1) * grd%msk(i1  ,j1,1) + p1 * grd%msk(i1+1,j1,1)
-           chl%pq1(k) = grd%msk(i1,j1,1)                                      &
-                * max(grd%msk(i1,j1,1),grd%msk(i1+1,j1,1))             &
+           div_y =  (1.-q1) * max(grd%global_msk(i1+GlobalRowOffset,j1  ,1),grd%global_msk(i1+GlobalRowOffset+1,j1  ,1))     &
+                +    q1  * max(grd%global_msk(i1+GlobalRowOffset,j1+1,1),grd%global_msk(i1+GlobalRowOffset+1,j1+1,1))
+           div_x =  (1.-p1) * grd%global_msk(i1+GlobalRowOffset  ,j1,1) + p1 * grd%global_msk(i1+GlobalRowOffset+1,j1,1)
+           chl%pq1(k) = grd%global_msk(i1+GlobalRowOffset,j1,1)                                      &
+                * max(grd%global_msk(i1+GlobalRowOffset,j1,1),grd%global_msk(i1+GlobalRowOffset+1,j1,1))             &
                 * (1.-p1) * (1.-q1)                                   &
                 /( div_x * div_y + 1.e-16 )
-           chl%pq2(k) = grd%msk(i1+1,j1,1)                                    &
-                * max(grd%msk(i1,j1,1),grd%msk(i1+1,j1,1))             &
+           chl%pq2(k) = grd%global_msk(i1+GlobalRowOffset+1,j1,1)                                    &
+                * max(grd%global_msk(i1+GlobalRowOffset,j1,1),grd%global_msk(i1+GlobalRowOffset+1,j1,1))             &
                 *     p1  * (1.-q1)                                    &
                 /( div_x * div_y + 1.e-16 )
-           div_x =  (1.-p1) * grd%msk(i1  ,j1+1,1) + p1 * grd%msk(i1+1,j1+1,1)
-           chl%pq3(k) = grd%msk(i1,j1+1,1)                                    &
-                * max(grd%msk(i1,j1+1,1),grd%msk(i1+1,j1+1,1))         &
+           div_x =  (1.-p1) * grd%global_msk(i1+GlobalRowOffset  ,j1+1,1) + p1 * grd%global_msk(i1+GlobalRowOffset+1,j1+1,1)
+           chl%pq3(k) = grd%global_msk(i1+GlobalRowOffset,j1+1,1)                                    &
+                * max(grd%global_msk(i1+GlobalRowOffset,j1+1,1),grd%global_msk(i1+GlobalRowOffset+1,j1+1,1))         &
                 * (1.-p1) *     q1                                     &
                 /( div_x * div_y + 1.e-16 )
-           chl%pq4(k) = grd%msk(i1+1,j1+1,1)                                  &
-                * max(grd%msk(i1,j1+1,1),grd%msk(i1+1,j1+1,1))         &
+           chl%pq4(k) = grd%global_msk(i1+GlobalRowOffset+1,j1+1,1)                                  &
+                * max(grd%global_msk(i1+GlobalRowOffset,j1+1,1),grd%global_msk(i1+GlobalRowOffset+1,j1+1,1))         &
                 *     p1  *     q1                                     &
                 /( div_x * div_y + 1.e-16 )
            
@@ -249,4 +240,8 @@ subroutine int_par_chl
      enddo    
   endif
   
+  DEALLOCATE ( chl%pb, chl%qb)
+  DEALLOCATE ( chl%flg)
+
+
 end subroutine int_par_chl

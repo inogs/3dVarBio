@@ -5,7 +5,7 @@ program MyPnetCDF
 
   implicit none
   
-  integer :: ierr, MyID, size, cmode, ncid
+  integer :: ierr, MyID, NPE, cmode, ncid
   integer :: jpni, jpnj, jpnij, jpreci, jprecj, jpkb
   integer :: jpiglo, jpjglo, jpk, DimId, VarId
   real, allocatable :: values(:,:)
@@ -21,7 +21,7 @@ program MyPnetCDF
 
   call MPI_Init(ierr)
   call MPI_Comm_rank(MPI_COMM_WORLD, MyID, ierr)
-  call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
+  call MPI_Comm_NPE(MPI_COMM_WORLD, NPE, ierr)
 
   !
   ! init check
@@ -45,7 +45,7 @@ program MyPnetCDF
 
   if(MyID .eq. 0) then
      WRITE(*,*) ' '
-     WRITE(*,*) 'Dom_Size'
+     WRITE(*,*) 'Dom_size'
      WRITE(*,*) ' '
      WRITE(*,*) ' number of processors following i : jpni   = ', jpni
      WRITE(*,*) ' number of processors following j : jpnj   = ', jpnj
@@ -59,8 +59,7 @@ program MyPnetCDF
   !
   ! open meshmask_872.nc in read-only mode
   !
-  ! filename = "meshmask_872.nc"
-  filename = "testfile.nc"
+  filename = "meshmask_872.nc"
   cmode = NF90_NOWRITE
   ierr = nf90mpi_open(MPI_COMM_WORLD, filename, cmode, MPI_INFO_NULL, ncid)
 
@@ -75,7 +74,7 @@ program MyPnetCDF
   call MyGetDimension(ncid, 'y', MyOffset)
   jpjglo = MyOffset
 
-  call MyGetDimension(ncid, 'x', MyOffset)
+  call MyGetDimension(ncid, 'z', MyOffset)
   jpk = MyOffset
   jpkb = jpk
 
@@ -86,8 +85,8 @@ program MyPnetCDF
      WRITE(*,*) ' jpjglo  : second dimension of global domain --> j ',jpjglo
      WRITE(*,*) ' jpk     : number of levels           > or = jpk   ',jpk
      ! WRITE(*,*) ' jpkb    : first vertical layers where biology is active > or = jpkb   ',jpkb
-     WRITE(*,*) ' WorkLoad: jpiglo / size                           ',jpiglo/ size
-     WRITE(*,*) ' Rest    : mod(jpiglo, size)                       ',mod(jpiglo, size)
+     WRITE(*,*) ' WorkLoad: jpiglo / NPE                           ',jpiglo/ NPE
+     WRITE(*,*) ' Rest    : mod(jpiglo, NPE)                       ',mod(jpiglo, NPE)
      WRITE(*,*) ' '
   endif
 
@@ -124,7 +123,7 @@ program MyPnetCDF
   !
   ! PDICERBO version of the domain decomposition:
   ! the domain is divided among the processes into slices
-  ! of size (jpiglo / size, jpjglo)
+  ! of NPE (jpiglo / NPE, jpjglo)
   ! WARNING!!! netcdf stores data in ROW MAJOR order
   ! while here we are reading in column major order.
   ! We have to take into account this simply swapping
@@ -132,8 +131,8 @@ program MyPnetCDF
   !
   !*******************************************
 
-  MyRest = mod(jpiglo, size)
-  MyCount(1) = jpiglo / size
+  MyRest = mod(jpiglo, NPE)
+  MyCount(1) = jpiglo / NPE
   RealOffset = 0
   if (MyId .lt. MyRest) then
      MyCount(1) = MyCount(1) + 1
@@ -167,7 +166,7 @@ program MyPnetCDF
   if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_get_vara_real', ierr)
 
   write(*,*) "MyID = ", MyID, " shape(values) = ", shape(values)
-  write(*,*) "MyID = ", MyID, " values = ", values
+  ! write(*,*) "MyID = ", MyID, " values = ", values
 
   ierr = nf90mpi_close(ncid)
   if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_close', ierr)

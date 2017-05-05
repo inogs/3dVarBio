@@ -38,65 +38,55 @@ subroutine clean_mem
   use ctl_str
   use cns_str
   use rcfl
-
-#ifdef _USE_MPI
   use mpi_str
-  use mpi
-#endif
   
   implicit none
 
-#ifdef _USE_MPI
   integer :: ierr
-#endif
   
   ! Deallocate everithing related to the old grid
   DEALLOCATE ( drv%grid, drv%ratco, drv%ratio)
   DEALLOCATE ( drv%mask, drv%dda, drv%ddi)
 
+  if (drv%argo .eq. 1) then
+     ! deallocate argo arrays
+     DEALLOCATE ( arg%flc)
+     DEALLOCATE ( arg%inc)
+     DEALLOCATE ( arg%ib, arg%jb, arg%kb)
+     DEALLOCATE ( arg%pq1, arg%pq2, arg%pq3, arg%pq4)
+     DEALLOCATE ( arg%pq5, arg%pq6, arg%pq7, arg%pq8)
+     DEALLOCATE (grd%lon, grd%lat)
+  endif
+
   ! chlorophyll structure
-  DEALLOCATE ( chl%flg)
-  DEALLOCATE ( chl%flc)
-  DEALLOCATE ( chl%inc)
-  DEALLOCATE ( chl%err)
-  DEALLOCATE ( chl%res)
-  DEALLOCATE ( chl%ib)
-  DEALLOCATE ( chl%pb)
-  DEALLOCATE ( chl%jb)
-  DEALLOCATE ( chl%qb)
-  DEALLOCATE ( chl%pq1)
-  DEALLOCATE ( chl%pq2)
-  DEALLOCATE ( chl%pq3)
-  DEALLOCATE ( chl%pq4)
-  DEALLOCATE ( chl%dzr)
+  if(drv%sat .eq. 1) then
+    DEALLOCATE ( chl%flc)
+    DEALLOCATE ( chl%inc)
+    DEALLOCATE ( chl%ib)
+    DEALLOCATE ( chl%jb)
+    DEALLOCATE ( chl%pq1)
+    DEALLOCATE ( chl%pq2)
+    DEALLOCATE ( chl%pq3)
+    DEALLOCATE ( chl%pq4)
+    DEALLOCATE ( chl%dzr)
+  endif
 
   ! Constants structure
   DEALLOCATE ( rcf%al)
   DEALLOCATE ( rcf%sc)
 
-#ifdef _USE_MPI
   DEALLOCATE(SendCountX2D, SendCountX4D)
   DEALLOCATE(SendDisplX2D, SendDisplX4D)
   DEALLOCATE(RecCountX2D, RecCountX4D)
   DEALLOCATE(RecDisplX2D, RecDisplX4D)
 
   DEALLOCATE(ChlExtended)
-  DEALLOCATE(SendRight, RecLeft)
-  DEALLOCATE(SendLeft, RecRight)
   DEALLOCATE(SendBottom, RecTop)
   DEALLOCATE(SendTop, RecBottom)
 
-  DEALLOCATE(ChlExtended4D, ChlExtendedAD_4D)
-  DEALLOCATE(SendLeft2D, RecRight2D)
-  DEALLOCATE(SendRight2D, RecLeft2D)
-  DEALLOCATE(SendTop2D, RecBottom2D)
-  DEALLOCATE(SendBottom2D, RecTop2D)
+  if(MyId .eq. 0) then
+    write(*,*) ' ALL MEMORY CLEAN'
+    write(*,*) ''
+  endif
 
-  call MPI_Comm_free(CommSliceX, ierr)
-  call MPI_Comm_free(CommSliceY, ierr)
-  if(MyRank .eq. 0) &
-#endif
-       write(*,*) ' ALL MEMORY CLEAN'
-  write(*,*) ''
-  
 end subroutine clean_mem

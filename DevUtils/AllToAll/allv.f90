@@ -4,21 +4,21 @@ program myalltoall
   
   implicit none
 
-  integer :: MyRank, Size, ierr, i, j, iProc, blockSize
+  integer :: MyId, NPE, ierr, i, j, iProc, blockNPE
   integer :: GlobalCol, localRow, localCol, RestRow, RestCol, OffsetRow, OffsetCol
   integer, allocatable :: SendCount(:), SendDispl(:), RecCount(:), RecDispl(:)
   real, allocatable :: Buffer(:,:), TmpBuf(:,:), RecBuf(:), DefBuf(:,:), LastBuf(:,:)
   
   call MPI_Init(ierr)
-  call MPI_Comm_size(MPI_COMM_WORLD, Size, ierr)
-  call MPI_Comm_rank(MPI_COMM_WORLD, MyRank, ierr)
+  call MPI_Comm_NPE(MPI_COMM_WORLD, NPE, ierr)
+  call MPI_Comm_rank(MPI_COMM_WORLD, MyId, ierr)
 
-  write(*,*) "Hello world from process ", MyRank, " of ", Size
+  write(*,*) "Hello world from process ", MyId, " of ", NPE
 
-  ALLOCATE(SendCount(Size))
-  ALLOCATE(SendDispl(Size))
-  ALLOCATE(RecCount(Size))
-  ALLOCATE(RecDispl(Size))
+  ALLOCATE(SendCount(NPE))
+  ALLOCATE(SendDispl(NPE))
+  ALLOCATE(RecCount(NPE))
+  ALLOCATE(RecDispl(NPE))
   
   ! localRow = 6
   ! localCol = 3
@@ -31,27 +31,27 @@ program myalltoall
   localRow = 6
   GlobalCol = 10
 
-  localCol = GlobalCol / Size
-  RestCol  = mod(GlobalCol, Size)
+  localCol = GlobalCol / NPE
+  RestCol  = mod(GlobalCol, NPE)
 
-  if(mod(localRow, size) .ne. 0) then
-     if(MyRank .eq. 0) then
+  if(mod(localRow, NPE) .ne. 0) then
+     if(MyId .eq. 0) then
         print*, ''
-        print*, 'Warning! localRow % ', size,' == ', mod(localRow, size)
+        print*, 'Warning! localRow % ', NPE,' == ', mod(localRow, NPE)
         print*, ''
      end if
   end if
 
-  RestRow = mod(localRow, Size)
-  blockSize = localRow/Size
+  RestRow = mod(localRow, NPE)
+  blockNPE = localRow/NPE
 
   if(RestRow .ne. 0) then
-     if(MyRank .lt. RestRow) then
-        blockSize = blockSize + 1
+     if(MyId .lt. RestRow) then
+        blockNPE = blockNPE + 1
      end if
   end if
         
-  if(MyRank .lt. RestCol) then
+  if(MyId .lt. RestCol) then
      localCol = localCol + 1
   end if
 
@@ -59,7 +59,7 @@ program myalltoall
   SendDispl(1) = 0
   RecDispl(1)  = 0
   
-  do i = 1, Size
+  do i = 1, NPE
      if(i-1 .lt. RestRow) then
         OffsetRow = 1
      else
@@ -72,16 +72,16 @@ program myalltoall
         OffsetCol = 0
      end if
      
-     SendCount(i) = (localRow/Size + OffsetRow) * localCol
-     RecCount(i)  = blockSize * (GlobalCol/Size + OffsetCol)
+     SendCount(i) = (localRow/NPE + OffsetRow) * localCol
+     RecCount(i)  = blockNPE * (GlobalCol/NPE + OffsetCol)
      
-     if(i .lt. Size) then
+     if(i .lt. NPE) then
         SendDispl(i+1) = SendDispl(i) + SendCount(i)
         RecDispl(i+1)  = RecDispl(i)  + RecCount(i)
      end if
   end do
 
-  ! if(MyRank .eq. 3) then
+  ! if(MyId .eq. 3) then
   !    print*, SendCount
   !    print*, SendDispl
   !    print*, RecCount
@@ -90,26 +90,26 @@ program myalltoall
 
   ALLOCATE(Buffer(localRow, localCol))
   ALLOCATE(TmpBuf(localCol, localRow))
-  ALLOCATE(RecBuf(blockSize*GlobalCol))
-  ALLOCATE(DefBuf(blockSize, GlobalCol))
+  ALLOCATE(RecBuf(blockNPE*GlobalCol))
+  ALLOCATE(DefBuf(blockNPE, GlobalCol))
   ALLOCATE(LastBuf(localRow, localCol))
 
   OffsetCol = 0
-  if(MyRank .ge. RestCol) then
+  if(MyId .ge. RestCol) then
      OffsetCol = RestCol
   end if
   
   ! Store initial data
   do i=1,localRow
      do j=1,localCol
-        Buffer(i, j) = j + (i - 1) * GlobalCol + MyRank*localCol + OffsetCol
+        Buffer(i, j) = j + (i - 1) * GlobalCol + MyId*localCol + OffsetCol
      end do
   end do
 
   TmpBuf = TRANSPOSE(Buffer)
   call MPI_Alltoallv(TmpBuf, SendCount, SendDispl, MPI_FLOAT, RecBuf, RecCount, RecDispl, MPI_FLOAT, MPI_COMM_WORLD, ierr)
   
-  ! write(*,*) "MyRank = ", MyRank, " is starting with:"
+  ! write(*,*) "MyId = ", MyId, " is starting with:"
 
   ! print*, ""
   ! print*, Buffer
@@ -118,10 +118,10 @@ program myalltoall
   ! print*, ""
 
   ! ! Reorder data
-  do j = 1,blockSize
-     do iProc = 0, Size-1        
-        do i=1, recCount(iProc+1)/blockSize
-           DefBuf(j,i + recDispl(iProc+1)/blockSize) = RecBuf( RecDispl(iProc+1) + i + (j-1) * recCount(iProc+1)/blockSize)
+  do j = 1,blockNPE
+     do iProc = 0, NPE-1        
+        do i=1, recCount(iProc+1)/blockNPE
+           DefBuf(j,i + recDispl(iProc+1)/blockNPE) = RecBuf( RecDispl(iProc+1) + i + (j-1) * recCount(iProc+1)/blockNPE)
         end do
      end do
   end do
@@ -141,7 +141,7 @@ program myalltoall
   ! print*, ""
   
   do j=1,localCol
-     do iProc=0, Size-1
+     do iProc=0, NPE-1
         do i=1, SendCount(iProc+1)/localCol
            LastBuf(i + SendDispl(iProc+1)/localCol, j) = RecBuf(i + SendDispl(iProc+1) + (j-1) * SendCount(iProc+1)/localCol)
         end do

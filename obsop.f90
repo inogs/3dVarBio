@@ -32,20 +32,24 @@ subroutine obsop
   use set_knd
   use obs_str
   use drv_str
+  use mpi_str
   
   implicit none
   
+  INTEGER(i4) :: ierr
+
+  call MPI_Barrier(Var3DCommunicator, ierr)
   ! ---
   ! Observations by ARGO floats
   if (drv%argo .eq. 1) &
-       call obs_arg
+    call parallel_obs_arg
   
   ! ---
   ! Observations of chlorophyll
-#ifdef _USE_MPI
-  call parallel_obs_chl
-#else
-  call obs_chl
-#endif
+  if(drv%sat .eq. 1) &
+    call onesided_obs_chl
+    ! call parallel_obs_chl
+
+  call MPI_Barrier(Var3DCommunicator, ierr)
   
 end subroutine obsop

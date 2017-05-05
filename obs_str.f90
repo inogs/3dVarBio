@@ -84,6 +84,8 @@ MODULE obs_str
      REAL(r8)   , POINTER     ::  pq7(:)     ! Interpolation parameter for masked grids
      REAL(r8)   , POINTER     ::  pq8(:)     ! Interpolation parameter for masked grids
 
+     INTEGER(i4)              ::  nc_global  ! Number of global good observations
+
   END TYPE arg_t
 
   TYPE (arg_t)                 :: arg
@@ -113,7 +115,7 @@ MODULE obs_str
      REAL(r8),    POINTER     ::  dzr(:,:)   ! Relative thickness
      REAL(r8)                 ::  max_val    ! Maximum value allowed to accept the observation
 
-     INTEGER(i8)              ::  nc_global  ! Number of global good observations
+     INTEGER(i4)              ::  nc_global  ! Number of global good observations
 
   END TYPE chl_t
   

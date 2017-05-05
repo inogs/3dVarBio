@@ -41,8 +41,8 @@ MODULE tao_str
 
  TYPE petsc_str
     
-    INTEGER(i4)               ::  n          ! local size of the optimisation vector
-    INTEGER(i4)               ::  n_global   ! global size of the optimization vector
+    INTEGER(i4)               ::  n          ! local NPE of the optimisation vector
+    INTEGER(i4)               ::  n_global   ! global NPE of the optimization vector
     real(r8)                 ::  f_b        ! The background cost function
     real(r8)                 ::  f_o        ! The observational cost function
     real(r8)                 ::  f_c, factr ! The cost function, accuracy

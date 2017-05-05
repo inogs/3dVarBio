@@ -53,12 +53,14 @@ subroutine resid
   
   ! ---
   ! Observations of chlorophyll
-  do i=1,chl%no
+  if(drv%sat .eq. 1) then
+    do i=1,chl%no
      if(chl%flc(i).eq.1)then
         k = k + 1
         obs%inc(k) = chl%inc(i) 
         obs%amo(k) = ( obs%inc(k) - obs%res(k) ) / obs%err(k)
      endif
-  enddo
+    enddo
+  endif
   
 end subroutine resid

@@ -35,7 +35,6 @@ subroutine parallel_rdeofs
   use grd_str
   use filenames
 
-  use mpi
   use mpi_str
   use pnetcdf
   
@@ -47,7 +46,7 @@ subroutine parallel_rdeofs
   real(4), allocatable           :: x3(:,:,:), x2(:,:)
   
   ! stat = nf90_open(trim(EOF_FILE), NF90_NOWRITE, ncid)
-  stat = nf90mpi_open(MPI_COMM_WORLD, trim(EOF_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
+  stat = nf90mpi_open(Var3DCommunicator, trim(EOF_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
   if (stat /= nf90_noerr) call handle_err("nf90mpi_open", stat)
   
   ! Get dimensions 
@@ -64,29 +63,29 @@ subroutine parallel_rdeofs
   stat = nfmpi_inq_dimlen (ncid, idvar, len = neofs)
   if (stat /= nf90_noerr) call handle_err("nfmpi_inq_dimlen neofs", stat)
 
-  if(MyRank .eq. 0) then
+  if(MyId .eq. 0) then
      write(drv%dia,*)'Eof dimensions are: ',ros%nreg, ros%kmt, neofs
      write(drv%dia,*)'Uses ',ros%neof,' eofs.'
   endif
   
   if(ros%nreg .ne. nregs) then
 
-     if(MyRank .eq. 0) &
+     if(MyId .eq. 0) &
           write(drv%dia,*)'Error: ros%nreg differs from nregs'
 
-     call MPI_Abort(MPI_COMM_WORLD, -1, stat)
+     call MPI_Abort(Var3DCommunicator, -1, stat)
      
   endif
   
   if(ros%neof .gt. neofs) then
 
-     if(MyRank .eq. 0) &
+     if(MyId .eq. 0) &
           write(drv%dia,*)'Error: Requires more Eofs than available in the input file.'
-     call MPI_Abort(MPI_COMM_WORLD, -1, stat)
+     call MPI_Abort(Var3DCommunicator, -1, stat)
      
   else if(ros%neof .lt. neofs) then
      
-     if(MyRank .eq. 0) then
+     if(MyId .eq. 0) then
         write(drv%dia,*)'Warning: ros%neof < neofs!'
         write(drv%dia,*)'ros%neof =', ros%neof
         write(drv%dia,*)'neofs =', neofs
@@ -95,10 +94,10 @@ subroutine parallel_rdeofs
   endif
   
   if(ros%kmt .ne. nlevs) then
-     if(MyRank .eq. 0) &
+     if(MyId .eq. 0) &
           write(drv%dia,*)'Error: Vertical dimension different than in the input file.'
 
-     call MPI_Abort(MPI_COMM_WORLD, -1, stat)
+     call MPI_Abort(Var3DCommunicator, -1, stat)
   endif
   
   !  Allocate eof arrays and get data

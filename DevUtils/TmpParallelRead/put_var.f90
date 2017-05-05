@@ -7,11 +7,11 @@
 !
 ! This example shows how to use nf90mpi_put_var_all() to write a 2D
 ! 4-byte integer array in parallel. It first defines a netCDF variable of
-! size global_nx * global_ny where
+! NPE global_nx * global_ny where
 !    global_nx == 5 and
 !    global_ny == (4 * number of MPI processes).
 ! The data partitioning pattern is a column-wise partitioning across all
-! processes. Each process writes a subarray of size nx * ny.
+! processes. Each process writes a subarray of NPE nx * ny.
 ! Note the description above follows the Fortran array index order.
 !
 ! Example commands for MPI run and outputs from running ncmpidump on the
@@ -73,14 +73,14 @@
           integer cmode, ncid, varid, dimid(2)
           integer(kind=MPI_OFFSET_KIND) nx, ny, global_nx, global_ny
           integer(kind=MPI_OFFSET_KIND) starts(2), counts(2)
-          integer(kind=MPI_OFFSET_KIND) malloc_size, sum_size
+          integer(kind=MPI_OFFSET_KIND) malloc_NPE, sum_NPE
           PARAMETER(nx=5, ny=4)
           integer buf(nx,ny)
           logical verbose
 
           call MPI_Init(err)
           call MPI_Comm_rank(MPI_COMM_WORLD, rank, err)
-          call MPI_Comm_size(MPI_COMM_WORLD, nprocs, err)
+          call MPI_Comm_NPE(MPI_COMM_WORLD, nprocs, err)
 
           ! take filename from command-line argument if there is any
           if (rank .EQ. 0) then
@@ -137,13 +137,13 @@
 
           ! check if there is any PnetCDF internal malloc residue
  998      format(A,I13,A)
-          err = nf90mpi_inq_malloc_size(malloc_size)
+          err = nf90mpi_inq_malloc_NPE(malloc_NPE)
           if (err == NF90_NOERR) then
-              call MPI_Reduce(malloc_size, sum_size, 1, MPI_OFFSET, &
+              call MPI_Reduce(malloc_NPE, sum_NPE, 1, MPI_OFFSET, &
                               MPI_SUM, 0, MPI_COMM_WORLD, err)
-              if (rank .EQ. 0 .AND. sum_size .GT. 0_MPI_OFFSET_KIND) print 998, &
+              if (rank .EQ. 0 .AND. sum_NPE .GT. 0_MPI_OFFSET_KIND) print 998, &
                   'heap memory allocated by PnetCDF internally has ',  &
-                  sum_size/1048576, ' MiB yet to be freed'
+                  sum_NPE/1048576, ' MiB yet to be freed'
           endif
 
  999      call MPI_Finalize(err)

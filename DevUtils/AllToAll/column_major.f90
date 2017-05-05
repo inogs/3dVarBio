@@ -4,15 +4,15 @@ program myalltoall
   
   implicit none
 
-  integer :: MyRank, Size, ierr, i, j
+  integer :: MyId, NPE, ierr, i, j
   integer :: GlobalRow, offset, localRow, localCol
   real, allocatable :: Buffer(:,:), TmpBuf(:) !,:)
   
   call MPI_Init(ierr)
-  call MPI_Comm_size(MPI_COMM_WORLD, Size, ierr)
-  call MPI_Comm_rank(MPI_COMM_WORLD, MyRank, ierr)
+  call MPI_Comm_NPE(MPI_COMM_WORLD, NPE, ierr)
+  call MPI_Comm_rank(MPI_COMM_WORLD, MyId, ierr)
 
-  write(*,*) "Hello world from process ", MyRank, " of ", Size
+  write(*,*) "Hello world from process ", MyId, " of ", NPE
 
   localRow = 4
   localCol = 4
@@ -31,7 +31,7 @@ program myalltoall
   TmpBuf(:) = 0.
   TmpBuf(1) = 1.
   
-  write(*,*) "MyRank = ", MyRank
+  write(*,*) "MyId = ", MyId
   print*, ""
   print*, Buffer
   print*, ""

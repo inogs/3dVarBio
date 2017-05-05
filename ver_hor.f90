@@ -113,7 +113,7 @@ subroutine ver_hor
      !$OMP PRIVATE(k)
      !$OMP DO
      do k=1,grd%km
-        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:) 
+        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scx(:,:,k)  !laura
      enddo
      !$OMP END DO
      !$OMP END PARALLEL
@@ -130,7 +130,7 @@ subroutine ver_hor
      !$OMP PRIVATE(k)
      !$OMP DO
      do k=1,grd%km
-        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:) 
+        grd%chl(:,:,k,l) = grd%chl(:,:,k,l) * grd%scy(:,:,k) !laura
      enddo
      !$OMP END DO
      !$OMP END PARALLEL
@@ -147,7 +147,7 @@ subroutine ver_hor
         !$OMP PRIVATE(k)
         !$OMP DO
         do k=1,grd%km
-           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:) 
+           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scy(:,:,k)  !laura 
         enddo
         !$OMP END DO
         !$OMP END PARALLEL
@@ -164,7 +164,7 @@ subroutine ver_hor
         !$OMP PRIVATE(k)
         !$OMP DO
         do k=1,grd%km
-           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:) 
+           grd%chl_ad(:,:,k,l) = grd%chl_ad(:,:,k,l) * grd%scx(:,:,k) !laura
         enddo
         !$OMP END DO
         !$OMP END PARALLEL
@@ -197,7 +197,7 @@ subroutine ver_hor
      !$OMP PRIVATE(k)
      !$OMP DO
      do k=1,grd%km
-        grd%chl(:,:,k,l)   = grd%chl(:,:,k,l) * grd%fct(:,:,k)  
+        grd%chl(:,:,k,l)   = grd%chl(:,:,k,l) * grd%msk(:,:,k)  
      enddo
      !$OMP END DO
      !$OMP END PARALLEL
@@ -205,15 +205,5 @@ subroutine ver_hor
   
   
   !103 continue
-  ! Correction is zero out of mask (for correction near the coast)
-  do k=1,grd%km
-     do j=1,grd%jm
-        do i=1,grd%im
-           if (grd%msk(i,j,k).eq.0) then
-              grd%chl(i,j,k,:) = 0.
-           endif
-        enddo  !i
-     enddo  !j
-  enddo  !k
 
 end subroutine ver_hor

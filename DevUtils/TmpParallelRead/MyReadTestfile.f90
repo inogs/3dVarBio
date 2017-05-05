@@ -5,15 +5,14 @@ program MyPnetCDF
 
   implicit none
   
-  integer :: ierr, MyID, size, cmode, ncid
+  integer :: ierr, MyID, NPE, cmode, ncid
   integer :: jpni, jpnj, jpnij, jpreci, jprecj, jpkb
   integer :: jpiglo, jpjglo, jpk, DimId, VarId
-  integer :: gridX, gridY, TmpInt
   real, allocatable :: values(:,:)
 
   integer, allocatable :: ilcit(:,:), ilcjt(:,:)
   integer :: ji, jj, jpi, jpj, nn !, jpij, jpim1, jpjm1, jpkm1, jpkbm1
-  integer :: MyRestRow, MyRestCol, OffsetRow, OffsetCol, dimd, xtype, ndims
+  integer :: MyRest, RealOffset, dimd, xtype, ndims
   integer, allocatable :: dimids(:)
   
   integer(KIND=MPI_OFFSET_KIND) MyOffset
@@ -22,7 +21,7 @@ program MyPnetCDF
 
   call MPI_Init(ierr)
   call MPI_Comm_rank(MPI_COMM_WORLD, MyID, ierr)
-  call MPI_Comm_size(MPI_COMM_WORLD, size, ierr)
+  call MPI_Comm_NPE(MPI_COMM_WORLD, NPE, ierr)
 
   !
   ! init check
@@ -35,24 +34,10 @@ program MyPnetCDF
   ! some parts of this code are copied from
   ! src/General/parini.F subroutine within ogstm package
   !
-  !*******************************************
   
   call COUNTLINE ('Dom_Dec_jpi.ascii', jpni)
   call COUNTWORDS('Dom_Dec_jpi.ascii', jpnj)
   
-  gridX = 5
-  gridY = 4
-
-  if(gridX * gridY .ne. size) then
-     if(MyID .eq. 0) then
-        WRITE(*,*) ""
-        WRITE(*,*) " Error: gridX * gridY != nproc "
-        WRITE(*,*) " Exit "
-        WRITE(*,*) ""
-     end if
-     call MPI_Abort(MPI_COMM_WORLD, -1, ierr)
-  end if
-
   jpnij = jpni*jpnj
   jpreci = 1
   jprecj = 1
@@ -60,7 +45,7 @@ program MyPnetCDF
 
   if(MyID .eq. 0) then
      WRITE(*,*) ' '
-     WRITE(*,*) 'Dom_Size'
+     WRITE(*,*) 'Dom_size'
      WRITE(*,*) ' '
      WRITE(*,*) ' number of processors following i : jpni   = ', jpni
      WRITE(*,*) ' number of processors following j : jpnj   = ', jpnj
@@ -75,10 +60,6 @@ program MyPnetCDF
   ! open meshmask_872.nc in read-only mode
   !
   ! filename = "meshmask_872.nc"
-
-  !
-  ! open testfile.nc produced by pnetcdf-write-bufferedf.f90 in read-only mode
-  !
   filename = "testfile.nc"
   cmode = NF90_NOWRITE
   ierr = nf90mpi_open(MPI_COMM_WORLD, filename, cmode, MPI_INFO_NULL, ncid)
@@ -94,19 +75,19 @@ program MyPnetCDF
   call MyGetDimension(ncid, 'y', MyOffset)
   jpjglo = MyOffset
 
-  ! call MyGetDimension(ncid, 'z', MyOffset)
-  ! jpk = MyOffset
-  ! jpkb = jpk
+  call MyGetDimension(ncid, 'x', MyOffset)
+  jpk = MyOffset
+  jpkb = jpk
 
   if(MyID .eq. 0) then
      WRITE(*,*) 'Dimension_Med_Grid'
      WRITE(*,*) ' '
      WRITE(*,*) ' jpiglo  : first  dimension of global domain --> i ',jpiglo
      WRITE(*,*) ' jpjglo  : second dimension of global domain --> j ',jpjglo
-     ! WRITE(*,*) ' jpk     : number of levels           > or = jpk   ',jpk
+     WRITE(*,*) ' jpk     : number of levels           > or = jpk   ',jpk
      ! WRITE(*,*) ' jpkb    : first vertical layers where biology is active > or = jpkb   ',jpkb
-     ! WRITE(*,*) ' WorkLoad: jpiglo / size                           ',jpiglo/ size
-     ! WRITE(*,*) ' Rest    : mod(jpiglo, size)                       ',mod(jpiglo, size)
+     WRITE(*,*) ' WorkLoad: jpiglo / NPE                           ',jpiglo/ NPE
+     WRITE(*,*) ' Rest    : mod(jpiglo, NPE)                       ',mod(jpiglo, NPE)
      WRITE(*,*) ' '
   endif
 
@@ -136,53 +117,35 @@ program MyPnetCDF
   ! jpjm1=jpj-1
   ! jpkm1=jpk-1
   ! jpij=jpi*jpj
-  ! jpkbm1=jpkb-1  
-
+  ! jpkbm1=jpkb-1
+  
 
   !*******************************************
   !
   ! PDICERBO version of the domain decomposition:
   ! the domain is divided among the processes into slices
-  ! of size (jpiglo / gridX, jpjglo / gridY).
-  ! Clearly, the division is done tacking into account 
-  ! rests. The only condition we need is that gridX*gridY = NPROC
-  !
+  ! of NPE (jpiglo / NPE, jpjglo)
   ! WARNING!!! netcdf stores data in ROW MAJOR order
   ! while here we are reading in column major order.
-  ! We have to take into account this simply swapping ("ideally")
+  ! We have to take into account this simply swapping
   ! the entries of MyStart and MyCount
   !
   !*******************************************
 
-  MyRestCol = mod(jpiglo, gridX)
-  MyRestRow = mod(jpjglo, gridY)
-
-  ! computing rests for X direction
-  MyCount(1) = jpiglo / gridX
-  MyCount(2) = jpjglo / gridY
-  OffsetCol = 0
-  if (mod(MyId, gridX) .lt. MyRestCol) then
+  MyRest = mod(jpiglo, NPE)
+  MyCount(1) = jpiglo / NPE
+  RealOffset = 0
+  if (MyId .lt. MyRest) then
      MyCount(1) = MyCount(1) + 1
   else
-     OffsetCol = MyRestCol
+     RealOffset = MyRest
   end if
 
-  ! computing rests for Y direction
-  OffsetRow = 0
-  TmpInt = MyId / gridX
-  if (TmpInt .lt. MyRestRow) then
-     MyCount(2) = MyCount(2) + 1
-  else
-     OffsetRow = MyRestRow
-  end if
-
-  TmpInt = jpiglo / gridX
-  MyStart(1) = TmpInt * mod(MyId, gridX) + OffsetCol + 1
+  MyStart(1) = MyCount(1) * MyID + RealOffset + 1
   MyCount(1) = MyCount(1)
 
-  TmpInt = MyId / gridX
-  MyStart(2) = mod(MyCount(2) * TmpInt + OffsetRow, jpjglo) + 1
-  MyCount(2) = MyCount(2)
+  MyStart(2) = 1
+  MyCount(2) = jpjglo
 
   if(MyID .eq. 0) then
      write(*,*) "MyID = ", MyId, " MyStart = ", MyStart, " MyCount = ", &
@@ -192,7 +155,7 @@ program MyPnetCDF
           MyCount, " Sum = ", MyCount +MyStart
   end if
   
-  allocate(values(MyCount(1), MyCount(2)))
+  allocate(values(MyCount(1), jpjglo))
 
   !
   ! reading nav_lon variable

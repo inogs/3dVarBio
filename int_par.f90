@@ -42,6 +42,7 @@ subroutine int_par
   
   ! ----
   ! Load observations of chlorophyll
-  call int_par_chl
+  if(drv%sat .eq. 1) &
+    call int_par_chl
   
 end subroutine int_par

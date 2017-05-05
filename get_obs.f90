@@ -35,17 +35,18 @@ subroutine get_obs
   
   implicit none
   
+  arg%no = 0
+  chl%no = 0
+
+  
   ! ----
   ! Load ARGO observations
   if (drv%argo .eq. 1) &
-       call get_obs_arg
+    call get_obs_arg
   
   ! ----
   ! Load observations of chlorophyll
-#ifndef _USE_MPI
-  call get_obs_chl
-#else
-  call parallel_get_obs_chl
-#endif
+  if(drv%sat .eq. 1) &
+    call parallel_get_obs_chl
   
 end subroutine get_obs
