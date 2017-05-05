@@ -1,36 +1,15 @@
-subroutine parallel_ver_hor
-
-  !---------------------------------------------------------------------------
-  !                                                                          !
-  !    Copyright 2006 Srdjan Dobricic, CMCC, Bologna                         !
-  !                                                                          !
-  !    This file is part of OceanVar.                                          !
-  !                                                                          !
-  !    OceanVar is free software: you can redistribute it and/or modify.     !
-  !    it under the terms of the GNU General Public License as published by  !
-  !    the Free Software Foundation, either version 3 of the License, or     !
-  !    (at your option) any later version.                                   !
-  !                                                                          !
-  !    OceanVar is distributed in the hope that it will be useful,           !
-  !    but WITHOUT ANY WARRANTY; without even the implied warranty of        !
-  !    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         !
-  !    GNU General Public License for more details.                          !
-  !                                                                          !
-  !    You should have received a copy of the GNU General Public License     !
-  !    along with OceanVar.  If not, see <http://www.gnu.org/licenses/>.       !
-  !                                                                          !
-  !---------------------------------------------------------------------------
-
+subroutine parallel_ver_hor_ad
+  
   !-----------------------------------------------------------------------
   !                                                                      !
-  ! Apply horizontal filter                                              !
+  ! Transformation from physical to control space                        !
   !                                                                      !
   ! Version 1: S.Dobricic 2006                                           !
   ! Version 2: S.Dobricic 2007                                           !
   !     Symmetric calculation in presence of coastal boundaries          !
-  !     eta_ad, tem_ad, and sal_ad are here temporary arrays             !
-  ! Version 3: A. Teruzzi 2013                                           !
-  !     Attenuation of correction near the cost where d<200m             !
+  !     eta, tem, and sal are here temporary arrays                      !
+  ! Version 3: A.Teruzzi 2013                                            !
+  !     Smoothing of the solution at d<200m                              !
   !-----------------------------------------------------------------------
 
 
@@ -46,19 +25,28 @@ subroutine parallel_ver_hor
 
   INTEGER(i4)    :: i,j,k, ione, l
   INTEGER        :: jp, SurfaceIndex
-  REAL(r8)          :: chlapp(8),chlsum
+  REAL(r8)       :: chlapp(8),chlsum
   INTEGER(i4)    :: iProc, ierr
   type(DoubleGrid), allocatable, dimension(:,:,:,:) :: SendBuf4D
-  type(DoubleGrid), allocatable, dimension(:)       :: RecBuf1D(:)
-  REAL(r8), allocatable, dimension(:,:,:,:) :: DefBufChl, DefBufChlAd
+  type(DoubleGrid), allocatable, dimension(:)       :: RecBuf1D
+  REAL(r8), allocatable, dimension(:,:,:,:) :: DefBufChl, DefBufChlAd  
   
+  !goto 103 ! No Vh
   ione = 1
-
+  
   ! ---
-  ! Vertical EOFs
-  call veof
-  !return
-  !goto 103 !No Vh
+  ! Scale for boundaries
+  do l=1,grd%nchl
+     !$OMP PARALLEL  &
+     !$OMP PRIVATE(k)
+     !$OMP DO
+     do k=1,grd%km
+        grd%chl_ad(:,:,k,l)   = grd%chl_ad(:,:,k,l) * grd%msk(:,:,k)
+     enddo
+     !$OMP END DO
+     !$OMP END PARALLEL
+  enddo
+  
   
   ! ---
   ! Load temporary arrays
@@ -67,19 +55,14 @@ subroutine parallel_ver_hor
      !$OMP PRIVATE(k)
      !$OMP DO
      do k=1,grd%km
-        grd%chl_ad(:,:,k,l) = grd%chl(:,:,k,l)
+        grd%chl(:,:,k,l)    = grd%chl_ad(:,:,k,l)
      enddo
      !$OMP END DO
      !$OMP END PARALLEL
   enddo
   
-  !********** APPLY RECURSIVE FILTERS ********** !
-  ! ---
-  ! Transpose calculation in the presense of coastal boundaries
-  
   ! ---
   ! y direction
-  
   ! ---
   ! Scale by the scaling factor
   do l=1,grd%nchl
@@ -100,9 +83,9 @@ subroutine parallel_ver_hor
   ! x direction
   if(NumProcI .gt. 1) then
      ALLOCATE(SendBuf4D(grd%nchl, grd%km, grd%im, grd%jm))
-     ALLOCATE( RecBuf1D(grd%nchl*grd%km*GlobalRow*localCol))
-     ALLOCATE( DefBufChl(GlobalRow, localCol, grd%km, grd%nchl))
-     ALLOCATE( DefBufChlAd(GlobalRow, localCol, grd%km, grd%nchl))
+     ALLOCATE( RecBuf1D(grd%nchl*grd%km*localCol*GlobalRow))
+     ALLOCATE(DefBufChl(GlobalRow, localCol, grd%km, grd%nchl))
+     ALLOCATE(DefBufChlAd(GlobalRow, localCol, grd%km, grd%nchl))
      
      do l=1,grd%nchl
         do k=1,grd%km
@@ -122,7 +105,7 @@ subroutine parallel_ver_hor
            end do
         end do
      end do
-     
+
      call MPI_Alltoallv(SendBuf4D, SendCountX4D, SendDisplX4D, MyPair, &
           RecBuf1D, RecCountX4D, RecDisplX4D, MyPair, Var3DCommunicator, ierr)
      
@@ -141,7 +124,7 @@ subroutine parallel_ver_hor
         do iProc=0, NumProcI-1
            do i=1,RecCountX4D(iProc+1)/SurfaceIndex
               do k=1,grd%km
-                 DefBufChlAd(i + RecDisplX4D(iProc+1)/(SurfaceIndex),j,k,1) = &
+                 DefBufChlAd(i + RecDisplX4D(iProc+1)/SurfaceIndex,j,k,1) = &
                       RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX4D(iProc+1)/localCol + RecDisplX4D(iProc+1))%chl_ad
               end do
            end do
@@ -163,7 +146,7 @@ subroutine parallel_ver_hor
      
      call rcfl_x_ad( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, DefBufChlAd, grd%inx, grd%imx)
      
-  else
+  else ! NumProcI .eq. 1
      ! ---
      ! Scale by the scaling factor
      do l=1,grd%nchl
@@ -178,9 +161,7 @@ subroutine parallel_ver_hor
      enddo
      
      call rcfl_x_ad( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, grd%chl_ad, grd%inx, grd%imx)
-     
   end if
-
   
   
   ! ---
@@ -189,6 +170,8 @@ subroutine parallel_ver_hor
      
      call rcfl_x( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, DefBufChl, grd%inx, grd%imx)
      
+     ! ---
+     ! Scale by the scaling factor
      do l=1,grd%nchl
         !$OMP PARALLEL  &
         !$OMP PRIVATE(k)
@@ -222,7 +205,7 @@ subroutine parallel_ver_hor
      
      call MPI_Alltoallv(SendBuf4D, RecCountX4D, RecDisplX4D, MyPair, &
           RecBuf1D, SendCountX4D, SendDisplX4D, MyPair, Var3DCommunicator, ierr)
-
+     
      SurfaceIndex = grd%im*grd%km
      do i=1,grd%im
         do iProc=0, NumProcI-1
@@ -248,9 +231,10 @@ subroutine parallel_ver_hor
      DEALLOCATE(SendBuf4D, RecBuf1D, DefBufChl, DefBufChlAd)
      
   else ! NumProcI .eq. 1
-     
      call rcfl_x( GlobalRow, localCol, grd%km*grd%nchl, grd%imax, grd%aex, grd%bex, grd%chl, grd%inx, grd%imx)
      
+     ! ---
+     ! Scale by the scaling factor
      do l=1,grd%nchl
         !$OMP PARALLEL  &
         !$OMP PRIVATE(k)
@@ -261,11 +245,11 @@ subroutine parallel_ver_hor
         !$OMP END DO
         !$OMP END PARALLEL
      enddo
-     
   end if
-
-  ! ---
-  ! y direction
+  
+  
+  ! ! ---
+  ! ! y direction
   ! Apply recursive filter in y direction
   call rcfl_y( localRow, GlobalCol, grd%km*grd%nchl, grd%jmax, grd%aey, grd%bey, grd%chl, grd%jnx, grd%jmx)
   
@@ -282,6 +266,7 @@ subroutine parallel_ver_hor
      !$OMP END PARALLEL
   enddo
   
+  
   ! ---
   ! Average
   do l=1,grd%nchl
@@ -289,20 +274,7 @@ subroutine parallel_ver_hor
      !$OMP PRIVATE(k)
      !$OMP DO
      do k=1,grd%km
-        grd%chl(:,:,k,l)   = (grd%chl(:,:,k,l) + grd%chl_ad(:,:,k,l) ) * 0.5
-     enddo
-     !$OMP END DO
-     !$OMP END PARALLEL
-  enddo
-  
-  ! ---
-  ! Scale for boundaries
-  do l=1,grd%nchl
-     !$OMP PARALLEL  &
-     !$OMP PRIVATE(k)
-     !$OMP DO
-     do k=1,grd%km
-        grd%chl(:,:,k,l)   = grd%chl(:,:,k,l) * grd%msk(:,:,k)
+        grd%chl_ad(:,:,k,l)  = (grd%chl_ad(:,:,k,l) + grd%chl(:,:,k,l) ) * 0.5
      enddo
      !$OMP END DO
      !$OMP END PARALLEL
@@ -310,5 +282,8 @@ subroutine parallel_ver_hor
   
   
   !103 continue
+  ! ---
+  ! Vertical EOFs
+  call veof_ad
   
-end subroutine parallel_ver_hor
+end subroutine parallel_ver_hor_ad

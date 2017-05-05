@@ -102,7 +102,7 @@ PHYSOBS  =  \
 OBJS    =  \
 	routines.o\
 	def_nml.o\
-	parallel_def_grd.o\
+	def_grd.o\
 	sav_itr.o\
 	ini_itr.o\
 	rdeofs.o\
@@ -139,15 +139,12 @@ OBJS    =  \
 	wrt_dia.o\
 	clean_mem.o\
 	mpi_utils.o\
+	readAnisotropy.o\
 	parallel_costf.o\
 	parallel_obs_chl.o\
 	parallel_rdgrds.o\
-	parallel_rdeofs.o\
 	parallel_wrt_dia.o\
-	parallel_readAnisotropy.o\
-	parallel_def_cov.o\
-	parallel_ver_hor.o\
-	parallel_rdrcorr.o\
+	def_cov.o\
 	oneside_chl.o\
 	tao_minimizer.o\
     oceanvar.o
