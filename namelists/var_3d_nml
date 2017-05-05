@@ -1,55 +1,6 @@
-W!------------------------------------------------------------
+!------------------------------------------------------------
 ! OceanVar namelist
 !------------------------------------------------------------
-!
-! Namelist runlst
-! ---
-!
-!             Define the general set-up
-!
-!  flag_a   - character*12: flag for the analysis
-!  sdat_f   - Starting date of the forecast
-!  shou_f   - Starting hour of the forecast
-!  lhou_f   - Length of the forecast 
-!
-! ---
-&runlst
-   flag_a   = "MFS_analysis"
-   sdat_f   = 20050225
-   shou_f   = 12
-   lhou_f   = 24
-/
-!------------------------------------------------------------
-!
-! Namelist obslst
-!
-!             Observational data sets set-up
-!
-! ---
-!  obs_sla -  1-assimilate sla, 0-do not assimilate
-!  obs_arg -  1-assimilate Argo, 0-do not assimilate
-!  obs_xbt -  1-assimilate XBT, 0-do not assimilate
-!  obs_gld -  1-assimilate glider, 0-do not assimilate
-!  obs_tra -  1-assimilate Argo trajectories, 0-do not assimilate
-!  obs_trd -  1-assimilate drifter trajectories, 0-do not assimilate
-!  obs_vdr -  1-assimilate velocity from drifters, 
-!             0-do not assimilate
-!  obs_gvl -  1-assimilate velocity from gliders, 
-!             0-do not assimilate
-!  obs_chl -  1-assimilate chlorophyll, 0-do not assimilate
-!
-! ---
-&obslst
-   obs_sla = 0
-   obs_arg = 0
-   obs_xbt = 0
-   obs_gld = 0
-   obs_tra = 0
-   obs_trd = 0
-   obs_vdr = 0
-   obs_gvl = 0
-   obs_chl = 1
-/
 !------------------------------------------------------------
 !
 ! Namelist drvlst
@@ -97,7 +48,7 @@ W!------------------------------------------------------------
 &ctllst
    ctl_m    = 5    
    ctl_tol  = 1.e-11
-   ctl_per  = 1.e-4
+   ctl_per  = 1.e-3
 /
 !------------------------------------------------------------
 !
@@ -116,54 +67,12 @@ W!------------------------------------------------------------
 !
 ! ---
 &covlst
-   neof     = 14
-   nreg     = 16363
+   neof     = 4
+   nreg     = 63045
    read_eof = .true. 
    rcf_ntr  = 4
-   rcf_L    = 10000.
+   rcf_L    = 5000.
    rcf_efc  = 5.0
-/
-!------------------------------------------------------------
-!
-! Namelist slalst
-! ---
-!
-!          SLA assimilation set-up
-!
-!  sla_dep -  Maximum depth for assimilation of sla
-!
-! ---
-&slalst
-   sla_dep  = 150.
-/
-!------------------------------------------------------------
-!
-! Namelist bmdlst
-! ---
-!
-!          Barotropic model set-up
-!
-!  bmd_dt  -  Time step
-!  bmd_ndy -  Number of days to integrate the model
-!  bmd_ady -  Number of days for averaging
-!  bmd_ady -  Weight for the trapezoidal scheme
-!  bmd_fc1 -  Horizontal friction for vorticity
-!  bmd_fc2 -  Horizontal friction for divergence
-!  bmd_ovr -  Overrelaxation
-!  bmd_resem - Stopping criteria
-!  bmd_ncnt - Maximum number of successive corrections
-!
-! ---
-&bmdlst
-  bmd_dt    = 7200. 
-  bmd_ndy   =  3.
-  bmd_ady   = 0.8
-  bmd_alp   = 1.0
-  bmd_fc1   = 0.1
-  bmd_fc2   = 0.2
-  bmd_ovr   = 1.9
-  bmd_resem = 5.e-2
-  bmd_ncnt  = 201
 /
 !------------------------------------------------------------
 !
@@ -178,12 +87,38 @@ W!------------------------------------------------------------
 !             0-no physical variables in state vector
 !  nchl    -  Number of phytoplankton species
 !  chl_dep -  Minimum depth for chlorophyll assimilation
+!  lsize   -  size of the working block in the master-slave approach
 !
 ! ---
 &biolst
   biol    = 1
   bphy    = 0
   nchl    = 1
-  chl_dep = 200.0
+  chl_dep = 0.0
+/
+!------------------------------------------------------------
+!
+! Namelist parameters
+! ---
+!
+!          Parameters namelist
+!
+!  sat     - 1-assimilate satellite data
+!            0-no satellite assimilation
+!  argo    - 1-assimilate argo data
+!          - 0-no argo assimilation
+! uniformL - 1-non uniform radius
+!          - 0-uniform radius (rcf%L)
+! anisL    - 1-anisotropy
+!            0-isotropy
+! verbose  - 1-set verbose output
+!
+! ---
+&params
+  sat     = 1
+  argo    = 0
+ uniformL = 0
+  anisL   = 0
+ verbose  = 0
 /
 !------------------------------------------------------------
