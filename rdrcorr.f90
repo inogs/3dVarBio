@@ -1,4 +1,4 @@
-subroutine rdrcorr
+subroutine parallel_rdrcorr
 
 !---------------------------------------------------------------------------
 !                                                                          !
@@ -24,58 +24,45 @@ subroutine rdrcorr
 
   use set_knd
   use drv_str
-  use netcdf
   use grd_str
   use cns_str
   use filenames
   use rcfl
 
+  use mpi_str
+  use pnetcdf
+
   implicit none
 
-  INTEGER(i4)                    :: stat, ncid, idvar,imr,jmr,kmr
+  integer(i4)            :: stat, ncid, idvar
+  integer(KIND=MPI_OFFSET_KIND)  :: GlobalStart(3), GlobalCount(3)
+  real(r4), ALLOCATABLE  :: x3(:,:,:)
 
-!write(*,*)trim(RCORR_FILE)
-    stat = nf90_open(trim(RCORR_FILE), NF90_NOWRITE, ncid)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
+  !write(*,*)trim(RCORR_FILE)
+  stat = nf90mpi_open(Var3DCommunicator, trim(RCORR_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
+  if (stat /= nf90_noerr) call handle_err("nf90mpi_open",stat)
 
-! Get dimensions 
-      stat = nf90_inq_dimid (ncid, 'longitude', idvar)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
-      stat = nf90_inquire_dimension (ncid, idvar, len = imr)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
-      stat = nf90_inq_dimid (ncid, 'latitude', idvar)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
-      stat = nf90_inquire_dimension (ncid, idvar, len = jmr)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
-!Laura add depth
-      stat = nf90_inq_dimid (ncid, 'depth', idvar)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
-      stat = nf90_inquire_dimension (ncid, idvar, len = kmr)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
+  ALLOCATE ( x3(GlobalRow,GlobalCol,grd%km))
+  GlobalStart(:) = 1
+  GlobalCount(1) = GlobalRow
+  GlobalCount(2) = GlobalCol
+  GlobalCount(3) = grd%km
 
-! Check on dimensions
-    if ((imr .ne. grd%im) .or. (jmr.ne.grd%jm) .or. (kmr.ne.grd%km)) then
-       write(drv%dia,*)'Error: dimensions of rcorr different from grid ones'
-       call f_exit(24)
-    endif
+  stat = nf90mpi_inq_varid (ncid, 'radius', idvar)
+  if (stat /= nf90_noerr) call handle_err("nf90mpi_inq_varid radius",stat)
+  stat = nfmpi_get_vara_real_all (ncid, idvar, GlobalStart, GlobalCount, x3)
+  if (stat /= nf90_noerr) call handle_err("nfmpi_get_vara_real_all radius",stat)
+  rcf%Lxyz(:,:,:) = x3(:,:,:)
 
+  !laura from km to meter
+  where (rcf%Lxyz<=0.0001) 
+      rcf%Lxyz=rcf%Lxyz/1000
+  end where
+    rcf%Lxyz= rcf%Lxyz*1000  !from km to meter
 
-!  Allocate rcorr arrays
-     print*,"dimensioni Lxyz",grd%im,grd%jm,kmr,grd%km
-     ALLOCATE ( rcf%Lxyz(grd%im,grd%jm,kmr))
+  stat = nf90mpi_close(ncid)
+  if (stat /= nf90_noerr) call handle_err("nf90mpi_close", stat)
 
-       stat = nf90_inq_varid (ncid, 'radius', idvar)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
-      stat = nf90_get_var (ncid,idvar,rcf%Lxyz)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
+  DEALLOCATE(x3)
 
-!laura from km to meter
-    where (rcf%Lxyz<=0.0001) 
-       rcf%Lxyz=rcf%Lxyz/1000
-    end where
-     rcf%Lxyz= rcf%Lxyz*1000  !from km to meter
-
-     stat = nf90_close(ncid)
-
-end subroutine rdrcorr
-
+end subroutine parallel_rdrcorr

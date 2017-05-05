@@ -1,4 +1,4 @@
-subroutine readAnisotropy
+subroutine parallel_readAnisotropy
 
 !---------------------------------------------------------------------------
 !                                                                          !
@@ -24,51 +24,63 @@ subroutine readAnisotropy
 
   use set_knd
   use drv_str
-  use netcdf
   use grd_str
   use cns_str
   use filenames
+
   use mpi_str
+  use pnetcdf
 
   implicit none
 
-  INTEGER(i4)                    :: stat, ncid, idvar,imr,jmr
+  INTEGER(i4)                    :: stat, ncid, idvar
+  integer(KIND=MPI_OFFSET_KIND)  :: GlobalStart(2), GlobalCount(2),imr,jmr
+  real(r4), ALLOCATABLE  :: x2(:,:)
 
-    stat = nf90_open(trim(ANIS_FILE), NF90_NOWRITE, ncid)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
+  stat = nf90mpi_open(Var3DCommunicator, trim(ANIS_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
+  if (stat /= nf90_noerr) call handle_err("nf90mpi_open",stat)
 
-! Get dimensions 
-      stat = nf90_inq_dimid (ncid, 'im', idvar)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
-      stat = nf90_inquire_dimension (ncid, idvar, len = imr)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
-      stat = nf90_inq_dimid (ncid, 'jm', idvar)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
-      stat = nf90_inquire_dimension (ncid, idvar, len = jmr)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
+  ALLOCATE ( x2(GlobalRow,GlobalCol))
+  GlobalStart(:) = 1
+  GlobalCount(1) = GlobalRow
+  GlobalCount(2) = GlobalCol
 
-! Check on dimensions
-    if ((imr .ne. GlobalRow).OR.(jmr.ne.GlobalCol)) then
-       write(drv%dia,*)'Error: dimensions of rcorr different from grid ones'
-       call f_exit(24)
-    endif
+  ! Get dimensions 
+  stat = nf90mpi_inq_dimid (ncid, 'im', idvar)
+  if (stat /= nf90_noerr) call handle_err("nf90mpi_inq_dimid",stat)
+  stat = nfmpi_inq_dimlen (ncid, idvar, imr)
+  if (stat /= nf90_noerr) call handle_err("nfmpi_inq_dimlen",stat)
+  stat = nf90mpi_inq_dimid (ncid, 'jm', idvar)
+  if (stat /= nf90_noerr) call handle_err("nf90mpi_inq_dimid",stat)
+  stat = nfmpi_inq_dimlen(ncid, idvar, jmr)
+  if (stat /= nf90_noerr) call handle_err("nfmpi_inq_dimlen",stat)
 
-
-!  Allocate rcorr arrays
-     ALLOCATE ( rcf%rtx(GlobalRow,GlobalCol))
-     ALLOCATE ( rcf%rty(GlobalRow,GlobalCol))
-
-
-       stat = nf90_inq_varid (ncid, 'kx_n', idvar)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
-      stat = nf90_get_var (ncid,idvar,rcf%rtx)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
-       stat = nf90_inq_varid (ncid, 'ky_n', idvar)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
-      stat = nf90_get_var (ncid,idvar,rcf%rty)
-    if (stat /= nf90_noerr) call netcdf_err(stat)
-
-    stat = nf90_close(ncid)
+  ! Check on dimensions
+  if ((imr .ne. GlobalRow).OR.(jmr.ne.GlobalCol)) then
+    write(drv%dia,*)'Error: dimensions of rcorr differ from grid ones'
+    call f_exit(24)
+  endif
 
 
-end subroutine readAnisotropy
+  !  Allocate rcorr arrays
+  ALLOCATE ( rcf%rtx(GlobalRow,GlobalCol))
+  ALLOCATE ( rcf%rty(GlobalRow,GlobalCol))
+
+
+  stat = nf90mpi_inq_varid (ncid, 'kx_n', idvar)
+  if (stat /= nf90_noerr) call handle_err("nf90mpi_inq_varid",stat)
+  stat = nfmpi_get_vara_real_all (ncid, idvar, GlobalStart, GlobalCount, x2)
+  if (stat /= nf90_noerr) call handle_err("nfmpi_get_vara_real_all",stat)
+  rcf%rtx(:,:) = x2(:,:)
+
+  stat = nf90mpi_inq_varid (ncid, 'ky_n', idvar)
+  if (stat /= nf90_noerr) call handle_err("nf90mpi_inq_varid",stat)
+  stat = nfmpi_get_vara_real_all (ncid, idvar, GlobalStart, GlobalCount, x2)
+  if (stat /= nf90_noerr) call handle_err("nfmpi_get_vara_real_all",stat)
+  rcf%rty(:,:) = x2(:,:)
+
+  stat = nf90mpi_close(ncid)
+  if (stat /= nf90_noerr) call handle_err("nf90mpi_close", stat)  
+  DEALLOCATE(x2)
+
+end subroutine parallel_readAnisotropy
