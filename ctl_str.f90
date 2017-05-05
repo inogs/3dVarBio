@@ -39,7 +39,7 @@ MODULE ctl_str
   
   TYPE lbfgs_t
      
-     INTEGER(i4)               ::  n          ! NPE of the optimisation vector
+     INTEGER(i4)               ::  n          ! size of the optimisation vector
 
      REAL(r8)                  ::  f_b        ! The background cost function
      REAL(r8)                  ::  f_o        ! The observational cost function
@@ -48,7 +48,7 @@ MODULE ctl_str
 
      real(r8), POINTER  ::  x_c(:)     ! The control vector (background - analyses)
      real(r8), POINTER  ::  g_c(:)     ! The gradient of f_c 
-     INTEGER(i4)        :: n_global   ! global NPE of the optimization vector (n is the local NPE)
+     INTEGER(i4)        :: n_global   ! global size of the optimization vector (n is the local size)
      
   END TYPE lbfgs_t
   

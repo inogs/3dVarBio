@@ -201,7 +201,7 @@ subroutine DomainDecomposition
   !
   ! PDICERBO version of the domain decomposition:
   ! the domain is divided among the processes into slices
-  ! of NPE (GlobalRow / NumProcI, GlobalCol / NumProcJ).
+  ! of size (GlobalRow / NumProcI, GlobalCol / NumProcJ).
   ! Clearly, the division is done tacking into account
   ! rests. The only condition we need is that NumProcI*NumProcJ = NPROC
   !

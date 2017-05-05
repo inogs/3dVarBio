@@ -48,7 +48,7 @@ subroutine ini_cfn
      ctl%n = nSurfaceWaterPoints * ros%neof
      call MPI_Allreduce(ctl%n, ctl%n_global, 1, MPI_INT, MPI_SUM, Var3DCommunicator, ierr)
 
-     if (MyId .eq. 0) write(drv%dia,*) 'NPE of the control vector: ',ctl%n_global
+     if (MyId .eq. 0) write(drv%dia,*) 'size of the control vector: ',ctl%n_global
 
 
      ALLOCATE( ctl%x_c(ctl%n)) ; ctl%x_c = huge(ctl%x_c(1))

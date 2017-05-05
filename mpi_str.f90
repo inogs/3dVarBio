@@ -27,7 +27,7 @@ MODULE mpi_str
   !     GlobalColOffset : offset needed to read grd%global_msk
   !     MpiWinChl : Window for one-sided communication on grd%chl array
   !     MpiWinChlAd : Window for one-sided communication on grd%chl_ad array
-  !     NextLocalRow : NPE of the local number of row for the process "below" me
+  !     NextLocalRow : size of the local number of row for the process "below" me
   !
   !-------------------------------------------------------!
 
