@@ -1,4 +1,4 @@
-subroutine parallel_obs_arg
+subroutine parallel_obs_arg_ad
   
   
   !---------------------------------------------------------------------------
@@ -24,7 +24,7 @@ subroutine parallel_obs_arg
   
   !-----------------------------------------------------------------------
   !                                                                      !
-  ! Apply observational operator for ARGO floats                         !
+  ! Apply observational operator for ARGO floats (adjoint)               !
   !                                                                      !
   ! Version 1: S.Dobricic 2006                                           !
   !-----------------------------------------------------------------------
@@ -34,57 +34,65 @@ subroutine parallel_obs_arg
   use grd_str
   use obs_str
   use mpi_str
-  
+  use filenames
+  use drv_str
+
   implicit none
   
   INTEGER(i4)   ::  i, j, k, kk
-  REAL(r8)      :: FirstData, SecData, ThirdData, LastData, Test
+  REAL(r8)      :: ToSum
   INTEGER(kind=MPI_ADDRESS_KIND) :: TargetOffset
   INTEGER       :: ierr, NData
-  real(r8), pointer, dimension(:,:,:)   :: GetData
+  real(r8), pointer, dimension(:,:,:) :: MatrixToSum
   
   do kk = 1,arg%no
      
      if(arg%flc(kk).eq.1)then
+        
+        obs%k = obs%k + 1
         
         i=arg%ib(kk)
         j=arg%jb(kk)
         k=arg%kb(kk)
         
         if(i .lt. grd%im) then
-           arg%inc(kk) = arg%pq1(kk) * grd%chl(i  ,j  ,k  ,1) +       &
-                arg%pq2(kk) * grd%chl(i+1,j  ,k  ,1) +       &
-                arg%pq3(kk) * grd%chl(i  ,j+1,k  ,1) +       &
-                arg%pq4(kk) * grd%chl(i+1,j+1,k  ,1) +       &
-                arg%pq5(kk) * grd%chl(i  ,j  ,k+1,1) +       &
-                arg%pq6(kk) * grd%chl(i+1,j  ,k+1,1) +       &
-                arg%pq7(kk) * grd%chl(i  ,j+1,k+1,1) +       &
-                arg%pq8(kk) * grd%chl(i+1,j+1,k+1,1)  
+           
+           grd%chl_ad(i  ,j  ,k  ,1) = grd%chl_ad(i  ,j  ,k  ,1) + arg%pq1(kk) * obs%gra(obs%k)
+           grd%chl_ad(i+1,j  ,k  ,1) = grd%chl_ad(i+1,j  ,k  ,1) + arg%pq2(kk) * obs%gra(obs%k)
+           grd%chl_ad(i  ,j+1,k  ,1) = grd%chl_ad(i  ,j+1,k  ,1) + arg%pq3(kk) * obs%gra(obs%k)
+           grd%chl_ad(i+1,j+1,k  ,1) = grd%chl_ad(i+1,j+1,k  ,1) + arg%pq4(kk) * obs%gra(obs%k)
+           grd%chl_ad(i  ,j  ,k+1,1) = grd%chl_ad(i  ,j  ,k+1,1) + arg%pq5(kk) * obs%gra(obs%k)
+           grd%chl_ad(i+1,j  ,k+1,1) = grd%chl_ad(i+1,j  ,k+1,1) + arg%pq6(kk) * obs%gra(obs%k)
+           grd%chl_ad(i  ,j+1,k+1,1) = grd%chl_ad(i  ,j+1,k+1,1) + arg%pq7(kk) * obs%gra(obs%k)
+           grd%chl_ad(i+1,j+1,k+1,1) = grd%chl_ad(i+1,j+1,k+1,1) + arg%pq8(kk) * obs%gra(obs%k)
            
         else
-           ALLOCATE(GetData(NextLocalRow,grd%jm,2))
+
+           ALLOCATE(MatrixToSum(NextLocalRow,grd%jm,2))
+           MatrixToSum(:,:,:) = dble(0)
            
+           grd%chl_ad(i  ,j  ,k  ,1) = grd%chl_ad(i  ,j  ,k  ,1) + arg%pq1(kk) * obs%gra(obs%k)
+           grd%chl_ad(i  ,j+1,k  ,1) = grd%chl_ad(i  ,j+1,k  ,1) + arg%pq3(kk) * obs%gra(obs%k)
+           grd%chl_ad(i  ,j  ,k+1,1) = grd%chl_ad(i  ,j  ,k+1,1) + arg%pq5(kk) * obs%gra(obs%k)
+           grd%chl_ad(i  ,j+1,k+1,1) = grd%chl_ad(i  ,j+1,k+1,1) + arg%pq7(kk) * obs%gra(obs%k)
+           
+           MatrixToSum(1,j  ,1) = arg%pq2(kk) * obs%gra(obs%k)
+           MatrixToSum(1,j+1,1) = arg%pq4(kk) * obs%gra(obs%k)
+           MatrixToSum(1,j  ,2) = arg%pq6(kk) * obs%gra(obs%k)
+           MatrixToSum(1,j+1,2) = arg%pq8(kk) * obs%gra(obs%k)
+           
+           call MPI_Win_lock (MPI_LOCK_EXCLUSIVE, ProcBottom, 0, MpiWinChlAd, ierr )
            NData = NextLocalRow*grd%jm*2
-           call MPI_Win_lock (MPI_LOCK_EXCLUSIVE, ProcBottom, 0, MpiWinChl, ierr )
            TargetOffset = (k-1)*grd%jm*NextLocalRow
-           call MPI_Get (GetData, NData, MPI_REAL8, ProcBottom, TargetOffset, NData, MPI_REAL8, MpiWinChl, ierr)
-           call MPI_Win_unlock(ProcBottom, MpiWinChl, ierr)
+           call MPI_Accumulate (MatrixToSum, NData, MPI_REAL8, ProcBottom, TargetOffset, NData, MPI_REAL8, MPI_SUM, MpiWinChlAd, ierr)
            
-           arg%inc(kk) = arg%pq1(kk) * grd%chl(i  ,j  ,k  ,1) +       &
-                arg%pq2(kk) * GetData(1  ,j  ,1    ) +       &
-                arg%pq3(kk) * grd%chl(i  ,j+1,k  ,1) +       &
-                arg%pq4(kk) * GetData(1  ,j+1,1    ) +       &
-                arg%pq5(kk) * grd%chl(i  ,j  ,k+1,1) +       &
-                arg%pq6(kk) * GetData(1  ,j  ,2    ) +       &
-                arg%pq7(kk) * grd%chl(i  ,j+1,k+1,1) +       &
-                arg%pq8(kk) * GetData(1  ,j+1,2    )  
-           
-           
-           DEALLOCATE(GetData)
+           call MPI_Win_unlock(ProcBottom, MpiWinChlAd, ierr)
+           DEALLOCATE(MatrixToSum)
+
         endif
         
      endif
      
   enddo
-
-end subroutine parallel_obs_arg
+  
+end subroutine parallel_obs_arg_ad

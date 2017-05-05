@@ -117,7 +117,6 @@ OBJS    =  \
 	obs_vec.o\
 	ini_cfn.o\
 	ini_nrm.o\
-	costf.o\
 	cnv_ctv.o\
 	ver_hor.o\
 	rcfl_x.o\
@@ -125,12 +124,10 @@ OBJS    =  \
 	veof.o\
 	obsop.o\
 	obs_arg.o\
-	obs_chl.o\
 	resid.o\
 	res_inc.o\
 	obsop_ad.o\
 	obs_arg_ad.o\
-	obs_chl_ad.o\
 	veof_ad.o\
 	ver_hor_ad.o\
 	rcfl_x_ad.o\
@@ -151,7 +148,6 @@ OBJS    =  \
 	parallel_def_cov.o\
 	parallel_ver_hor.o\
 	parallel_rdrcorr.o\
-	parallel_obs_arg.o\
 	oneside_chl.o\
 	tao_minimizer.o\
     oceanvar.o
