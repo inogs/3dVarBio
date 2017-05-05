@@ -24,7 +24,7 @@ subroutine tao_minimizer
   PetscScalar, allocatable, dimension(:)  :: MyValues
   PetscScalar, pointer                    :: xtmp(:)
 
-  external MyFuncAndGradient, MyBounds, MyConvTest
+  external MyFuncAndGradient
 
   if(MyId .eq. 0) then
      print*,'PETSc-TAO lmvm minimizer configuration'
@@ -37,12 +37,17 @@ subroutine tao_minimizer
   endif
 
   ! Allocate working arrays
+  ! TAO needs to know both n (the local size of the array)
+  ! and M (global size of the array)
   n = ctl%n
   M = ctl%n_global
 
   ALLOCATE(loc(n), MyValues(n))
 
   ! Create MyState array and fill it
+  ! VecGetOwnergshipRange returns the indices related to the local
+  ! section of the PETSc Vector (required in order to fill the initial state vector,
+  ! further informations can be found in the PETSc user manual, Section 2.1 and 2.2)
   call VecCreateMPI(Var3DCommunicator, n, M, MyState, ierr)
   call VecGetOwnershipRange(MyState, GlobalStart, MyEnd, ierr)
 
@@ -59,8 +64,7 @@ subroutine tao_minimizer
      print*, ""
   endif
 
-  ! Take values from ctl%x_c in order to initialize
-  ! the solution array for Tao solver
+  ! Setting initial state vector to zero
   do j = 1, ctl%n
      loc(j) = GlobalStart + j - 1
      MyValues(j) = 0.
@@ -71,46 +75,50 @@ subroutine tao_minimizer
   call VecAssemblyBegin(MyState, ierr)
   call VecAssemblyEnd(MyState, ierr)
 
-  ! Counter init
+  ! Iteration counter initialization
   drv%MyCounter = 0
 
-  ! Create Tao object and set type BLMVM (ones that use BFGS minimization algorithm)
+  ! Create Tao object and set type LMVM (ones that use BFGS minimization algorithm)
   call TaoCreate(Var3DCommunicator, tao, ierr)
   CHKERRQ(ierr)
-  ! call TaoSetType(tao,"blmvm",ierr)
   call TaoSetType(tao,"lmvm",ierr)
   CHKERRQ(ierr)
 
   ! Set initial solution array, MyBounds and MyFuncAndGradient routines
   call TaoSetInitialVector(tao, MyState, ierr)
   CHKERRQ(ierr)
-  ! call TaoSetVariableBoundsRoutine(tao, MyBounds, PETSC_NULL_OBJECT, ierr)
-  ! CHKERRQ(ierr)
   call TaoSetObjectiveAndGradientRoutine(tao, MyFuncAndGradient, PETSC_NULL_OBJECT, ierr)
   CHKERRQ(ierr)
 
-  ! Set MyTolerance and ConvergenceTest
+  ! Calling parallel_cost in order to compute
+  ! the initial gradient. This will be used to
+  ! set MyTolerance
   call parallel_costf
   MaxGrad = 0
   do j=1,ctl%n
      MaxGrad = max(MaxGrad, abs(ctl%g_c(j)))
   end do
 
+  ! since MaxGrad is the local maximum value, the MPI_Allreduce call
+  ! is required to find the global maximum value
   call MPI_Allreduce(MPI_IN_PLACE, MaxGrad, 1, MPI_REAL8, MPI_MAX, Var3DCommunicator, ierr)
   MyTolerance = ctl%pgper * MaxGrad
+
   if(MyId .eq. 0) then
      print*, "Setting MyTolerance", MyTolerance
      print*, ""
      write(drv%dia,*) "Setting MyTolerance", MyTolerance
   endif
 
-  call TaoSetTolerances(tao, MyTolerance, 1.d-4, ctl%pgper, ierr) !PETSC_DEFAULT_REAL, PETSC_DEFAULT_REAL, ierr) !
+  ! setting tolerances
+  call TaoSetTolerances(tao, MyTolerance, 1.d-4, ctl%pgper, ierr)
   CHKERRQ(ierr)
 
-  ! Perform minimization
+  ! calling the solver to minimize the problem
   call TaoSolve(tao, ierr)
   CHKERRQ(ierr)
 
+  ! printing solver info
   if(MyId .eq. 0) then
      print*, ''
      print*, 'Tao Solver Info:'
@@ -119,7 +127,7 @@ subroutine tao_minimizer
 
   call TaoView(tao, PETSC_VIEWER_STDOUT_WORLD, ierr)
 
-  ! Take computed solution and copy into ctl%x_c array
+  ! Get the solution and copy into ctl%x_c array
   call TaoGetSolutionVector(tao, MyState, ierr)
   CHKERRQ(ierr)
   call VecGetArrayReadF90(MyState, xtmp, ierr)
@@ -135,6 +143,7 @@ subroutine tao_minimizer
   ! Deallocating variables
   DEALLOCATE(loc, MyValues)
 
+  ! free memory
   call TaoDestroy(tao, ierr)
   CHKERRQ(ierr)
 
@@ -187,6 +196,7 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   ! read temporary state provided by Tao Solver
   ! and set it in ctl%x_c array in order to compute
   ! the actual value of Cost Function and the gradient
+  ! with parallel_costf subroutine
   call VecGetArrayReadF90(MyState, xtmp, ierr)
   CHKERRQ(ierr)
 
@@ -200,7 +210,7 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   ! compute function and gradient
   call parallel_costf
 
-  ! assign the Cost Function value computed by costf to CostFunc
+  ! assign the Cost Function value computed by parallel_costf to CostFunc
   CostFunc = ctl%f_c
 
   call VecGetArrayF90(Grad, my_grad, ierr)
