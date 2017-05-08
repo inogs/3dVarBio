@@ -47,8 +47,7 @@ subroutine obsop
   ! ---
   ! Observations of chlorophyll
   if(drv%sat .eq. 1) &
-    call onesided_obs_chl
-    ! call obs_chl
+    call obs_chl
 
   call MPI_Barrier(Var3DCommunicator, ierr)
   
