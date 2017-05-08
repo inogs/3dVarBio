@@ -42,7 +42,7 @@ subroutine parallel_def_grd
   ! Define grid
 
   ! Read grid definition
-  call parallel_rdgrd
+  call readGrid
 
   nSurfaceWaterPoints = 0
   do i=1,grd%im

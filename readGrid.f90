@@ -1,4 +1,4 @@
-subroutine parallel_rdgrd
+subroutine readGrid
 
   use set_knd
   use drv_str
@@ -170,7 +170,7 @@ subroutine parallel_rdgrd
 
   call CreateMpiWindows
 
-end subroutine parallel_rdgrd
+end subroutine readGrid
 
 subroutine DomainDecomposition
 

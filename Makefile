@@ -138,7 +138,7 @@ OBJS    =  \
 	readAnisotropy.o\
 	costf.o\
 	parallel_obs_chl.o\
-	parallel_rdgrds.o\
+	readGrid.o\
 	def_cov.o\
 	oneside_chl.o\
 	tao_minimizer.o\
