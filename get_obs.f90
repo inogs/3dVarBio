@@ -47,6 +47,6 @@ subroutine get_obs
   ! ----
   ! Load observations of chlorophyll
   if(drv%sat .eq. 1) &
-    call parallel_get_obs_chl
+    call get_obs_chl
   
 end subroutine get_obs

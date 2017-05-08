@@ -93,7 +93,7 @@ subroutine tao_minimizer
   ! Calling parallel_cost in order to compute
   ! the initial gradient. This will be used to
   ! set MyTolerance
-  call parallel_costf
+  call costf
   MaxGrad = 0
   do j=1,ctl%n
      MaxGrad = max(MaxGrad, abs(ctl%g_c(j)))
@@ -196,7 +196,7 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   ! read temporary state provided by Tao Solver
   ! and set it in ctl%x_c array in order to compute
   ! the actual value of Cost Function and the gradient
-  ! with parallel_costf subroutine
+  ! with costf subroutine
   call VecGetArrayReadF90(MyState, xtmp, ierr)
   CHKERRQ(ierr)
 
@@ -208,9 +208,9 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   CHKERRQ(ierr)
 
   ! compute function and gradient
-  call parallel_costf
+  call costf
 
-  ! assign the Cost Function value computed by parallel_costf to CostFunc
+  ! assign the Cost Function value computed by costf to CostFunc
   CostFunc = ctl%f_c
 
   call VecGetArrayF90(Grad, my_grad, ierr)

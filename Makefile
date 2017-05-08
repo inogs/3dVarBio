@@ -110,7 +110,6 @@ OBJS    =  \
 	get_obs.o\
 	get_obs_arg.o\
 	get_obs_chl.o\
-	parallel_get_obs_chl.o\
 	int_par.o\
 	obs_vec.o\
 	ini_cfn.o\
@@ -137,7 +136,7 @@ OBJS    =  \
 	clean_mem.o\
 	mpi_utils.o\
 	readAnisotropy.o\
-	parallel_costf.o\
+	costf.o\
 	parallel_obs_chl.o\
 	parallel_rdgrds.o\
 	def_cov.o\

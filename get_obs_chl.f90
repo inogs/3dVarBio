@@ -1,4 +1,4 @@
-subroutine parallel_get_obs_chl
+subroutine get_obs_chl
   
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -154,4 +154,87 @@ subroutine parallel_get_obs_chl
   endif
   chl%flc(:) = chl%flg(:)
 
-end subroutine parallel_get_obs_chl
+end subroutine get_obs_chl
+
+subroutine int_par_chl
+  
+  !-----------------------------------------------------------------------
+  !                                                                      !
+  ! Get interpolation parameters for a grid                              !
+  !                                                                      !
+  ! Version 1: S.Dobricic 2006                                           !
+  !-----------------------------------------------------------------------
+  
+  use set_knd
+  use drv_str
+  use grd_str
+  use obs_str
+  use mpi_str
+  
+  implicit none
+  
+  integer(i4)   ::  k
+  integer(i4)   ::  i1, kk, j1
+  real(r8)      ::  p1, q1
+  real(r8)      ::  div_x, div_y
+
+  if(MyId .eq. 0) &
+       write(drv%dia,*) 'Number of CHL observations:  >>>>>>>>>>>>>',chl%nc_global
+
+  if(chl%nc.gt.0) then
+     
+     
+     ! ---
+     ! Interpolation parameters
+     do kk = 1,chl%no
+        j1 = (kk-1)/grd%im + 1
+        i1 = kk - (j1-1)*grd%im
+        q1 = 0.0
+        p1 = 0.0
+        chl%ib(kk) = i1
+        chl%jb(kk) = j1
+        chl%pb(kk) = p1
+        chl%qb(kk) = q1
+     enddo
+     
+     
+     ! ---
+     ! Horizontal interpolation parameters for each masked grid
+     do k = 1,chl%no
+        if(chl%flc(k) .eq. 1) then
+           
+           i1=chl%ib(k)
+           p1=chl%pb(k)
+           j1=chl%jb(k)
+           q1=chl%qb(k)
+           
+           div_y =  (1.-q1) * max(grd%global_msk(i1+GlobalRowOffset,j1  ,1),grd%global_msk(i1+GlobalRowOffset+1,j1  ,1))     &
+                +    q1  * max(grd%global_msk(i1+GlobalRowOffset,j1+1,1),grd%global_msk(i1+GlobalRowOffset+1,j1+1,1))
+           div_x =  (1.-p1) * grd%global_msk(i1+GlobalRowOffset  ,j1,1) + p1 * grd%global_msk(i1+GlobalRowOffset+1,j1,1)
+           chl%pq1(k) = grd%global_msk(i1+GlobalRowOffset,j1,1)                                      &
+                * max(grd%global_msk(i1+GlobalRowOffset,j1,1),grd%global_msk(i1+GlobalRowOffset+1,j1,1))             &
+                * (1.-p1) * (1.-q1)                                   &
+                /( div_x * div_y + 1.e-16 )
+           chl%pq2(k) = grd%global_msk(i1+GlobalRowOffset+1,j1,1)                                    &
+                * max(grd%global_msk(i1+GlobalRowOffset,j1,1),grd%global_msk(i1+GlobalRowOffset+1,j1,1))             &
+                *     p1  * (1.-q1)                                    &
+                /( div_x * div_y + 1.e-16 )
+           div_x =  (1.-p1) * grd%global_msk(i1+GlobalRowOffset  ,j1+1,1) + p1 * grd%global_msk(i1+GlobalRowOffset+1,j1+1,1)
+           chl%pq3(k) = grd%global_msk(i1+GlobalRowOffset,j1+1,1)                                    &
+                * max(grd%global_msk(i1+GlobalRowOffset,j1+1,1),grd%global_msk(i1+GlobalRowOffset+1,j1+1,1))         &
+                * (1.-p1) *     q1                                     &
+                /( div_x * div_y + 1.e-16 )
+           chl%pq4(k) = grd%global_msk(i1+GlobalRowOffset+1,j1+1,1)                                  &
+                * max(grd%global_msk(i1+GlobalRowOffset,j1+1,1),grd%global_msk(i1+GlobalRowOffset+1,j1+1,1))         &
+                *     p1  *     q1                                     &
+                /( div_x * div_y + 1.e-16 )
+           
+        endif
+     enddo    
+  endif
+  
+  DEALLOCATE ( chl%pb, chl%qb)
+  DEALLOCATE ( chl%flg)
+
+
+end subroutine int_par_chl

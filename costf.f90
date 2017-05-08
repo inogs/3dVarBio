@@ -1,4 +1,4 @@
-subroutine parallel_costf
+subroutine costf
   
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -109,4 +109,4 @@ subroutine parallel_costf
   !   write(*,*) 'COSTF sum(g_c) = ' , sum( ctl%g_c)
   ctl%g_c(:) = ctl%x_c(:) + ctl%g_c(:) ! OMP
   
-end subroutine parallel_costf
+end subroutine costf
