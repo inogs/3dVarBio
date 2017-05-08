@@ -1,4 +1,4 @@
-subroutine parallel_readAnisotropy
+subroutine readAnisotropy
 
 !---------------------------------------------------------------------------
 !                                                                          !
@@ -83,4 +83,4 @@ subroutine parallel_readAnisotropy
   if (stat /= nf90_noerr) call handle_err("nf90mpi_close", stat)  
   DEALLOCATE(x2)
 
-end subroutine parallel_readAnisotropy
+end subroutine readAnisotropy

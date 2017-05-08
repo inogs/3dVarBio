@@ -1,4 +1,4 @@
-subroutine parallel_ver_hor_ad
+subroutine ver_hor_ad
   
   !-----------------------------------------------------------------------
   !                                                                      !
@@ -286,4 +286,4 @@ subroutine parallel_ver_hor_ad
   ! Vertical EOFs
   call veof_ad
   
-end subroutine parallel_ver_hor_ad
+end subroutine ver_hor_ad

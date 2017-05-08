@@ -1,4 +1,4 @@
-subroutine parallel_obs_chl
+subroutine obs_chl
   
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -86,9 +86,9 @@ subroutine parallel_obs_chl
      
   enddo
 
-end subroutine parallel_obs_chl
+end subroutine obs_chl
 
-subroutine parallel_obs_chl_ad  
+subroutine obs_chl_ad  
   
   !-----------------------------------------------------------------------
   !                                                                      !
@@ -174,4 +174,4 @@ subroutine parallel_obs_chl_ad
      grd%chl_ad(1,j,1,1) = grd%chl_ad(1,j,1,1) + RecTop(j) - SendTop(j)
   end do
 
-end subroutine parallel_obs_chl_ad
+end subroutine obs_chl_ad

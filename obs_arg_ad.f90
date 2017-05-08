@@ -1,4 +1,4 @@
-subroutine parallel_obs_arg_ad
+subroutine obs_arg_ad
   
   
   !---------------------------------------------------------------------------
@@ -95,4 +95,4 @@ subroutine parallel_obs_arg_ad
      
   enddo
   
-end subroutine parallel_obs_arg_ad
+end subroutine obs_arg_ad

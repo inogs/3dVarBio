@@ -51,7 +51,7 @@ subroutine oceanvar
 
   ! ---
   ! Define grid parameters
-  call parallel_def_grd
+  call def_grd
   if(MyId .eq. 0) write(drv%dia,*) 'out of def_grd '           
   
   ! ---
@@ -71,7 +71,7 @@ subroutine oceanvar
              
   ! ---
   ! Define constants for background covariances
-  call parallel_def_cov
+  call def_cov
   if(MyId .eq. 0) write(drv%dia,*) 'out of def_cov '
      
   ! ---
@@ -98,7 +98,7 @@ subroutine oceanvar
   call cnv_inn
   ! ---
   ! Write outputs and diagnostics
-  call parallel_wrt_dia
+  call wrt_dia
 
   call sav_itr
   if(MyId .eq. 0) write(drv%dia,*) 'out of sav_itr '

@@ -1,4 +1,4 @@
-subroutine parallel_wrt_dia
+subroutine wrt_dia
   
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -104,4 +104,4 @@ subroutine parallel_wrt_dia
   if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_close', status)
   
 
-end subroutine parallel_wrt_dia
+end subroutine wrt_dia

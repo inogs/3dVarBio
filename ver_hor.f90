@@ -1,4 +1,4 @@
-subroutine parallel_ver_hor
+subroutine ver_hor
 
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -311,4 +311,4 @@ subroutine parallel_ver_hor
   
   !103 continue
   
-end subroutine parallel_ver_hor
+end subroutine ver_hor

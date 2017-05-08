@@ -90,7 +90,7 @@ subroutine tao_minimizer
   call TaoSetObjectiveAndGradientRoutine(tao, MyFuncAndGradient, PETSC_NULL_OBJECT, ierr)
   CHKERRQ(ierr)
 
-  ! Calling parallel_cost in order to compute
+  ! Calling costf in order to compute
   ! the initial gradient. This will be used to
   ! set MyTolerance
   call costf

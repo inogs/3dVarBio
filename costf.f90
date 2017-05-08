@@ -57,7 +57,7 @@ subroutine costf
   
   ! --------
   ! Control to physical space 
-  call parallel_ver_hor
+  call ver_hor
   
   ! --------
   ! Apply observational operators
@@ -95,7 +95,7 @@ subroutine costf
   
   ! --------
   ! Control to physical space 
-  call parallel_ver_hor_ad
+  call ver_hor_ad
   
   !   write(*,*) 'COSTF sum(ro_ad) = ' , sum(grd%ro_ad)
   ! --------

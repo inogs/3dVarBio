@@ -1,4 +1,4 @@
-subroutine parallel_rdeofs
+subroutine rdeofs
   
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -135,6 +135,6 @@ subroutine parallel_rdeofs
 
   DEALLOCATE(x3, x2)
   
-end subroutine parallel_rdeofs
+end subroutine rdeofs
 
 

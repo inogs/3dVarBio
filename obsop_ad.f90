@@ -43,13 +43,13 @@ subroutine obsop_ad
   ! ---
   ! ARGO observations
   if (drv%argo .eq. 1) &
-    call parallel_obs_arg_ad
+    call obs_arg_ad
 
   ! ---
   ! Observations of chlorophyll
   if(drv%sat .eq. 1) &  
     call onesided_obs_chl_ad
-    ! call parallel_obs_chl_ad
+    ! call obs_chl_ad
 
   call MPI_Barrier(Var3DCommunicator, ierr)
   

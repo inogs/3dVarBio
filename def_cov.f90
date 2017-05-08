@@ -1,4 +1,4 @@
-subroutine parallel_def_cov
+subroutine def_cov
 
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -52,7 +52,7 @@ subroutine parallel_def_cov
   ALLOCATE ( rcf%Lxyz(GlobalRow,GlobalCol,grd%km))
   
   if(drv%uniformL .eq. 1) then
-    call parallel_rdrcorr
+    call rdrcorr
   else
     ! the following loop initializes
     ! rcf%Lxyz array to the correlation
@@ -70,7 +70,7 @@ subroutine parallel_def_cov
   ALLOCATE ( rcf%L_y(GlobalRow,GlobalCol,grd%km))
 
   if(drv%anisL .eq. 1) then
-    call parallel_readAnisotropy
+    call readAnisotropy
     do k=1,grd%km
       rcf%L_x(:,:,k) = rcf%L*rcf%rtx
       rcf%L_y(:,:,k) = rcf%L*rcf%rty
@@ -393,7 +393,7 @@ subroutine parallel_def_cov
            
   ros%kmt = grd%km * grd%nchl 
 
-  call parallel_rdeofs
+  call rdeofs
   
   ALLOCATE ( grd%ro(    grd%im, grd%jm, ros%neof))   ; grd%ro    = 0.0
   ALLOCATE ( grd%ro_ad( grd%im, grd%jm, ros%neof))   ; grd%ro_ad = 0.0
@@ -418,4 +418,4 @@ subroutine parallel_def_cov
 
   DEALLOCATE(rcf%Lxyz, rcf%L_x, rcf%L_y)
   
-end subroutine parallel_def_cov
+end subroutine def_cov

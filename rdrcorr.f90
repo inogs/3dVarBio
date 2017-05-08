@@ -1,4 +1,4 @@
-subroutine parallel_rdrcorr
+subroutine rdrcorr
 
 !---------------------------------------------------------------------------
 !                                                                          !
@@ -65,4 +65,4 @@ subroutine parallel_rdrcorr
 
   DEALLOCATE(x3)
 
-end subroutine parallel_rdrcorr
+end subroutine rdrcorr

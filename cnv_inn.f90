@@ -42,6 +42,6 @@ subroutine cnv_inn
   ! Convert the control vector to v
   call cnv_ctv
 
-  call parallel_ver_hor
+  call ver_hor
   
 end subroutine cnv_inn

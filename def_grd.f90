@@ -1,4 +1,4 @@
-subroutine parallel_def_grd
+subroutine def_grd
 
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -44,6 +44,7 @@ subroutine parallel_def_grd
   ! Read grid definition
   call readGrid
 
+  ! count the number of surface water points and index them
   nSurfaceWaterPoints = 0
   do i=1,grd%im
      do j=1,grd%jm
@@ -68,4 +69,4 @@ subroutine parallel_def_grd
      enddo
   enddo
 
-end subroutine parallel_def_grd
+end subroutine def_grd
