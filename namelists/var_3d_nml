@@ -3,38 +3,6 @@
 !------------------------------------------------------------
 !------------------------------------------------------------
 !
-! Namelist drvlst
-! ---
-!
-!             Outer loop set-up
-!
-!  ntr     -  Number of outer iterations over grids
-!  grid    -  grid number in each iteration
-!  read_grd - Logical to read grids from files.
-!             See subroutine def_grd.f90       
-!  ratio   -  Resolution ratio between the previous 
-!             and the current grid
-!  mask    -  Mask type: 
-!              1 - no land
-!              2 - 2d mask by coasts
-!              3 - 3d mask by bottom topography
-!  barmd   -  Run barotropic model on the grid
-!  divda   -  Apply divergence damping on the grid
-!  divdi   -  Initialise corrections by divergence damping 
-!
-! ---
-&grdlst
-   ntr      =  1,
-   grid     =  1,  1,   1
-   read_grd = .T. ,.T.,.T.
-   ratio    =  1., 1.,  1.
-   mask     =  3,  3,   3 
-   barmd    =  0,  0,   1 
-   divda    =  0,  0,   1 
-   divdi    =  0,  0,   1 
-/
-!------------------------------------------------------------
-!
 ! Namelist ctllst
 ! ---
 !
@@ -46,7 +14,6 @@
 !
 ! ---
 &ctllst
-   ctl_m    = 5    
    ctl_tol  = 1.e-11
    ctl_per  = 1.e-3
 /
@@ -91,8 +58,6 @@
 !
 ! ---
 &biolst
-  biol    = 1
-  bphy    = 0
   nchl    = 1
   chl_dep = 0.0
 /

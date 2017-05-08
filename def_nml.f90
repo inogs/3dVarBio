@@ -46,9 +46,9 @@ subroutine def_nml
   REAL(r8)      :: rcf_L, ctl_tol, ctl_per, rcf_efc, chl_dep
   INTEGER(i4)   :: argo, sat
   
-  NAMELIST /ctllst/ ctl_m, ctl_tol, ctl_per
+  NAMELIST /ctllst/ ctl_tol, ctl_per
   NAMELIST /covlst/ neof, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
-  NAMELIST /biolst/ biol, bphy, nchl, chl_dep
+  NAMELIST /biolst/ nchl, chl_dep
   NAMELIST /params/ sat, argo, uniformL, anisL, verbose
 
 
@@ -122,8 +122,6 @@ subroutine def_nml
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) ' BIOLOGY NAMELIST INPUT: '
-    write(drv%dia,*) ' Biological assimilation          biol     = ', biol
-    write(drv%dia,*) ' Biological+physical assimilation bphy     = ', bphy
     write(drv%dia,*) ' Number of phytoplankton species  nchl     = ', nchl
     write(drv%dia,*) ' Minimum depth for chlorophyll    chl_dep  = ', chl_dep
 
