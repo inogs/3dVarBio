@@ -84,4 +84,17 @@ subroutine obs_chl_ad
      grd%chl_ad(1,j,1,1) = grd%chl_ad(1,j,1,1) + RecTop(j) - SendTop(j)
   end do
 
+  grd%bgc_ad(:,:,:,:,:) = 0.0
+
+  do l = 1,grd%nchl
+    do k = 1,grd%km
+      do j = 1,grd%jm
+        do i = 1,grd%im
+          grd%bgc_ad(i,j,k,l,1) = grd%bgc_ad(i,j,k,l,1) + grd%chl_ad(i,j,k,1)
+        enddo
+      enddo
+    enddo
+  enddo
+
+
 end subroutine obs_chl_ad

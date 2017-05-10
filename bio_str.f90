@@ -1,4 +1,4 @@
-subroutine cnv_ctv
+MODULE bio_str
 
 !---------------------------------------------------------------------------
 !                                                                          !
@@ -23,32 +23,26 @@ subroutine cnv_ctv
 
 !-----------------------------------------------------------------------
 !                                                                      !
-! Convert from control to v                                            !
+! Structure of biogeochemical covariance                               !
 !                                                                      !
-! Version 1: S.Dobricic 2006                                           !
+! Version 1: A.Teruzzi 2012                                            !
 !-----------------------------------------------------------------------
 
-
  use set_knd
- use grd_str
- use ctl_str
- use eof_str
 
- implicit none
+implicit none
 
- INTEGER(i4)   :: i,j,k, kk
- INTEGER(i4)   :: jumpInd, indSupWP
+public
 
+   TYPE bio_t
 
-   do k=1,ros%neof
-   jumpInd =  (k -1 )*nSurfaceWaterPoints
-       do indSupWP = 1,nSurfaceWaterPoints
-           i = SurfaceWaterPoints(1,indSupWP)
-           j = SurfaceWaterPoints(2,indSupWP)
-           kk = jumpInd + indSupWP
-           grd%ro(i,j,k) = ctl%x_c(kk)
-       enddo
-   enddo
+        LOGICAL               ::  read_quot        ! Read biological quotas from file
+        REAL(r8),    POINTER  ::  cquot(:,:,:,:,:) ! Component quotas
+        REAL(r8),    POINTER  ::  pquot(:,:,:,:)     ! Phytoplankton component quotas
 
 
-end subroutine cnv_ctv
+   END TYPE bio_t
+
+   TYPE (bio_t)                 :: bio
+
+END MODULE bio_str

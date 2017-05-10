@@ -418,4 +418,6 @@ subroutine def_cov
 
   DEALLOCATE(rcf%Lxyz, rcf%L_x, rcf%L_y)
   
+  call rdquotas
+
 end subroutine def_cov

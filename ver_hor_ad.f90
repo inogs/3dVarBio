@@ -34,6 +34,8 @@ subroutine ver_hor_ad
   !goto 103 ! No Vh
   ione = 1
   
+  call bio_mod_ad
+
   ! ---
   ! Scale for boundaries
   do l=1,grd%nchl

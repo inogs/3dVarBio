@@ -59,6 +59,7 @@ OBJSTR  =  \
 	eof_str.o\
 	ctl_str.o\
 	rcfl_mod.o\
+	bio_str.o\
 	mpi_str.o
 
 PHYSOBS  =  \
@@ -136,6 +137,9 @@ OBJS    =  \
 	clean_mem.o\
 	mpi_utils.o\
 	readAnisotropy.o\
+	bio_mod.o\
+	bio_mod_ad.o\
+	rdquotas.o\
 	costf.o\
 	obs_chl.o\
 	obs_chl_ad.o\

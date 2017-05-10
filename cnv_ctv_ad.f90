@@ -38,17 +38,6 @@ subroutine cnv_ctv_ad
  INTEGER(i4)     :: i,j,k, kk
  INTEGER(i4)   :: jumpInd, indSupWP
 
-! integer xid,yid,eofid, idvip, status, ncid,nSFid, nDIMS, SFid
-!       kk = 0
-!   do k=1,ros%neof
-!    do j=1,grd%jm
-!     do i=1,grd%im
-!       kk = kk+1
-!       ctl%g_c(kk) = grd%ro_ad(i,j,k)
-!     enddo
-!    enddo
-!   enddo
-
    do k=1,ros%neof
      jumpInd =  (k -1 )* nSurfaceWaterPoints
         do indSupWP=1,nSurfaceWaterPoints

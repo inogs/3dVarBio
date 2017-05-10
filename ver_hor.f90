@@ -308,6 +308,7 @@ subroutine ver_hor
      !$OMP END PARALLEL
   enddo
   
+  call bio_mod
   
   !103 continue
   

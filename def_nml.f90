@@ -44,11 +44,11 @@ subroutine def_nml
   INTEGER(i4)   :: ctl_m
   INTEGER(i4)   :: biol, bphy, nchl, uniformL, anisL, verbose
   REAL(r8)      :: rcf_L, ctl_tol, ctl_per, rcf_efc, chl_dep
-  INTEGER(i4)   :: argo, sat
+  INTEGER(i4)   :: argo, sat, ncmp
   
   NAMELIST /ctllst/ ctl_tol, ctl_per
   NAMELIST /covlst/ neof, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
-  NAMELIST /biolst/ nchl, chl_dep
+  NAMELIST /biolst/ nchl, chl_dep, ncmp
   NAMELIST /params/ sat, argo, uniformL, anisL, verbose
 
 
@@ -124,11 +124,13 @@ subroutine def_nml
     write(drv%dia,*) ' BIOLOGY NAMELIST INPUT: '
     write(drv%dia,*) ' Number of phytoplankton species  nchl     = ', nchl
     write(drv%dia,*) ' Minimum depth for chlorophyll    chl_dep  = ', chl_dep
+    write(drv%dia,*) ' Number of phytoplankton components  ncmp  = ', ncmp
 
   endif
 
   grd%nchl = nchl
   chl%dep  = chl_dep
+  grd%ncmp = ncmp
 
   read(11,params)
 

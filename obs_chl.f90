@@ -40,9 +40,22 @@ subroutine obs_chl
   INTEGER   :: StatBottom(MPI_STATUS_SIZE)
   INTEGER   :: MyTag
   
+  grd%chl(:,:,:) = 0.0
+
+  do l = 1,grd%nchl
+    do k = 1,grd%km
+      do j = 1,grd%jm
+        do i = 1,grd%im
+          grd%chl(i,j,k) = grd%chl(i,j,k) + grd%bgc(i,j,k,l,1)
+        enddo
+      enddo
+    enddo
+  enddo
+
+
   ! Filling array to send
   do j=1,grd%jm
-     SendTop(j)  = grd%chl(1,j,1,1)
+    SendTop(j)  = grd%chl(1,j,1,1)
   end do
   
   MyTag = 42

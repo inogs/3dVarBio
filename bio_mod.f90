@@ -1,8 +1,8 @@
-subroutine cnv_ctv
+subroutine bio_mod
 
 !---------------------------------------------------------------------------
 !                                                                          !
-!    Copyright 2006 Srdjan Dobricic, CMCC, Bologna                         !
+!    Copyright 2007 Srdjan Dobricic, CMCC, Bologna                         !
 !                                                                          !
 !    This file is part of OceanVar.                                          !
 !                                                                          !
@@ -23,32 +23,32 @@ subroutine cnv_ctv
 
 !-----------------------------------------------------------------------
 !                                                                      !
-! Convert from control to v                                            !
+! Biological model                                                     !
 !                                                                      !
-! Version 1: S.Dobricic 2006                                           !
+! Version 1: A.Teruzzi 2012                                           !
 !-----------------------------------------------------------------------
 
+  use grd_str
+  use bio_str
+  use eof_str
 
- use set_knd
- use grd_str
- use ctl_str
- use eof_str
+  IMPLICIT NONE
 
- implicit none
+  INTEGER(i4)     :: m, l, k,j ,i
 
- INTEGER(i4)   :: i,j,k, kk
- INTEGER(i4)   :: jumpInd, indSupWP
+  grd%bgc(:,:,:,:,:) = 0.0
 
-
-   do k=1,ros%neof
-   jumpInd =  (k -1 )*nSurfaceWaterPoints
-       do indSupWP = 1,nSurfaceWaterPoints
-           i = SurfaceWaterPoints(1,indSupWP)
-           j = SurfaceWaterPoints(2,indSupWP)
-           kk = jumpInd + indSupWP
-           grd%ro(i,j,k) = ctl%x_c(kk)
-       enddo
-   enddo
+  do m=1,grd%ncmp
+    do l=1,grd%nchl
+      do k=1,grd%km
+        do j=1,grd%jm
+          do i=1,grd%im
+            grd%bgc(i,j,k,l,m)=bio%cquot(i,j,k,l,m)*bio%pquot(i,j,k,l)*grd%chl(i,j,k,1)
+          enddo
+        enddo
+      enddo
+    enddo
+  enddo
 
 
-end subroutine cnv_ctv
+end subroutine bio_mod
