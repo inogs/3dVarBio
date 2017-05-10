@@ -137,7 +137,8 @@ OBJS    =  \
 	mpi_utils.o\
 	readAnisotropy.o\
 	costf.o\
-	parallel_obs_chl.o\
+	obs_chl.o\
+	obs_chl_ad.o\
 	readGrid.o\
 	def_cov.o\
 	tao_minimizer.o\
