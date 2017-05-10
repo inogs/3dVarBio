@@ -35,18 +35,18 @@ subroutine obs_chl
   
   implicit none
   
-  INTEGER(i4)   ::  i, j, l, kk
+  INTEGER(i4)   ::  i, j, k, l, kk
   INTEGER   :: ReqTop, ReqBottom, ierr
   INTEGER   :: StatBottom(MPI_STATUS_SIZE)
   INTEGER   :: MyTag
   
-  grd%chl(:,:,:) = 0.0
+  grd%chl(:,:,:,:) = 0.0
 
   do l = 1,grd%nchl
     do k = 1,grd%km
       do j = 1,grd%jm
         do i = 1,grd%im
-          grd%chl(i,j,k) = grd%chl(i,j,k) + grd%bgc(i,j,k,l,1)
+          grd%chl(i,j,k,1) = grd%chl(i,j,k,1) + grd%bgc(i,j,k,l,1)
         enddo
       enddo
     enddo

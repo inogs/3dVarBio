@@ -15,7 +15,7 @@ subroutine obs_chl_ad
 
   implicit none
 
-  INTEGER(i4)   ::  i, j, kk, l
+  INTEGER(i4)   ::  i, j, k, kk, l
   INTEGER   :: ReqBottom, ReqTop, ierr
   INTEGER   :: StatTop(MPI_STATUS_SIZE), StatBottom(MPI_STATUS_SIZE)
   INTEGER   :: MyTag
