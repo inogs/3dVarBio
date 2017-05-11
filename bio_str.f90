@@ -36,10 +36,8 @@ public
 
    TYPE bio_t
 
-        LOGICAL               ::  read_quot        ! Read biological quotas from file
         REAL(r8),    POINTER  ::  cquot(:,:,:,:,:) ! Component quotas
         REAL(r8),    POINTER  ::  pquot(:,:,:,:)     ! Phytoplankton component quotas
-
 
    END TYPE bio_t
 
