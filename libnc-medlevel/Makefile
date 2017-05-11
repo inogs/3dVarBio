@@ -11,7 +11,7 @@ libnc-medlevel.a: 	 $(OBJS)
 			 $(AR) cru $(LIB) $(OBJS)
 
 nc-med-level-lib.o:     nc-med-level-lib.f90
-			$(FC) $(FFLAGS) -L$(LIBFEXIT) -lf_exit nc-med-level-lib.f90 -c
+			$(FC) $(FFLAGS) nc-med-level-lib.f90 -c
 
 
 

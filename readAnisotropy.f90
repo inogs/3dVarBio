@@ -58,7 +58,7 @@ subroutine readAnisotropy
   ! Check on dimensions
   if ((imr .ne. GlobalRow).OR.(jmr.ne.GlobalCol)) then
     write(drv%dia,*)'Error: dimensions of rcorr differ from grid ones'
-    call f_exit(24)
+    call MPI_Abort(MPI_COMM_WORLD, -1, stat)
   endif
 
 

@@ -453,6 +453,7 @@ END SUBROUTINE SET_ATT
 !****************************************************************************
 subroutine handle_err1(status,mycount, FileNetCDF)
 USE netcdf
+use mpi
 integer status,mycount
 character fileNetCDF*(*)
 
@@ -462,7 +463,7 @@ if(status .ne. nf90_NoErr)  then
    write(*,*)  'file :', fileNetCDF
    write(*,*) nf90_strerror(status)
    write(*,*) 'Stopped'
-   call f_exit(1)
+   call MPI_Abort(MPI_COMM_WORLD, -1, status)
 endif
 end
 
