@@ -40,13 +40,13 @@ subroutine obs_chl
   INTEGER   :: StatBottom(MPI_STATUS_SIZE)
   INTEGER   :: MyTag
   
-  grd%chl(:,:,:,:) = 0.0
+  grd%chl(:,:,:) = 0.0
 
   do l = 1,grd%nchl
     do k = 1,grd%km
       do j = 1,grd%jm
         do i = 1,grd%im
-          grd%chl(i,j,k,1) = grd%chl(i,j,k,1) + grd%bgc(i,j,k,l,1)
+          grd%chl(i,j,k) = grd%chl(i,j,k) + grd%bgc(i,j,k,l,1)
         enddo
       enddo
     enddo
@@ -55,7 +55,7 @@ subroutine obs_chl
 
   ! Filling array to send
   do j=1,grd%jm
-    SendTop(j)  = grd%chl(1,j,1,1)
+    SendTop(j)  = grd%chl(1,j,1)
   end do
   
   MyTag = 42
@@ -68,13 +68,13 @@ subroutine obs_chl
   
   do j=1,grd%jm
      do i=1,grd%im
-        ChlExtended(i,j,1) = grd%chl(i,j,1,1)
+        ChlExtended(i,j) = grd%chl(i,j,1)
      end do
   end do
   
   call MPI_Wait(ReqBottom, StatBottom, ierr)
   do j=1,grd%jm
-     ChlExtended(grd%im+1,j,1) = RecBottom(j)
+     ChlExtended(grd%im+1,j) = RecBottom(j)
   end do
   
   do kk = 1,chl%no
@@ -87,13 +87,11 @@ subroutine obs_chl
         
         chl%inc(kk) = 0.0
         
-        do l=1,grd%nchl
-           chl%inc(kk) = chl%inc(kk) + (                        &
-                chl%pq1(kk) * ChlExtended(i  ,j  ,1) +       &
-                chl%pq2(kk) * ChlExtended(i+1,j  ,1) +       &
-                chl%pq3(kk) * ChlExtended(i  ,j+1,1) +       &
-                chl%pq4(kk) * ChlExtended(i+1,j+1,1) ) * chl%dzr(1,kk)
-        enddo
+        chl%inc(kk) = chl%inc(kk) + (                        &
+            chl%pq1(kk) * ChlExtended(i  ,j  ) +       &
+            chl%pq2(kk) * ChlExtended(i+1,j  ) +       &
+            chl%pq3(kk) * ChlExtended(i  ,j+1) +       &
+            chl%pq4(kk) * ChlExtended(i+1,j+1) ) * chl%dzr(1,kk)
         
      endif
      

@@ -39,6 +39,7 @@ subroutine sav_itr
   use cns_str
   use rcfl
   use mpi_str
+  use bio_str
 
   implicit none
   
@@ -68,6 +69,7 @@ subroutine sav_itr
   ! Biological vectors
   DEALLOCATE ( grd%chl)
   DEALLOCATE ( grd%chl_ad)
+  DEALLOCATE ( grd%bgc, grd%bgc_ad)
  
   ! Observational vector
   DEALLOCATE ( obs%inc, obs%amo, obs%res)
@@ -80,6 +82,9 @@ subroutine sav_itr
 
   ! Control structure
   DEALLOCATE ( ctl%x_c, ctl%g_c)
+
+  ! Bio structure
+  DEALLOCATE ( bio%cquot, bio%pquot )
 
   DEALLOCATE (SurfaceWaterPoints)  
   

@@ -47,11 +47,11 @@ MODULE mpi_str
 
   ! Arrays needed for alltoallv communication
   ! X dimension
-  integer, allocatable, dimension(:) :: SendCountX2D, SendCountX4D, SendDisplX2D, SendDisplX4D
-  integer, allocatable, dimension(:) :: RecCountX2D, RecCountX4D, RecDisplX2D, RecDisplX4D
+  integer, allocatable, dimension(:) :: SendCountX2D, SendCountX3D, SendDisplX2D, SendDisplX3D
+  integer, allocatable, dimension(:) :: RecCountX2D, RecCountX3D, RecDisplX2D, RecDisplX3D
 
   ! Arrays needed for the ghost cells exchange
-  REAL(r8), POINTER, DIMENSION(:,:,:)    ::  ChlExtended
+  REAL(r8), POINTER, DIMENSION(:,:)    ::  ChlExtended
   REAL(r8), POINTER, DIMENSION(:)        ::  SendTop, RecBottom, SendBottom, RecTop
 
 END MODULE mpi_str

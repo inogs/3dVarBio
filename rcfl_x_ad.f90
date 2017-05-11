@@ -110,14 +110,8 @@ subroutine rcfl_x_ad( im, jm, km, imax, al, bt, fld, inx, imx)
         
      enddo
      
-     !        do j=1,jm
-     !        do i=1,im
-     !         fld(i,j,k) = c_rcx(j,inx(i,j,k))
-     !        enddo
-     !        enddo
      ! This way fills land points with some values.
-     ! We prefer not investigate at the mooment and use only the water points
-
+     ! We prefer not investigate at the moment and use only the water points
      do j=1,localCol
         do i=1,GlobalRow
            if(grd%global_msk(i,j + GlobalColOffset,1).eq.1) then

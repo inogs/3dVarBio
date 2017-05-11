@@ -92,10 +92,10 @@ subroutine my_3dvar_node()
   call MPI_TYPE_CONTIGUOUS(2, MPI_REAL8, MyPair, ierr)
   call MPI_TYPE_COMMIT(MyPair, ierr)
 
-  ALLOCATE(SendCountX2D(NumProcI), SendCountX4D(NumProcI))
-  ALLOCATE(SendDisplX2D(NumProcI), SendDisplX4D(NumProcI))
-  ALLOCATE(RecCountX2D(NumProcI), RecCountX4D(NumProcI))
-  ALLOCATE(RecDisplX2D(NumProcI), RecDisplX4D(NumProcI))
+  ALLOCATE(SendCountX2D(NumProcI), SendCountX3D(NumProcI))
+  ALLOCATE(SendDisplX2D(NumProcI), SendDisplX3D(NumProcI))
+  ALLOCATE(RecCountX2D(NumProcI), RecCountX3D(NumProcI))
+  ALLOCATE(RecDisplX2D(NumProcI), RecDisplX3D(NumProcI))
 
   ! print for debug 
   ! write(*,*) "MyId", MyId, "PosI", MyPosI, "PosJ", MyPosJ, "Left", ProcLeft, "Right", ProcRight, "Top", ProcTop, "Bottom", ProcBottom

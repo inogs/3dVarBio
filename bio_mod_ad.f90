@@ -36,14 +36,14 @@ subroutine bio_mod_ad
 
   INTEGER(i4)     :: m, l, k, j, i
   
-  grd%chl_ad(:,:,:,:) = 0.0
+  grd%chl_ad(:,:,:) = 0.0
 
   do m=1,grd%ncmp
     do l=1,grd%nchl
       do k=1,grd%km
         do j=1,grd%jm
           do i=1,grd%im
-            grd%chl_ad(i,j,k,1) = grd%chl_ad(i,j,k,1) + bio%cquot(i,j,k,l,m) * bio%pquot(i,j,k,l) * grd%bgc_ad(i,j,k,l,m)
+            grd%chl_ad(i,j,k) = grd%chl_ad(i,j,k) + bio%cquot(i,j,k,l,m) * bio%pquot(i,j,k,l) * grd%bgc_ad(i,j,k,l,m)
           enddo
         enddo
       enddo

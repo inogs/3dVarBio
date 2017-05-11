@@ -51,8 +51,8 @@ MODULE grd_str
 
      INTEGER(i4)              ::  nchl            ! No. of phytoplankton species
      INTEGER(i4)              ::  ncmp            ! No. of phytoplankton components
-     REAL(r8),    POINTER     ::  chl(:,:,:,:)    ! chlorophyll
-     REAL(r8),    POINTER     ::  chl_ad(:,:,:,:) ! chlorophyll adjoint variable
+     REAL(r8),    POINTER     ::  chl(:,:,:)    ! chlorophyll
+     REAL(r8),    POINTER     ::  chl_ad(:,:,:) ! chlorophyll adjoint variable
      REAL(r8),    POINTER     ::  bgc(:,:,:,:,:)    ! biogeochemical variables
      REAL(r8),    POINTER     ::  bgc_ad(:,:,:,:,:) ! biogeochemical adjoint variables
 

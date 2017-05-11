@@ -57,24 +57,24 @@ subroutine obs_arg_ad
         
         if(i .lt. grd%im) then
            
-           grd%chl_ad(i  ,j  ,k  ,1) = grd%chl_ad(i  ,j  ,k  ,1) + arg%pq1(kk) * obs%gra(obs%k)
-           grd%chl_ad(i+1,j  ,k  ,1) = grd%chl_ad(i+1,j  ,k  ,1) + arg%pq2(kk) * obs%gra(obs%k)
-           grd%chl_ad(i  ,j+1,k  ,1) = grd%chl_ad(i  ,j+1,k  ,1) + arg%pq3(kk) * obs%gra(obs%k)
-           grd%chl_ad(i+1,j+1,k  ,1) = grd%chl_ad(i+1,j+1,k  ,1) + arg%pq4(kk) * obs%gra(obs%k)
-           grd%chl_ad(i  ,j  ,k+1,1) = grd%chl_ad(i  ,j  ,k+1,1) + arg%pq5(kk) * obs%gra(obs%k)
-           grd%chl_ad(i+1,j  ,k+1,1) = grd%chl_ad(i+1,j  ,k+1,1) + arg%pq6(kk) * obs%gra(obs%k)
-           grd%chl_ad(i  ,j+1,k+1,1) = grd%chl_ad(i  ,j+1,k+1,1) + arg%pq7(kk) * obs%gra(obs%k)
-           grd%chl_ad(i+1,j+1,k+1,1) = grd%chl_ad(i+1,j+1,k+1,1) + arg%pq8(kk) * obs%gra(obs%k)
+           grd%chl_ad(i  ,j  ,k  ) = grd%chl_ad(i  ,j  ,k  ) + arg%pq1(kk) * obs%gra(obs%k)
+           grd%chl_ad(i+1,j  ,k  ) = grd%chl_ad(i+1,j  ,k  ) + arg%pq2(kk) * obs%gra(obs%k)
+           grd%chl_ad(i  ,j+1,k  ) = grd%chl_ad(i  ,j+1,k  ) + arg%pq3(kk) * obs%gra(obs%k)
+           grd%chl_ad(i+1,j+1,k  ) = grd%chl_ad(i+1,j+1,k  ) + arg%pq4(kk) * obs%gra(obs%k)
+           grd%chl_ad(i  ,j  ,k+1) = grd%chl_ad(i  ,j  ,k+1) + arg%pq5(kk) * obs%gra(obs%k)
+           grd%chl_ad(i+1,j  ,k+1) = grd%chl_ad(i+1,j  ,k+1) + arg%pq6(kk) * obs%gra(obs%k)
+           grd%chl_ad(i  ,j+1,k+1) = grd%chl_ad(i  ,j+1,k+1) + arg%pq7(kk) * obs%gra(obs%k)
+           grd%chl_ad(i+1,j+1,k+1) = grd%chl_ad(i+1,j+1,k+1) + arg%pq8(kk) * obs%gra(obs%k)
            
         else
 
            ALLOCATE(MatrixToSum(NextLocalRow,grd%jm,2))
            MatrixToSum(:,:,:) = dble(0)
            
-           grd%chl_ad(i  ,j  ,k  ,1) = grd%chl_ad(i  ,j  ,k  ,1) + arg%pq1(kk) * obs%gra(obs%k)
-           grd%chl_ad(i  ,j+1,k  ,1) = grd%chl_ad(i  ,j+1,k  ,1) + arg%pq3(kk) * obs%gra(obs%k)
-           grd%chl_ad(i  ,j  ,k+1,1) = grd%chl_ad(i  ,j  ,k+1,1) + arg%pq5(kk) * obs%gra(obs%k)
-           grd%chl_ad(i  ,j+1,k+1,1) = grd%chl_ad(i  ,j+1,k+1,1) + arg%pq7(kk) * obs%gra(obs%k)
+           grd%chl_ad(i  ,j  ,k  ) = grd%chl_ad(i  ,j  ,k  ) + arg%pq1(kk) * obs%gra(obs%k)
+           grd%chl_ad(i  ,j+1,k  ) = grd%chl_ad(i  ,j+1,k  ) + arg%pq3(kk) * obs%gra(obs%k)
+           grd%chl_ad(i  ,j  ,k+1) = grd%chl_ad(i  ,j  ,k+1) + arg%pq5(kk) * obs%gra(obs%k)
+           grd%chl_ad(i  ,j+1,k+1) = grd%chl_ad(i  ,j+1,k+1) + arg%pq7(kk) * obs%gra(obs%k)
            
            MatrixToSum(1,j  ,1) = arg%pq2(kk) * obs%gra(obs%k)
            MatrixToSum(1,j+1,1) = arg%pq4(kk) * obs%gra(obs%k)

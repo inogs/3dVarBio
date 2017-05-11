@@ -36,7 +36,7 @@ subroutine res_inc
 
  implicit none
 
- grd%chl_ad(:,:,:,:) = 0.0 ! OMP
+ grd%chl_ad(:,:,:) = 0.0 ! OMP
  
  obs%gra(:) = obs%amo(:) / obs%err(:) ! OMP
 

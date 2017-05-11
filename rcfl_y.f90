@@ -99,15 +99,8 @@ subroutine rcfl_y( im, jm, km, jmax, al, bt, fld, jnx, jmx)
         
      enddo
      
-     !        do j=1,jm
-     !         do i=1,im
-     !          fld(i,j,k) = a_rcy(i,jnx(i,j,k))
-     !         enddo
-     !        enddo
-     
      ! This way fills land points with some values.
      ! We prefer not investigate at the mooment and use only the water points
-
      do j=1,GlobalCol
         do i=1,localRow
            if(grd%global_msk(i + GlobalRowOffset,j,1).eq.1) then

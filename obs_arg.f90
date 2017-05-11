@@ -52,14 +52,14 @@ subroutine obs_arg
         k=arg%kb(kk)
         
         if(i .lt. grd%im) then
-           arg%inc(kk) = arg%pq1(kk) * grd%chl(i  ,j  ,k  ,1) +       &
-                arg%pq2(kk) * grd%chl(i+1,j  ,k  ,1) +       &
-                arg%pq3(kk) * grd%chl(i  ,j+1,k  ,1) +       &
-                arg%pq4(kk) * grd%chl(i+1,j+1,k  ,1) +       &
-                arg%pq5(kk) * grd%chl(i  ,j  ,k+1,1) +       &
-                arg%pq6(kk) * grd%chl(i+1,j  ,k+1,1) +       &
-                arg%pq7(kk) * grd%chl(i  ,j+1,k+1,1) +       &
-                arg%pq8(kk) * grd%chl(i+1,j+1,k+1,1)  
+           arg%inc(kk) = arg%pq1(kk) * grd%chl(i  ,j  ,k) +       &
+                arg%pq2(kk) * grd%chl(i+1,j  ,k  ) +       &
+                arg%pq3(kk) * grd%chl(i  ,j+1,k  ) +       &
+                arg%pq4(kk) * grd%chl(i+1,j+1,k  ) +       &
+                arg%pq5(kk) * grd%chl(i  ,j  ,k+1) +       &
+                arg%pq6(kk) * grd%chl(i+1,j  ,k+1) +       &
+                arg%pq7(kk) * grd%chl(i  ,j+1,k+1) +       &
+                arg%pq8(kk) * grd%chl(i+1,j+1,k+1)  
            
         else
            ALLOCATE(GetData(NextLocalRow,grd%jm,2))
@@ -70,14 +70,14 @@ subroutine obs_arg
            call MPI_Get (GetData, NData, MPI_REAL8, ProcBottom, TargetOffset, NData, MPI_REAL8, MpiWinChl, ierr)
            call MPI_Win_unlock(ProcBottom, MpiWinChl, ierr)
            
-           arg%inc(kk) = arg%pq1(kk) * grd%chl(i  ,j  ,k  ,1) +       &
-                arg%pq2(kk) * GetData(1  ,j  ,1    ) +       &
-                arg%pq3(kk) * grd%chl(i  ,j+1,k  ,1) +       &
-                arg%pq4(kk) * GetData(1  ,j+1,1    ) +       &
-                arg%pq5(kk) * grd%chl(i  ,j  ,k+1,1) +       &
-                arg%pq6(kk) * GetData(1  ,j  ,2    ) +       &
-                arg%pq7(kk) * grd%chl(i  ,j+1,k+1,1) +       &
-                arg%pq8(kk) * GetData(1  ,j+1,2    )  
+           arg%inc(kk) = arg%pq1(kk) * grd%chl(i  ,j  ,k) +       &
+                arg%pq2(kk) * GetData(1  ,j  ,1  ) +       &
+                arg%pq3(kk) * grd%chl(i  ,j+1,k  ) +       &
+                arg%pq4(kk) * GetData(1  ,j+1,1  ) +       &
+                arg%pq5(kk) * grd%chl(i  ,j  ,k+1) +       &
+                arg%pq6(kk) * GetData(1  ,j  ,2  ) +       &
+                arg%pq7(kk) * grd%chl(i  ,j+1,k+1) +       &
+                arg%pq8(kk) * GetData(1  ,j+1,2  )  
            
            
            DEALLOCATE(GetData)

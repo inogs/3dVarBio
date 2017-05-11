@@ -71,10 +71,10 @@ subroutine clean_mem
   DEALLOCATE ( rcf%al)
   DEALLOCATE ( rcf%sc)
 
-  DEALLOCATE(SendCountX2D, SendCountX4D)
-  DEALLOCATE(SendDisplX2D, SendDisplX4D)
-  DEALLOCATE(RecCountX2D, RecCountX4D)
-  DEALLOCATE(RecDisplX2D, RecDisplX4D)
+  DEALLOCATE(SendCountX2D, SendCountX3D)
+  DEALLOCATE(SendDisplX2D, SendDisplX3D)
+  DEALLOCATE(RecCountX2D, RecCountX3D)
+  DEALLOCATE(RecDisplX2D, RecDisplX3D)
 
   DEALLOCATE(ChlExtended)
   DEALLOCATE(SendBottom, RecTop)

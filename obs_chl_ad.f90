@@ -22,7 +22,7 @@ subroutine obs_chl_ad
 
   ! Filling array to send
   do j=1,grd%jm
-     SendTop(j)  = grd%chl_ad(1,j,1,1)
+     SendTop(j)  = grd%chl_ad(1,j,1)
   end do
 
   MyTag = 42
@@ -35,13 +35,13 @@ subroutine obs_chl_ad
 
   do j=1,grd%jm
      do i=1,grd%im
-        ChlExtended(i,j,1) = grd%chl_ad(i,j,1,1)
+        ChlExtended(i,j) = grd%chl_ad(i,j,1)
      end do
   end do
 
   call MPI_Wait(ReqBottom, StatBottom, ierr)
   do j=1,grd%jm
-     ChlExtended(grd%im+1,j,1) = RecBottom(j)
+     ChlExtended(grd%im+1,j) = RecBottom(j)
   end do
 
   do kk = 1,chl%no
@@ -53,17 +53,15 @@ subroutine obs_chl_ad
         i=chl%ib(kk)
         j=chl%jb(kk)
 
-        do l=1,grd%nchl
-           ChlExtended(i  ,j  ,1) = ChlExtended(i  ,j  ,1) + chl%pq1(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
-           ChlExtended(i+1,j  ,1) = ChlExtended(i+1,j  ,1) + chl%pq2(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
-           ChlExtended(i  ,j+1,1) = ChlExtended(i  ,j+1,1) + chl%pq3(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
-           ChlExtended(i+1,j+1,1) = ChlExtended(i+1,j+1,1) + chl%pq4(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
-        enddo
+        ChlExtended(i  ,j  ) = ChlExtended(i  ,j  ) + chl%pq1(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
+        ChlExtended(i+1,j  ) = ChlExtended(i+1,j  ) + chl%pq2(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
+        ChlExtended(i  ,j+1) = ChlExtended(i  ,j+1) + chl%pq3(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
+        ChlExtended(i+1,j+1) = ChlExtended(i+1,j+1) + chl%pq4(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
      endif
   enddo
 
   do j=1,grd%jm
-     SendBottom(j) = ChlExtended(grd%im+1,j,1)
+     SendBottom(j) = ChlExtended(grd%im+1,j)
   end do
 
   RecTop(:)  = SendTop(:)
@@ -75,13 +73,13 @@ subroutine obs_chl_ad
 
   do j=1,grd%jm
      do i=1,grd%im
-        grd%chl_ad(i,j,1,1) = ChlExtended(i,j,1)
+        grd%chl_ad(i,j,1) = ChlExtended(i,j)
      end do
   end do
 
   call MPI_Wait(ReqTop, StatTop, ierr)
   do j=1,grd%jm
-     grd%chl_ad(1,j,1,1) = grd%chl_ad(1,j,1,1) + RecTop(j) - SendTop(j)
+     grd%chl_ad(1,j,1) = grd%chl_ad(1,j,1) + RecTop(j) - SendTop(j)
   end do
 
   grd%bgc_ad(:,:,:,:,:) = 0.0
@@ -90,7 +88,7 @@ subroutine obs_chl_ad
     do k = 1,grd%km
       do j = 1,grd%jm
         do i = 1,grd%im
-          grd%bgc_ad(i,j,k,l,1) = grd%bgc_ad(i,j,k,l,1) + grd%chl_ad(i,j,k,1)
+          grd%bgc_ad(i,j,k,l,1) = grd%bgc_ad(i,j,k,l,1) + grd%chl_ad(i,j,k)
         enddo
       enddo
     enddo

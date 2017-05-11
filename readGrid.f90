@@ -70,7 +70,7 @@ subroutine readGrid
   call DomainDecomposition
 
 
-  ALLOCATE(ChlExtended(grd%im+1, grd%jm+1, grd%nchl))
+  ALLOCATE(ChlExtended(grd%im+1, grd%jm+1))
   ALLOCATE(SendTop(grd%jm), RecBottom(grd%jm))
   ALLOCATE(SendBottom(grd%jm), RecTop(grd%jm))
 
@@ -95,8 +95,8 @@ subroutine readGrid
 
   ALLOCATE ( Dump_chl(grd%im,grd%jm,grd%km) ) ; Dump_chl  = 0.0
   ALLOCATE ( Dump_msk(grd%im,grd%jm) )        ; Dump_msk  = 0.0
-  ALLOCATE ( grd%chl(grd%im,grd%jm,grd%km,grd%nchl) )    ; grd%chl    = huge(grd%chl(1,1,1,1))
-  ALLOCATE ( grd%chl_ad(grd%im,grd%jm,grd%km,grd%nchl) ) ; grd%chl_ad = huge(grd%chl_ad(1,1,1,1))
+  ALLOCATE ( grd%chl(grd%im,grd%jm,grd%km) )    ; grd%chl    = huge(grd%chl(1,1,1))
+  ALLOCATE ( grd%chl_ad(grd%im,grd%jm,grd%km) ) ; grd%chl_ad = huge(grd%chl_ad(1,1,1))
   ALLOCATE ( grd%bgc(grd%im,grd%jm,grd%km,grd%nchl,grd%ncmp) ) ; grd%bgc = huge(grd%bgc(1,1,1,1,1))
   ALLOCATE ( grd%bgc_ad(grd%im,grd%jm,grd%km,grd%nchl,grd%ncmp) ) ; grd%bgc_ad = huge(grd%bgc_ad(1,1,1,1,1))
 
@@ -272,8 +272,8 @@ subroutine DomainDecomposition
           localCol = localCol + 1
   end if
 
-  SendDisplX4D(1) = 0
-  RecDisplX4D(1)  = 0
+  SendDisplX3D(1) = 0
+  RecDisplX3D(1)  = 0
 
   SendDisplX2D(1) = 0
   RecDisplX2D(1)  = 0
@@ -291,15 +291,15 @@ subroutine DomainDecomposition
         OffsetCol = 0
     end if
 
-    SendCountX4D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im * grd%km
-    RecCountX4D(i)  = localCol * grd%km * (GlobalRow / NumProcI + OffsetCol)
+    SendCountX3D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im * grd%km
+    RecCountX3D(i)  = localCol * grd%km * (GlobalRow / NumProcI + OffsetCol)
 
     SendCountX2D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im
     RecCountX2D(i)  = localCol * (GlobalRow / NumProcI + OffsetCol)
 
     if(i .lt. NumProcI) then
-        SendDisplX4D(i+1) = SendDisplX4D(i) + SendCountX4D(i)
-        RecDisplX4D(i+1)  = RecDisplX4D(i) + RecCountX4D(i)
+        SendDisplX3D(i+1) = SendDisplX3D(i) + SendCountX3D(i)
+        RecDisplX3D(i+1)  = RecDisplX3D(i) + RecCountX3D(i)
 
         SendDisplX2D(i+1) = SendDisplX2D(i) + SendCountX2D(i)
         RecDisplX2D(i+1)  = RecDisplX2D(i) + RecCountX2D(i)
@@ -416,7 +416,7 @@ subroutine CreateMpiWindows
 
   ! lenreal = 8
   call MPI_Type_get_extent(MPI_REAL8, dummy, lenreal, ierr)
-  nbytes = grd%im*grd%jm*grd%km*grd%nchl*lenreal
+  nbytes = grd%im*grd%jm*grd%km*lenreal
 
   call MPI_Win_create(grd%chl, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinChl, ierr)
   call MPI_Win_create(grd%chl_ad, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinChlAd, ierr)

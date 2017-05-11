@@ -53,20 +53,18 @@ subroutine wrt_dia
   if(MyId .eq. 0) &
      write(drv%dia,*) 'writes to corrections.dat !!!!!!!!!!!!!!!!!!!!!!!!!'     
 
-  do l=1,grd%nchl
-     do k=1,grd%km
-        do j=1,grd%jm
-           do i=1,grd%im
-              if (drv%argo .eq. 1) then
-                 if (grd%msk(i,j,k) .eq. 0) then
-                    Dump_chl(i,j,k) = -1.
-                 else
-                    Dump_chl(i,j,k) = REAL(grd%chl(i,j,k,l), 4)
-                 endif
+  do k=1,grd%km
+     do j=1,grd%jm
+        do i=1,grd%im
+           if (drv%argo .eq. 1) then
+              if (grd%msk(i,j,k) .eq. 0) then
+                 Dump_chl(i,j,k) = -1.
               else
-                 Dump_chl(i,j,k) = REAL(grd%chl(i,j,k,l), 4 )
+                 Dump_chl(i,j,k) = REAL(grd%chl(i,j,k), 4)
               endif
-           enddo
+           else
+              Dump_chl(i,j,k) = REAL(grd%chl(i,j,k), 4 )
+           endif
         enddo
      enddo
   enddo
@@ -99,7 +97,6 @@ subroutine wrt_dia
   
   status = nf90mpi_put_var_all(ncid,idchl,Dump_chl,MyStart,MyCount)
   if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_put_var_all', status)
-  ! status = nf90_sync(ncid)
   status = nf90mpi_close(ncid)
   if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_close', status)
   

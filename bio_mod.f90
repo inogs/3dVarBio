@@ -43,7 +43,7 @@ subroutine bio_mod
       do k=1,grd%km
         do j=1,grd%jm
           do i=1,grd%im
-            grd%bgc(i,j,k,l,m)=bio%cquot(i,j,k,l,m)*bio%pquot(i,j,k,l)*grd%chl(i,j,k,1)
+            grd%bgc(i,j,k,l,m)=bio%cquot(i,j,k,l,m)*bio%pquot(i,j,k,l)*grd%chl(i,j,k)
           enddo
         enddo
       enddo

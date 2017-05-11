@@ -52,17 +52,15 @@ subroutine veof_ad
    ! 3D variables
    k1 = 0
    
-   do l=1,grd%nchl
-      do k=1,grd%km ! OMP
-         k1 = k1 + 1
-         do j=1,grd%jm
-            do i=1,grd%im
+   do k=1,grd%km ! OMP
+      k1 = k1 + 1
+      do j=1,grd%jm
+         do i=1,grd%im
 #ifdef opt_huge_memory
-               egm(i,j) = egm(i,j) + ros%evc( i, j, k1,n) * grd%chl_ad(i,j,k,l)
+            egm(i,j) = egm(i,j) + ros%evc( i, j, k1,n) * grd%chl_ad(i,j,k)
 #else
-               egm(i,j) = egm(i,j) + ros%evc(grd%reg(i,j), k,n) * grd%chl_ad(i,j,k,l)
+            egm(i,j) = egm(i,j) + ros%evc(grd%reg(i,j), k,n) * grd%chl_ad(i,j,k)
 #endif
-            enddo
          enddo
       enddo
    enddo
