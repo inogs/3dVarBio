@@ -24,7 +24,7 @@ subroutine ver_hor_ad
   implicit none
 
   INTEGER(i4)    :: i,j,k, ione, l
-  INTEGER        :: jp, SurfaceIndex
+  INTEGER        :: jp, SurfaceIndex, TmpOffset, LinearIndex
   INTEGER(i4)    :: iProc, ierr
   type(DoubleGrid), allocatable, dimension(:,:,:) :: SendBuf3D
   type(DoubleGrid), allocatable, dimension(:)       :: RecBuf1D
@@ -89,20 +89,22 @@ subroutine ver_hor_ad
      SurfaceIndex = localCol*grd%km
      do j=1,localCol
         do iProc=0, NumProcI-1
+           TmpOffset = RecDisplX3D(iProc+1)/SurfaceIndex
            do i=1,RecCountX3D(iProc+1)/SurfaceIndex
+              LinearIndex = (i-1)*grd%km + (j-1)*RecCountX3D(iProc+1)/localCol + RecDisplX3D(iProc+1)
               do k=1,grd%km
-                 DefBufChl(i + RecDisplX3D(iProc+1)/SurfaceIndex,j,k) = &
-                      RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX3D(iProc+1)/localCol + RecDisplX3D(iProc+1))%chl
+                 DefBufChl(i + TmpOffset,j,k) = RecBuf1D(k + LinearIndex)%chl
               end do
            end do
         end do
      end do
      do j=1,localCol
         do iProc=0, NumProcI-1
+           TmpOffset = RecDisplX3D(iProc+1)/SurfaceIndex
            do i=1,RecCountX3D(iProc+1)/SurfaceIndex
+              LinearIndex = (i-1)*grd%km + (j-1)*RecCountX3D(iProc+1)/localCol + RecDisplX3D(iProc+1)
               do k=1,grd%km
-                 DefBufChlAd(i + RecDisplX3D(iProc+1)/SurfaceIndex,j,k) = &
-                      RecBuf1D(k + (i-1)*grd%km + (j-1)*RecCountX3D(iProc+1)/localCol + RecDisplX3D(iProc+1))%chl_ad
+                 DefBufChlAd(i + TmpOffset,j,k) = RecBuf1D(k + LinearIndex)%chl_ad
               end do
            end do
         end do
@@ -165,20 +167,22 @@ subroutine ver_hor_ad
      SurfaceIndex = grd%im*grd%km
      do i=1,grd%im
         do iProc=0, NumProcI-1
+           TmpOffset = SendDisplX3D(iProc+1)/SurfaceIndex
            do j=1,SendCountX3D(iProc+1)/SurfaceIndex
+              LinearIndex = (j-1)*grd%km +(i-1)*SendCountX3D(iProc+1)/grd%im + SendDisplX3D(iProc+1)
               do k=1,grd%km
-                 grd%chl(i, j + SendDisplX3D(iProc+1)/SurfaceIndex,k) = &
-                      RecBuf1D(k + (j-1)*grd%km +(i-1)*SendCountX3D(iProc+1)/grd%im + SendDisplX3D(iProc+1))%chl
+                 grd%chl(i, j + TmpOffset,k) = RecBuf1D(k + LinearIndex)%chl
               end do
            end do
         end do
      end do
      do i=1,grd%im
         do iProc=0, NumProcI-1
+           TmpOffset = SendDisplX3D(iProc+1)/SurfaceIndex
            do j=1,SendCountX3D(iProc+1)/SurfaceIndex
+              LinearIndex = (j-1)*grd%km +(i-1)*SendCountX3D(iProc+1)/grd%im + SendDisplX3D(iProc+1)
               do k=1,grd%km
-                 grd%chl_ad(i, j + SendDisplX3D(iProc+1)/SurfaceIndex,k) = &
-                      RecBuf1D(k + (j-1)*grd%km +(i-1)*SendCountX3D(iProc+1)/grd%im + SendDisplX3D(iProc+1))%chl_ad
+                 grd%chl_ad(i, j + TmpOffset,k) = RecBuf1D(k + LinearIndex)%chl_ad
               end do
            end do
         end do
