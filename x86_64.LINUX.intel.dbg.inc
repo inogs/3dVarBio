@@ -11,7 +11,6 @@ MPLD    = $(MPFC)
 FORTRAN_UNDERSCORE = _
 OPT_FLTCONSISTENCY =
 
-LIBFEXIT  = ./libfexit/
 LIBNCMEDLEV =./libnc-medlevel
 
 PREPROC =
