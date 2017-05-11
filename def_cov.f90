@@ -216,25 +216,27 @@ subroutine def_cov
   ! since it is already well placed
   DEALLOCATE(RecBuf1D, DefBuf2D)
 
-  do k=1,grd%km
-     Lmean = mean_rad(k,rcf%L_y(:,:,k)) !for each level, mean of Lxyz
-     do l=1,rcf%ntb
-        dst = rcf%dsmn + (l-1.) * rcf%dsl
-        E   = (2. * rcf%ntr) * dst**2 / (4. * Lmean**2)
-        rcf%al(l) = 1. + E - sqrt(E*(E+2.))
-        rcf%alp   = rcf%al(l)
-        sfct(:) = 0.
-        al(:) = rcf%al(l)
-        bt(:) = rcf%al(l)
-        do j=1,nspl
-                jnxx(j) = j
-        enddo
-        sfct(nspl/2+1) = 1.
-        call rcfl_y_init    ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
-        call rcfl_y_ad_init ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
-        rcf%sc(k,l) = sfct(nspl/2+1)
+  if(drv%anisL .eq. 1) then
+    do k=1,grd%km
+      Lmean = mean_rad(k,rcf%L_y(:,:,k)) !for each level, mean of Lxyz
+      do l=1,rcf%ntb
+          dst = rcf%dsmn + (l-1.) * rcf%dsl
+          E   = (2. * rcf%ntr) * dst**2 / (4. * Lmean**2)
+          rcf%al(l) = 1. + E - sqrt(E*(E+2.))
+          rcf%alp   = rcf%al(l)
+          sfct(:) = 0.
+          al(:) = rcf%al(l)
+          bt(:) = rcf%al(l)
+          do j=1,nspl
+                  jnxx(j) = j
+          enddo
+          sfct(nspl/2+1) = 1.
+          call rcfl_y_init    ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
+          call rcfl_y_ad_init ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
+          rcf%sc(k,l) = sfct(nspl/2+1)
+      enddo
     enddo
-  enddo
+  endif
 
   DEALLOCATE ( sfct, jnxx, al, bt ) 
 
