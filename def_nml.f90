@@ -160,10 +160,11 @@ subroutine def_nml
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) ' BIOLOGY NAMELIST INPUT: '
-    write(drv%dia,*) ' Biological assimilation          biol     = ', biol
-    write(drv%dia,*) ' Biological+physical assimilation bphy     = ', bphy
-    write(drv%dia,*) ' Number of phytoplankton species  nchl     = ', nchl
-    write(drv%dia,*) ' Minimum depth for chlorophyll    chl_dep  = ', chl_dep
+    write(drv%dia,*) ' Biological assimilation            biol     = ', biol
+    write(drv%dia,*) ' Biological+physical assimilation   bphy     = ', bphy
+    write(drv%dia,*) ' Number of phytoplankton species    nchl     = ', nchl
+    write(drv%dia,*) ' Minimum depth for chlorophyll      chl_dep  = ', chl_dep
+    write(drv%dia,*) ' Level size for the k-axis slicing  lsize    = ', lsize
 
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) '------------------------------------------------------------'
