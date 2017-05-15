@@ -178,14 +178,10 @@ libnc-medlevel.a :
 
 clean:
 	$(RM) *.o *.mod cpp.* *.L
-	cd $(LIBFEXIT) && $(MAKE) erase
-	cd ..
 	cd $(LIBNCMEDLEV) && $(MAKE) erase
 	cd ..
 
 erase:
 	$(RM) *.o *.mod cpp.* *.L $(EXEC)
-	cd $(LIBFEXIT) && $(MAKE) erase
-	cd ..
 	cd $(LIBNCMEDLEV) && $(MAKE) erase
 	cd ..
