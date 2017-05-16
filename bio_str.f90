@@ -36,10 +36,10 @@ public
 
    TYPE bio_t
 
-        REAL(r8),    POINTER  ::  cquot(:,:,:,:,:) ! Component quotas
-        REAL(r8),    POINTER  ::  pquot(:,:,:,:)     ! Phytoplankton component quotas
-        REAL(r8),    POINTER  ::  phy(:,:,:,:,:) 
-        REAL(r8),    POINTER  ::  phy_ad(:,:,:,:,:) 
+        REAL(r8),    POINTER  ::  cquot(:,:,:,:,:)     ! Component quotas
+        REAL(r8),    POINTER  ::  pquot(:,:,:,:)       ! Phytoplankton component quotas
+        REAL(r8),    POINTER  ::  phy(:,:,:,:,:)       ! biogeochemical variables 
+        REAL(r8),    POINTER  ::  phy_ad(:,:,:,:,:)    ! biogeochemical adjoint variables
 
    END TYPE bio_t
 
