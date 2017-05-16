@@ -97,8 +97,8 @@ subroutine readGrid
   ALLOCATE ( Dump_msk(grd%im,grd%jm) )        ; Dump_msk  = 0.0
   ALLOCATE ( grd%chl(grd%im,grd%jm,grd%km) )    ; grd%chl    = huge(grd%chl(1,1,1))
   ALLOCATE ( grd%chl_ad(grd%im,grd%jm,grd%km) ) ; grd%chl_ad = huge(grd%chl_ad(1,1,1))
-  ALLOCATE ( grd%bgc(grd%im,grd%jm,grd%km,grd%nchl,grd%ncmp) ) ; grd%bgc = huge(grd%bgc(1,1,1,1,1))
-  ALLOCATE ( grd%bgc_ad(grd%im,grd%jm,grd%km,grd%nchl,grd%ncmp) ) ; grd%bgc_ad = huge(grd%bgc_ad(1,1,1,1,1))
+  ALLOCATE ( bio%phy(grd%im,grd%jm,grd%km,grd%nchl,grd%ncmp) ) ; bio%phy = huge(bio%phy(1,1,1,1,1))
+  ALLOCATE ( bio%phy_ad(grd%im,grd%jm,grd%km,grd%nchl,grd%ncmp) ) ; bio%phy_ad = huge(bio%phy_ad(1,1,1,1,1))
 
   ALLOCATE ( x3(grd%im,grd%jm,grd%km)) ;  x3 = huge(x3(1,1,1))
   ALLOCATE ( x2(grd%im,grd%jm))        ;  x2 = huge(x2(1,1))

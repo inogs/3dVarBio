@@ -43,7 +43,7 @@ subroutine bio_mod_ad
       do k=1,grd%km
         do j=1,grd%jm
           do i=1,grd%im
-            grd%chl_ad(i,j,k) = grd%chl_ad(i,j,k) + bio%cquot(i,j,k,l,m) * bio%pquot(i,j,k,l) * grd%bgc_ad(i,j,k,l,m)
+            grd%chl_ad(i,j,k) = grd%chl_ad(i,j,k) + bio%cquot(i,j,k,l,m) * bio%pquot(i,j,k,l) * bio%phy_ad(i,j,k,l,m)
           enddo
         enddo
       enddo

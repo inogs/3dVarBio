@@ -69,7 +69,7 @@ subroutine sav_itr
   ! Biological vectors
   DEALLOCATE ( grd%chl)
   DEALLOCATE ( grd%chl_ad)
-  DEALLOCATE ( grd%bgc, grd%bgc_ad)
+  DEALLOCATE ( bio%phy, bio%phy_ad)
  
   ! Observational vector
   DEALLOCATE ( obs%inc, obs%amo, obs%res)

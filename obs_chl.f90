@@ -46,7 +46,7 @@ subroutine obs_chl
     do k = 1,grd%km
       do j = 1,grd%jm
         do i = 1,grd%im
-          grd%chl(i,j,k) = grd%chl(i,j,k) + grd%bgc(i,j,k,l,1)
+          grd%chl(i,j,k) = grd%chl(i,j,k) + bio%phy(i,j,k,l,1)
         enddo
       enddo
     enddo

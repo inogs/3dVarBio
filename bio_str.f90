@@ -38,6 +38,8 @@ public
 
         REAL(r8),    POINTER  ::  cquot(:,:,:,:,:) ! Component quotas
         REAL(r8),    POINTER  ::  pquot(:,:,:,:)     ! Phytoplankton component quotas
+        REAL(r8),    POINTER  ::  phy(:,:,:,:,:) 
+        REAL(r8),    POINTER  ::  phy_ad(:,:,:,:,:) 
 
    END TYPE bio_t
 
