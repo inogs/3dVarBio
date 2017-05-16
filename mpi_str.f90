@@ -3,16 +3,14 @@ MODULE mpi_str
   use mpi
 
   IMPLICIT NONE
-  !include "mpif.h"
+
   public
 
   !-------------------------------------------------------!
-  !     MPI vaiables
+  !     MPI variables
   !
   !     NPE : Number of Processing Elements
   !     MyId : process number  [ 0 - NPE-1 ]
-  !     MyColRank : process rank in a column communicator
-  !     MyRowRank : process rank in a row communicator
   !     MyPosI : rank on communicator along row direction
   !     MyPosJ : rank on communicator along column direction
   !     ProcBottom: rank of process under me
@@ -27,12 +25,13 @@ MODULE mpi_str
   !     GlobalColOffset : offset needed to read grd%global_msk
   !     MpiWinChl : Window for one-sided communication on grd%chl array
   !     MpiWinChlAd : Window for one-sided communication on grd%chl_ad array
-  !     NextLocalRow : size of the local number of row for the process "below" me
+  !     NextLocalRow : size of the local number of row for the process "below" MyID
+  !     
+  !     Var3DCommunicator : MPI Communicator (useful for the "interaction" with ogstm)
   !
   !-------------------------------------------------------!
 
   integer  :: NPE, MyId, MyPosI, MyPosJ
-  integer  :: MyColRank, MyRowRank
   integer  :: ProcBottom, ProcTop
   integer  :: NumProcI, NumProcJ
   integer  :: GlobalRow, GlobalCol
