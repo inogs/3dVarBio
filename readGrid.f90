@@ -7,6 +7,7 @@ subroutine readGrid
   use mpi_str
   use pnetcdf
   use cns_str
+  use bio_str
 
   implicit none
 

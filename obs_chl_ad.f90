@@ -12,6 +12,7 @@ subroutine obs_chl_ad
   use grd_str
   use obs_str
   use mpi_str
+  use bio_str
 
   implicit none
 

@@ -32,6 +32,7 @@ subroutine obs_chl
   use grd_str
   use obs_str
   use mpi_str
+  use bio_str
   
   implicit none
   
