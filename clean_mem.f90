@@ -44,7 +44,7 @@ subroutine clean_mem
 
   integer :: ierr
   
-  if (drv%argo .eq. 1) then
+  if (drv%argo_obs .eq. 1) then
      ! deallocate argo arrays
      DEALLOCATE ( arg%flc)
      DEALLOCATE ( arg%inc)
@@ -55,16 +55,16 @@ subroutine clean_mem
   endif
 
   ! chlorophyll structure
-  if(drv%sat .eq. 1) then
-    DEALLOCATE ( chl%flc)
-    DEALLOCATE ( chl%inc)
-    DEALLOCATE ( chl%ib)
-    DEALLOCATE ( chl%jb)
-    DEALLOCATE ( chl%pq1)
-    DEALLOCATE ( chl%pq2)
-    DEALLOCATE ( chl%pq3)
-    DEALLOCATE ( chl%pq4)
-    DEALLOCATE ( chl%dzr)
+  if(drv%sat_obs .eq. 1) then
+    DEALLOCATE ( sat%flc)
+    DEALLOCATE ( sat%inc)
+    DEALLOCATE ( sat%ib)
+    DEALLOCATE ( sat%jb)
+    DEALLOCATE ( sat%pq1)
+    DEALLOCATE ( sat%pq2)
+    DEALLOCATE ( sat%pq3)
+    DEALLOCATE ( sat%pq4)
+    DEALLOCATE ( sat%dzr)
   endif
 
   ! Constants structure

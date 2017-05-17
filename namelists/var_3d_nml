@@ -81,7 +81,7 @@
 !
 ! ---
 &params
-  sat     = 1
+ sat_obs  = 1
   argo    = 0
  uniformL = 0
   anisL   = 0

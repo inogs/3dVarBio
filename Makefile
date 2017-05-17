@@ -110,7 +110,7 @@ OBJS    =  \
 	netcdf_err.o\
 	get_obs.o\
 	get_obs_arg.o\
-	get_obs_chl.o\
+	get_obs_sat.o\
 	int_par.o\
 	obs_vec.o\
 	ini_cfn.o\
@@ -141,8 +141,8 @@ OBJS    =  \
 	bio_mod_ad.o\
 	rdquotas.o\
 	costf.o\
-	obs_chl.o\
-	obs_chl_ad.o\
+	obs_sat.o\
+	obs_sat_ad.o\
 	readGrid.o\
 	def_cov.o\
 	tao_minimizer.o\

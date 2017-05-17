@@ -42,7 +42,7 @@ subroutine obs_vec
   ! -------
   ! Define observational vector
   
-  obs%no = chl%nc + arg%no
+  obs%no = sat%nc + arg%no
 
   if(MyId .eq. 0) &
        write(drv%dia,*) ' Total number of observations: ', obs%no
@@ -56,7 +56,7 @@ subroutine obs_vec
   
  k=0
 
- if (drv%argo .eq. 1) then
+ if (drv%argo_obs .eq. 1) then
     ! ARGO observations
     do i=1,arg%no
        if(arg%flc(i).eq.1)then
@@ -71,16 +71,16 @@ subroutine obs_vec
  endif
  
  ! Observations of chlorophyll
- if(drv%sat .eq. 1) then
-  do i=1,chl%no
-    if(chl%flc(i).eq.1)then
+ if(drv%sat_obs .eq. 1) then
+  do i=1,sat%no
+    if(sat%flc(i).eq.1)then
        k=k+1
-       obs%res(k) = chl%res(i)
-       obs%err(k) = chl%err(i)
+       obs%res(k) = sat%res(i)
+       obs%err(k) = sat%err(i)
     endif
   enddo
   
-  DEALLOCATE(chl%res, chl%err)
+  DEALLOCATE(sat%res, sat%err)
 
  endif
  

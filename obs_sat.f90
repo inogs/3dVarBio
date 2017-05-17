@@ -1,4 +1,4 @@
-subroutine obs_chl
+subroutine obs_sat
   
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -78,25 +78,25 @@ subroutine obs_chl
      ChlExtended(grd%im+1,j) = RecBottom(j)
   end do
   
-  do kk = 1,chl%no
+  do kk = 1,sat%no
      
-     if(chl%flc(kk).eq.1 )then
+     if(sat%flc(kk).eq.1 )then
         
         
-        i=chl%ib(kk)
-        j=chl%jb(kk)
+        i=sat%ib(kk)
+        j=sat%jb(kk)
         
-        chl%inc(kk) = 0.0
+        sat%inc(kk) = 0.0
         
-        chl%inc(kk) = chl%inc(kk) + (                        &
-            chl%pq1(kk) * ChlExtended(i  ,j  ) +       &
-            chl%pq2(kk) * ChlExtended(i+1,j  ) +       &
-            chl%pq3(kk) * ChlExtended(i  ,j+1) +       &
-            chl%pq4(kk) * ChlExtended(i+1,j+1) ) * chl%dzr(1,kk)
+        sat%inc(kk) = sat%inc(kk) + (                        &
+            sat%pq1(kk) * ChlExtended(i  ,j  ) +       &
+            sat%pq2(kk) * ChlExtended(i+1,j  ) +       &
+            sat%pq3(kk) * ChlExtended(i  ,j+1) +       &
+            sat%pq4(kk) * ChlExtended(i+1,j+1) ) * sat%dzr(1,kk)
         
      endif
      
   enddo
 
-end subroutine obs_chl
+end subroutine obs_sat
 

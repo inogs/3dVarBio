@@ -41,13 +41,13 @@ subroutine obsop
   call MPI_Barrier(Var3DCommunicator, ierr)
   ! ---
   ! Observations by ARGO floats
-  if (drv%argo .eq. 1) &
+  if (drv%argo_obs .eq. 1) &
     call obs_arg
   
   ! ---
   ! Observations of chlorophyll
-  if(drv%sat .eq. 1) &
-    call obs_chl
+  if(drv%sat_obs .eq. 1) &
+    call obs_sat
 
   call MPI_Barrier(Var3DCommunicator, ierr)
   

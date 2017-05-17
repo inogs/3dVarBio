@@ -56,7 +56,7 @@ subroutine wrt_dia
   do k=1,grd%km
      do j=1,grd%jm
         do i=1,grd%im
-           if (drv%argo .eq. 1) then
+           if (drv%argo_obs .eq. 1) then
               if (grd%msk(i,j,k) .eq. 0) then
                  Dump_chl(i,j,k) = -1.
               else

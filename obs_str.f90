@@ -119,6 +119,6 @@ MODULE obs_str
 
   END TYPE chl_t
   
-  TYPE (chl_t)                 :: chl
+  TYPE (chl_t)                 :: sat
   
 END MODULE obs_str

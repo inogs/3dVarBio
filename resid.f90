@@ -41,7 +41,7 @@ subroutine resid
   
   ! ---
   ! ARGO observations
-  if (drv%argo .eq. 1) then
+  if (drv%argo_obs .eq. 1) then
      do i=1,arg%no
         if(arg%flc(i).eq.1)then
            k = k + 1
@@ -53,11 +53,11 @@ subroutine resid
   
   ! ---
   ! Observations of chlorophyll
-  if(drv%sat .eq. 1) then
-    do i=1,chl%no
-     if(chl%flc(i).eq.1)then
+  if(drv%sat_obs .eq. 1) then
+    do i=1,sat%no
+     if(sat%flc(i).eq.1)then
         k = k + 1
-        obs%inc(k) = chl%inc(i) 
+        obs%inc(k) = sat%inc(i) 
         obs%amo(k) = ( obs%inc(k) - obs%res(k) ) / obs%err(k)
      endif
     enddo

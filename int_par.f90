@@ -37,12 +37,12 @@ subroutine int_par
   
   ! ----
   ! Load ARGO observations
-  if (drv%argo .eq. 1) &
+  if (drv%argo_obs .eq. 1) &
        call int_par_arg
   
   ! ----
   ! Load observations of chlorophyll
-  if(drv%sat .eq. 1) &
+  if(drv%sat_obs .eq. 1) &
     call int_par_chl
   
 end subroutine int_par

@@ -44,12 +44,12 @@ subroutine def_nml
   INTEGER(i4)   :: ctl_m
   INTEGER(i4)   :: biol, bphy, nchl, uniformL, anisL, verbose
   REAL(r8)      :: rcf_L, ctl_tol, ctl_per, rcf_efc, chl_dep
-  INTEGER(i4)   :: argo, sat, ncmp
+  INTEGER(i4)   :: argo, sat_obs, ncmp
   
   NAMELIST /ctllst/ ctl_tol, ctl_per
   NAMELIST /covlst/ neof, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
   NAMELIST /biolst/ nchl, chl_dep, ncmp
-  NAMELIST /params/ sat, argo, uniformL, anisL, verbose
+  NAMELIST /params/ sat_obs, argo, uniformL, anisL, verbose
 
 
 ! -------------------------------------------------------------------
@@ -129,7 +129,7 @@ subroutine def_nml
   endif
 
   grd%nchl = nchl
-  chl%dep  = chl_dep
+  sat%dep  = chl_dep
   grd%ncmp = ncmp
 
   read(11,params)
@@ -153,8 +153,8 @@ subroutine def_nml
 
   close(11)
 
-  drv%sat  = sat
-  drv%argo = argo
+  drv%sat_obs  = sat_obs
+  drv%argo_obs = argo
   drv%uniformL = uniformL
   drv%anisL = anisL
   drv%Verbose = verbose

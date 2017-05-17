@@ -105,7 +105,7 @@ subroutine readGrid
   ALLOCATE ( x2(grd%im,grd%jm))        ;  x2 = huge(x2(1,1))
   ALLOCATE ( x1(grd%km) )              ;  x1 = huge(x1(1))
 
-  if (drv%argo .eq. 1) then
+  if (drv%argo_obs .eq. 1) then
      ALLOCATE ( grd%lon(grd%im,grd%jm)) ; grd%lon = huge(grd%lon(1,1))
      ALLOCATE ( grd%lat(grd%im,grd%jm)) ; grd%lat = huge(grd%lat(1,1))
   endif
@@ -122,7 +122,7 @@ subroutine readGrid
   if (ierr .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all dy', ierr)
   grd%dy(:,:) = x2(:,:)
 
-  if (drv%argo .eq. 1) then
+  if (drv%argo_obs .eq. 1) then
      ierr = nf90mpi_inq_varid (ncid, 'lon', VarId)
      if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_inq_varid', ierr)
      ierr = nfmpi_get_vara_real_all (ncid, VarId, MyStart, MyCount, x2)

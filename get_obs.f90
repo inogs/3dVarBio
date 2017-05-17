@@ -36,17 +36,17 @@ subroutine get_obs
   implicit none
   
   arg%no = 0
-  chl%no = 0
+  sat%no = 0
 
   
   ! ----
   ! Load ARGO observations
-  if (drv%argo .eq. 1) &
+  if (drv%argo_obs .eq. 1) &
     call get_obs_arg
   
   ! ----
   ! Load observations of chlorophyll
-  if(drv%sat .eq. 1) &
-    call get_obs_chl
+  if(drv%sat_obs .eq. 1) &
+    call get_obs_sat
   
 end subroutine get_obs

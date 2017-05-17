@@ -1,4 +1,4 @@
-subroutine obs_chl_ad
+subroutine obs_sat_ad
 
   !-----------------------------------------------------------------------
   !                                                                      !
@@ -45,19 +45,19 @@ subroutine obs_chl_ad
      ChlExtended(grd%im+1,j) = RecBottom(j)
   end do
 
-  do kk = 1,chl%no
+  do kk = 1,sat%no
 
-     if(chl%flc(kk).eq.1)then
+     if(sat%flc(kk).eq.1)then
 
         obs%k = obs%k + 1
 
-        i=chl%ib(kk)
-        j=chl%jb(kk)
+        i=sat%ib(kk)
+        j=sat%jb(kk)
 
-        ChlExtended(i  ,j  ) = ChlExtended(i  ,j  ) + chl%pq1(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
-        ChlExtended(i+1,j  ) = ChlExtended(i+1,j  ) + chl%pq2(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
-        ChlExtended(i  ,j+1) = ChlExtended(i  ,j+1) + chl%pq3(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
-        ChlExtended(i+1,j+1) = ChlExtended(i+1,j+1) + chl%pq4(kk) * chl%dzr(1,kk) * obs%gra(obs%k)
+        ChlExtended(i  ,j  ) = ChlExtended(i  ,j  ) + sat%pq1(kk) * sat%dzr(1,kk) * obs%gra(obs%k)
+        ChlExtended(i+1,j  ) = ChlExtended(i+1,j  ) + sat%pq2(kk) * sat%dzr(1,kk) * obs%gra(obs%k)
+        ChlExtended(i  ,j+1) = ChlExtended(i  ,j+1) + sat%pq3(kk) * sat%dzr(1,kk) * obs%gra(obs%k)
+        ChlExtended(i+1,j+1) = ChlExtended(i+1,j+1) + sat%pq4(kk) * sat%dzr(1,kk) * obs%gra(obs%k)
      endif
   enddo
 
@@ -96,4 +96,4 @@ subroutine obs_chl_ad
   enddo
 
 
-end subroutine obs_chl_ad
+end subroutine obs_sat_ad
