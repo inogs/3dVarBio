@@ -32,7 +32,8 @@ subroutine ver_hor_ad
   
   ione = 1
   
-  call bio_mod_ad
+  if(drv%bio_assim .eq. 1) &
+    call bio_mod_ad
   
   ! goto 103 ! No Vh
 

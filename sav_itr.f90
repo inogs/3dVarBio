@@ -69,7 +69,6 @@ subroutine sav_itr
   ! Biological vectors
   DEALLOCATE ( grd%chl)
   DEALLOCATE ( grd%chl_ad)
-  DEALLOCATE ( bio%phy, bio%phy_ad)
  
   ! Observational vector
   DEALLOCATE ( obs%inc, obs%amo, obs%res)
@@ -84,7 +83,10 @@ subroutine sav_itr
   DEALLOCATE ( ctl%x_c, ctl%g_c)
 
   ! Bio structure
-  DEALLOCATE ( bio%cquot, bio%pquot )
+  if(drv%bio_assim .eq. 1) then
+    DEALLOCATE ( bio%phy, bio%phy_ad)
+    DEALLOCATE ( bio%cquot, bio%pquot )
+  endif
 
   DEALLOCATE (SurfaceWaterPoints)  
   

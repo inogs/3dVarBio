@@ -420,6 +420,9 @@ subroutine def_cov
 
   DEALLOCATE(rcf%Lxyz, rcf%L_x, rcf%L_y)
   
-  call rdquotas
+  ! read ratios for biological repartition
+  ! of the chlorophyll
+  if(drv%bio_assim .eq. 1) &
+    call rdquotas
 
 end subroutine def_cov

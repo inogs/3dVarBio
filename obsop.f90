@@ -40,8 +40,11 @@ subroutine obsop
 
   call MPI_Barrier(Var3DCommunicator, ierr)
 
-  call bio_conv
-  
+  ! ---
+  ! Apply biological repartition of the chlorophyll
+  if(drv%bio_assim .eq. 1) &
+    call bio_conv
+
   ! ---
   ! Observations by ARGO floats
   if (drv%argo_obs .eq. 1) &

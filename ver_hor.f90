@@ -246,6 +246,9 @@ subroutine ver_hor
   
   ! 103 continue
   
-  call bio_mod
+  ! ---
+  ! Apply biological repartition of the chlorophyll
+  if(drv%bio_assim .eq. 1) &
+    call bio_mod
     
 end subroutine ver_hor
