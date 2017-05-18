@@ -1,8 +1,8 @@
-subroutine obsop
-  
+subroutine bio_conv_ad
+
   !---------------------------------------------------------------------------
   !                                                                          !
-  !    Copyright 2006 Srdjan Dobricic, CMCC, Bologna                         !
+  !    Copyright 2007 Srdjan Dobricic, CMCC, Bologna                         !
   !                                                                          !
   !    This file is part of OceanVar.                                          !
   !                                                                          !
@@ -23,35 +23,30 @@ subroutine obsop
 
   !-----------------------------------------------------------------------
   !                                                                      !
-  ! Apply observational operators   
+  ! Biological model                                                     !
   !                                                                      !
-  ! Version 1: S.Dobricic 2006                                           !
+  ! Version 1: A.Teruzzi 2012                                           !
   !-----------------------------------------------------------------------
 
-  
-  use set_knd
-  use obs_str
-  use drv_str
-  use mpi_str
-  
+  use grd_str
+  use bio_str
+
   implicit none
-  
-  INTEGER(i4) :: ierr
 
-  call MPI_Barrier(Var3DCommunicator, ierr)
+  INTEGER(i4)   ::  i, j, k, l
 
-  call bio_conv
-  
-  ! ---
-  ! Observations by ARGO floats
-  if (drv%argo_obs .eq. 1) &
-    call obs_arg
-  
-  ! ---
-  ! Observations of chlorophyll
-  if(drv%sat_obs .eq. 1) &
-    call obs_sat
+  bio%phy_ad(:,:,:,:,:) = 0.0
 
-  call MPI_Barrier(Var3DCommunicator, ierr)
+  do l = 1,grd%nchl
+    do k = 1,grd%km
+      do j = 1,grd%jm
+        do i = 1,grd%im
+          bio%phy_ad(i,j,k,l,1) = bio%phy_ad(i,j,k,l,1) + grd%chl_ad(i,j,k)
+        enddo
+      enddo
+    enddo
+  enddo
+
   
-end subroutine obsop
+
+end subroutine bio_conv_ad

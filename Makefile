@@ -142,6 +142,8 @@ OBJS    =  \
 	rdquotas.o\
 	costf.o\
 	obs_sat.o\
+	bio_conv.o\
+	bio_conv_ad.o\
 	obs_sat_ad.o\
 	readGrid.o\
 	def_cov.o\

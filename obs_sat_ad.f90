@@ -12,11 +12,10 @@ subroutine obs_sat_ad
   use grd_str
   use obs_str
   use mpi_str
-  use bio_str
 
   implicit none
 
-  INTEGER(i4)   ::  i, j, k, kk, l
+  INTEGER(i4)   ::  i, j, k, kk
   INTEGER   :: ReqBottom, ReqTop, ierr
   INTEGER   :: StatTop(MPI_STATUS_SIZE), StatBottom(MPI_STATUS_SIZE)
   INTEGER   :: MyTag
@@ -82,18 +81,5 @@ subroutine obs_sat_ad
   do j=1,grd%jm
      grd%chl_ad(1,j,1) = grd%chl_ad(1,j,1) + RecTop(j) - SendTop(j)
   end do
-
-  bio%phy_ad(:,:,:,:,:) = 0.0
-
-  do l = 1,grd%nchl
-    do k = 1,grd%km
-      do j = 1,grd%jm
-        do i = 1,grd%im
-          bio%phy_ad(i,j,k,l,1) = bio%phy_ad(i,j,k,l,1) + grd%chl_ad(i,j,k)
-        enddo
-      enddo
-    enddo
-  enddo
-
 
 end subroutine obs_sat_ad

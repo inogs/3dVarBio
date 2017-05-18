@@ -32,26 +32,14 @@ subroutine obs_sat
   use grd_str
   use obs_str
   use mpi_str
-  use bio_str
   
   implicit none
   
-  INTEGER(i4)   ::  i, j, k, l, kk
+  INTEGER(i4)   ::  i, j, k, kk
   INTEGER   :: ReqTop, ReqBottom, ierr
   INTEGER   :: StatBottom(MPI_STATUS_SIZE)
   INTEGER   :: MyTag
   
-  grd%chl(:,:,:) = 0.0
-
-  do l = 1,grd%nchl
-    do k = 1,grd%km
-      do j = 1,grd%jm
-        do i = 1,grd%im
-          grd%chl(i,j,k) = grd%chl(i,j,k) + bio%phy(i,j,k,l,1)
-        enddo
-      enddo
-    enddo
-  enddo
 
 
   ! Filling array to send

@@ -50,6 +50,8 @@ subroutine obsop_ad
   if(drv%sat_obs .eq. 1) &  
     call obs_sat_ad
 
+  call bio_conv_ad
+
   call MPI_Barrier(Var3DCommunicator, ierr)
   
 end subroutine obsop_ad
