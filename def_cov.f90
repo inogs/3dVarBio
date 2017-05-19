@@ -393,7 +393,7 @@ subroutine def_cov
   ! ---
   ! Vertical EOFs
            
-  ros%kmt = grd%km !* grd%nchl 
+  ros%kmt = grd%km
 
   call rdeofs
   

@@ -38,8 +38,8 @@ subroutine bio_mod
 
   bio%phy(:,:,:,:,:) = 0.0
 
-  do m=1,grd%ncmp
-    do l=1,grd%nchl
+  do m=1,bio%ncmp
+    do l=1,bio%nphy
       do k=1,grd%km
         do j=1,grd%jm
           do i=1,grd%im

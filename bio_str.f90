@@ -41,6 +41,9 @@ public
         REAL(r8),    POINTER  ::  phy(:,:,:,:,:)       ! biogeochemical variables 
         REAL(r8),    POINTER  ::  phy_ad(:,:,:,:,:)    ! biogeochemical adjoint variables
 
+        INTEGER               ::  nphy                 ! number of phytoplankton types
+        INTEGER               ::  ncmp            ! No. of phytoplankton components
+
    END TYPE bio_t
 
    TYPE (bio_t)                 :: bio

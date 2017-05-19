@@ -65,12 +65,12 @@ subroutine rdquotas
 !     stat = nf90_inquire_dimension (ncid, idvar, len = iim)
 !   if (stat /= nf90_noerr) call netcdf_err(stat)
 !
-!   if(grd%nchl .ne. nchl) then
+!   if(bio%nphy .ne. nchl) then
 !     write(drv%dia,*)'Error: Number of phytoplankton types different than in the input file.'
 !     call f_exit(10)
 !   endif
 !
-!   if(grd%ncmp .ne. ncmps) then
+!   if(bio%ncmp .ne. ncmps) then
 !     write(drv%dia,*)'Error: Number of phytoplankton components different than in the input file.'
 !   endif
 !
@@ -83,12 +83,12 @@ subroutine rdquotas
 !   endif
 
 
-   write(drv%dia,*)'Number of phytoplankton types is ', grd%nchl
-   write(drv%dia,*)'Number of phytoplankton components is ', grd%ncmp
+   write(drv%dia,*)'Number of phytoplankton types is ', bio%nphy
+   write(drv%dia,*)'Number of phytoplankton components is ', bio%ncmp
 
 ! Allocate quotas arrys
-   ALLOCATE ( bio%pquot( grd%im, grd%jm, grd%km, grd%nchl))
-   ALLOCATE ( bio%cquot( grd%im, grd%jm, grd%km, grd%nchl, grd%ncmp))
+   ALLOCATE ( bio%pquot( grd%im, grd%jm, grd%km, bio%nphy))
+   ALLOCATE ( bio%cquot( grd%im, grd%jm, grd%km, bio%nphy, bio%ncmp))
 
     bio%pquot(:,:,:,:) = dble(1)
     bio%cquot(:,:,:,:,:) = dble(1)

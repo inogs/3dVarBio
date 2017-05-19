@@ -42,13 +42,13 @@ subroutine def_nml
   LOGICAL       :: read_eof
   INTEGER(i4)   :: neof, nreg, rcf_ntr
   INTEGER(i4)   :: ctl_m, bio_assim
-  INTEGER(i4)   :: biol, bphy, nchl, uniformL, anisL, verbose
+  INTEGER(i4)   :: biol, bphy, nphyto, uniformL, anisL, verbose
   REAL(r8)      :: rcf_L, ctl_tol, ctl_per, rcf_efc, chl_dep
   INTEGER(i4)   :: argo, sat_obs, ncmp
   
   NAMELIST /ctllst/ ctl_tol, ctl_per
   NAMELIST /covlst/ neof, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
-  NAMELIST /biolst/ bio_assim, nchl, chl_dep, ncmp
+  NAMELIST /biolst/ bio_assim, nphyto, chl_dep, ncmp
   NAMELIST /params/ sat_obs, argo, uniformL, anisL, verbose
 
 
@@ -123,16 +123,16 @@ subroutine def_nml
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) ' BIOLOGY NAMELIST INPUT: '
     write(drv%dia,*) ' Biological repartition of the chlorophyll = ', bio_assim
-    write(drv%dia,*) ' Number of phytoplankton species  nchl     = ', nchl
+    write(drv%dia,*) ' Number of phytoplankton species  nphyt    = ', nphyto
     write(drv%dia,*) ' Minimum depth for chlorophyll    chl_dep  = ', chl_dep
     write(drv%dia,*) ' Number of phytoplankton components  ncmp  = ', ncmp
 
   endif
 
   drv%bio_assim = bio_assim
-  grd%nchl = nchl
+  bio%nphy = nphyto
   sat%dep  = chl_dep
-  grd%ncmp = ncmp
+  bio%ncmp = ncmp
 
   read(11,params)
 
@@ -141,7 +141,7 @@ subroutine def_nml
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) ' PARAMETERS NAMELIST INPUT: '
-    write(drv%dia,*) ' Read Satellite observations      sat      = ', sat    
+    write(drv%dia,*) ' Read Satellite observations      sat_obs  = ', sat_obs
     write(drv%dia,*) ' Read ARGO float observations     argo     = ', argo
     write(drv%dia,*) ' Set uniform correlation radius   uniformL = ', uniformL
     write(drv%dia,*) ' Set anisotropy on corr radius    anisL    = ', anisL

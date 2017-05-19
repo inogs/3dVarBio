@@ -37,7 +37,7 @@ subroutine bio_conv_ad
 
   bio%phy_ad(:,:,:,:,:) = 0.0
 
-  do l = 1,grd%nchl
+  do l = 1,bio%nphy
     do k = 1,grd%km
       do j = 1,grd%jm
         do i = 1,grd%im
