@@ -23,7 +23,7 @@ subroutine readGrid
   !
   ! open grid1.nc in read-only mode
   ierr = nf90mpi_open(Var3DCommunicator, GRID_FILE, NF90_NOWRITE, MPI_INFO_NULL, ncid)
-  if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_open', ierr)
+  if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_open Grid', ierr)
 
   !
   ! get grid dimensions

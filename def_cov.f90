@@ -423,6 +423,6 @@ subroutine def_cov
   ! read ratios for biological repartition
   ! of the chlorophyll
   if(drv%bio_assim .eq. 1) &
-    call rdquotas
+    call readBioStat
 
 end subroutine def_cov

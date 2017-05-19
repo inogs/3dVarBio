@@ -139,7 +139,7 @@ OBJS    =  \
 	readAnisotropy.o\
 	bio_mod.o\
 	bio_mod_ad.o\
-	rdquotas.o\
+	readBioStat.o\
 	costf.o\
 	obs_sat.o\
 	bio_conv.o\

@@ -13,6 +13,9 @@ character (LEN=1024) :: RCORR_FILE  != 'chl_rad_corr.nc'
 character (LEN=1024) :: ARGO_FILE   != 'argo_mis.dat'
 character (LEN=1024) :: ANIS_FILE   != 'gradsal.nc'
 
+character (LEN=17)   :: DA_DATE
+! character (LEN=8)   :: DA_DATE
+
 
 
 
@@ -32,6 +35,8 @@ MISFIT_FILE = 'chl_mis.nc'
  RCORR_FILE = 'chl_rad_corr.nc'
   ARGO_FILE = 'arg_mis.dat'
   ANIS_FILE = 'gradsal.nc'
+    DA_DATE = '20130102-12:00:00'
+    ! DA_DATE = '20130102'
 
 END SUBROUTINE SETFILENAMES
 
