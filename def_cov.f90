@@ -399,7 +399,6 @@ subroutine def_cov
   
   ALLOCATE ( grd%ro(    grd%im, grd%jm, ros%neof))   ; grd%ro    = 0.0
   ALLOCATE ( grd%ro_ad( grd%im, grd%jm, ros%neof))   ; grd%ro_ad = 0.0
-  ALLOCATE ( Dump_vip ( grd%im, grd%jm, ros%neof))   ; Dump_vip  = 0.0
   
   if(MyId .eq. 0) &
        write(*,*) 'rcfl allocation :', grd%jmax, grd%imax, nthreads

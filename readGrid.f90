@@ -94,8 +94,6 @@ subroutine readGrid
   ALLOCATE ( grd%inx(GlobalRow,localCol,grd%km))   ; grd%inx  = huge(grd%inx(1,1,1))
   ALLOCATE ( grd%jnx(localRow,GlobalCol,grd%km))   ; grd%jnx  = huge(grd%jnx(1,1,1))
 
-  ALLOCATE ( Dump_chl(grd%im,grd%jm,grd%km) ) ; Dump_chl  = 0.0
-  ALLOCATE ( Dump_msk(grd%im,grd%jm) )        ; Dump_msk  = 0.0
   ALLOCATE ( grd%chl(grd%im,grd%jm,grd%km) )    ; grd%chl    = huge(grd%chl(1,1,1))
   ALLOCATE ( grd%chl_ad(grd%im,grd%jm,grd%km) ) ; grd%chl_ad = huge(grd%chl_ad(1,1,1))
 

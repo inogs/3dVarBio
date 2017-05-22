@@ -47,6 +47,10 @@ subroutine wrt_dia
   integer            :: ncid,xid,yid,depid,idchl
   integer            :: idvip,idmsk,eofid
   integer(kind=MPI_OFFSET_KIND) :: global_im, global_jm, global_km
+
+  real(r4), allocatable, dimension(:,:,:) :: Dump_chl
+
+  ALLOCATE ( Dump_chl(grd%im,grd%jm,grd%km) ) ; Dump_chl  = 0.0
   
   ! ---
   ! Innovations
@@ -66,12 +70,6 @@ subroutine wrt_dia
               Dump_chl(i,j,k) = REAL(grd%chl(i,j,k), 4 )
            endif
         enddo
-     enddo
-  enddo
-  
-  do j=1,grd%jm
-     do i=1,grd%im
-        Dump_msk(i,j) = real(grd%msk(i,j,1),4);
      enddo
   enddo
   
@@ -100,5 +98,6 @@ subroutine wrt_dia
   status = nf90mpi_close(ncid)
   if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_close', status)
   
+  DEALLOCATE(Dump_chl)
 
 end subroutine wrt_dia

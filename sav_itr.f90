@@ -100,7 +100,6 @@ subroutine sav_itr
   DEALLOCATE ( bta_rcx)
   DEALLOCATE ( alp_rcy)
   DEALLOCATE ( bta_rcy)
-  DEALLOCATE (Dump_chl, Dump_vip, Dump_msk)
   
   if(MyId .eq. 0) write(*,*) ' DEALLOCATION DONE'
   
