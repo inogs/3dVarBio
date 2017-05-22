@@ -38,11 +38,10 @@ subroutine readBioStat
 
   implicit none
 
-  INTEGER(i4)        :: ncid, VarId, ierr, MyIndex
+  INTEGER(i4)        :: ncid, VarId, ierr, iVar
   INTEGER(i4)        :: i,j,k,l,m
-
-  ! CHARACTER(LEN=28)  :: RstFileName
-  CHARACTER(LEN=37)  :: RstFileName
+   
+  CHARACTER(LEN=51)  :: RstFileName
   CHARACTER(LEN=3)   :: MyVarName
   REAL(4), ALLOCATABLE :: x3(:,:,:), SumChl(:,:,:)
 
@@ -50,6 +49,7 @@ subroutine readBioStat
   ALLOCATE(SumChl(grd%im, grd%jm, grd%km))
 
   SumChl(:,:,:) = 0.0
+  x3(:,:,:)     = 0.0
 
   bio%DA_VarList( 1)='P1l'
   bio%DA_VarList( 2)='P2l'
@@ -79,12 +79,12 @@ subroutine readBioStat
 
   do m=1,bio%ncmp
     do l=1,bio%nphy
-      MyIndex = l + bio%nphy*(m-1)
+      iVar = l + bio%nphy*(m-1)
 
-      if(MyIndex .gt. 17) cycle
+      if(iVar .gt. 17) cycle
 
-      MyVarName = bio%DA_VarList(MyIndex)
-      RstFileName = 'RST.'//trim(DA_DATE)//'.'//MyVarName//'.nc'
+      MyVarName = bio%DA_VarList(iVar)
+      RstFileName = 'DA__FREQ_1/RST.'//DA_DATE//'.'//MyVarName//'.nc'
 
       if(drv%Verbose .eq. 1) then
         if(MyId .eq. 0) &
@@ -94,7 +94,7 @@ subroutine readBioStat
       ierr = nf90mpi_open(Var3DCommunicator, trim(RstFileName), NF90_NOWRITE, MPI_INFO_NULL, ncid)
       if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_open RST', ierr)
 
-      ierr = nf90mpi_inq_varid (ncid, bio%DA_VarList(MyIndex), VarId)
+      ierr = nf90mpi_inq_varid (ncid, bio%DA_VarList(iVar), VarId)
       if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_inq_varid', ierr)
       ierr = nfmpi_get_vara_real_all (ncid, VarId, MyStart, MyCount, x3)
       if (ierr .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all RST', ierr)
@@ -104,8 +104,13 @@ subroutine readBioStat
         do k=1,grd%km
           do j=1,grd%jm
             do i=1,grd%im
+              ! bio%pquot(i,j,k,l) = grd%msk(i,j,k) * x3(i,j,k)
               bio%pquot(i,j,k,l) = x3(i,j,k)
               SumChl(i,j,k) = SumChl(i,j,k) + x3(i,j,k)
+
+              ! debug print
+              ! if((l.eq.3) .and. (i.eq.181) .and. (j.eq.158) .and. (k.eq.22)) &
+              !   print*, "pquot ", bio%pquot(181,158,22,3)
             enddo
           enddo
         enddo
@@ -114,7 +119,13 @@ subroutine readBioStat
       do k=1,grd%km
         do j=1,grd%jm
           do i=1,grd%im
-            bio%cquot(i,j,k,l,m) = x3(i,j,k) / bio%pquot(i,j,k,l)
+            if(bio%pquot(i,j,k,l).ne.0) &
+              bio%cquot(i,j,k,l,m) = grd%msk(i,j,k) * x3(i,j,k) / bio%pquot(i,j,k,l)
+
+            ! debug print
+            ! if(bio%cquot(i,j,k,l,m) .gt. 1.e6) write(*,*) "i ", i, " j ", j, " k ", k, " l ", l, " m ", m, " bio%cquot ", bio%cquot(i,j,k,l,m)
+            ! if((l.eq.3) .and. (i.eq.181) .and. (j.eq.158) .and. (k.eq.22) .and. (m.eq.4)) &
+            !   print*, "cquot ", bio%cquot(181,158,22,3,4), " x3 ", x3(181,158,22)
           enddo
         enddo
       enddo
@@ -143,9 +154,10 @@ subroutine readBioStat
   enddo
   
 
-
-  write(drv%dia,*)'Number of phytoplankton types is ', bio%nphy
-  write(drv%dia,*)'Number of phytoplankton components is ', bio%ncmp
+  if(MyId .eq. 0) then
+    write(drv%dia,*)'Number of phytoplankton types is ', bio%nphy
+    write(drv%dia,*)'Number of phytoplankton components is ', bio%ncmp
+  endif
 
   DEALLOCATE(x3, SumChl)
 
