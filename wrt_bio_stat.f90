@@ -18,6 +18,7 @@ subroutine wrt_bio_stat
   CHARACTER(LEN=37)  :: BioRestart
   CHARACTER(LEN=6)   :: MyVarName
 
+  real(r8)           :: TmpVal
   real(r4), allocatable, dimension(:,:,:) :: DumpBio
   
   ALLOCATE(DumpBio(grd%im,grd%jm,72)); DumpBio(:,:,:) = 0.
@@ -31,6 +32,27 @@ subroutine wrt_bio_stat
   global_jm = GlobalCol
   global_km = 72 ! grd%km
   MyTime = 1
+
+  ! checp obtained values and eventually
+  ! correct in order to avoid negative concentrations
+  do k=1,grd%km
+    do j=1,grd%jm
+      do i=1,grd%im
+
+        ! value obtained with the assimilation algorithm
+        TmpVal = bio%InitialChl(i,j,k) + grd%chl(i,j,k)
+
+        if(TmpVal .lt. 0) then
+          ! negative values are not allowed
+          ! therefore the correction must be reduced
+          do l=1,bio%nphy
+            bio%phy(i,j,k,l,1) = 0.01*bio%pquot(i,j,k,l)*bio%InitialChl(i,j,k)
+          enddo
+        endif
+
+      enddo
+    enddo
+  enddo
 
   do m=1,bio%ncmp
     do l=1,bio%nphy
@@ -66,7 +88,8 @@ subroutine wrt_bio_stat
       do k=1,grd%km
         do j=1,grd%jm
           do i=1,grd%im
-            DumpBio(i,j,k) = REAL(bio%phy(i,j,k,l,m), 4)
+            TmpVal = bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*(bio%InitialChl(i,j,k) + bio%phy(i,j,k,l,1))
+            DumpBio(i,j,k) = REAL(TmpVal, 4)
           enddo
         enddo
       enddo
