@@ -40,6 +40,7 @@ public
         REAL(r8),    POINTER  ::  pquot(:,:,:,:)       ! Phytoplankton component quotas
         REAL(r8),    POINTER  ::  phy(:,:,:,:,:)       ! biogeochemical variables 
         REAL(r8),    POINTER  ::  phy_ad(:,:,:,:,:)    ! biogeochemical adjoint variables
+        REAL(r8),    POINTER  ::  InitialChl(:,:,:)     ! initial amount of chlorophyll
 
         INTEGER               ::  nphy                 ! number of phytoplankton types
         INTEGER               ::  ncmp                 ! No. of phytoplankton components

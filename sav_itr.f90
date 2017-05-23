@@ -48,58 +48,59 @@ subroutine sav_itr
 
   ! ---
   ! Grid structure
-  DEALLOCATE ( grd%reg)
-  DEALLOCATE ( grd%msk)
-  DEALLOCATE ( grd%dep)
-  DEALLOCATE ( grd%dx, grd%dy)
-  DEALLOCATE ( grd%alx )
-  DEALLOCATE ( grd%aly )
-  DEALLOCATE ( grd%btx )
-  DEALLOCATE ( grd%bty )
-  DEALLOCATE ( grd%scx )
-  DEALLOCATE ( grd%scy )
-  DEALLOCATE ( grd%imx, grd%jmx)
-  DEALLOCATE ( grd%istp, grd%jstp)
-  DEALLOCATE ( grd%inx, grd%jnx)
-  DEALLOCATE ( grd%aex)
-  DEALLOCATE ( grd%aey)
-  DEALLOCATE ( grd%bex)
-  DEALLOCATE ( grd%bey)
+  DEALLOCATE( grd%reg)
+  DEALLOCATE( grd%msk)
+  DEALLOCATE( grd%dep)
+  DEALLOCATE( grd%dx, grd%dy)
+  DEALLOCATE( grd%alx )
+  DEALLOCATE( grd%aly )
+  DEALLOCATE( grd%btx )
+  DEALLOCATE( grd%bty )
+  DEALLOCATE( grd%scx )
+  DEALLOCATE( grd%scy )
+  DEALLOCATE( grd%imx, grd%jmx)
+  DEALLOCATE( grd%istp, grd%jstp)
+  DEALLOCATE( grd%inx, grd%jnx)
+  DEALLOCATE( grd%aex)
+  DEALLOCATE( grd%aey)
+  DEALLOCATE( grd%bex)
+  DEALLOCATE( grd%bey)
  
   ! Biological vectors
-  DEALLOCATE ( grd%chl)
-  DEALLOCATE ( grd%chl_ad)
+  DEALLOCATE( grd%chl)
+  DEALLOCATE( grd%chl_ad)
  
   ! Observational vector
-  DEALLOCATE ( obs%inc, obs%amo, obs%res)
-  DEALLOCATE ( obs%err, obs%gra)
+  DEALLOCATE( obs%inc, obs%amo, obs%res)
+  DEALLOCATE( obs%err, obs%gra)
  
   ! Covariances structure
-  DEALLOCATE ( grd%ro)
-  DEALLOCATE ( grd%ro_ad)
-  DEALLOCATE ( ros%evc, ros%eva )
+  DEALLOCATE( grd%ro)
+  DEALLOCATE( grd%ro_ad)
+  DEALLOCATE( ros%evc, ros%eva )
 
   ! Control structure
-  DEALLOCATE ( ctl%x_c, ctl%g_c)
+  DEALLOCATE( ctl%x_c, ctl%g_c)
 
   ! Bio structure
   if(drv%bio_assim .eq. 1) then
-    DEALLOCATE ( bio%phy, bio%phy_ad)
-    DEALLOCATE ( bio%cquot, bio%pquot )
+    DEALLOCATE( bio%phy, bio%phy_ad)
+    DEALLOCATE( bio%cquot, bio%pquot)
+    DEALLOCATE( bio%InitialChl)
   endif
 
-  DEALLOCATE (SurfaceWaterPoints)  
+  DEALLOCATE(SurfaceWaterPoints)  
   
-  DEALLOCATE ( a_rcx)
-  DEALLOCATE ( b_rcx)
-  DEALLOCATE ( c_rcx)
-  DEALLOCATE ( a_rcy)
-  DEALLOCATE ( b_rcy)
-  DEALLOCATE ( c_rcy)
-  DEALLOCATE ( alp_rcx)
-  DEALLOCATE ( bta_rcx)
-  DEALLOCATE ( alp_rcy)
-  DEALLOCATE ( bta_rcy)
+  DEALLOCATE( a_rcx)
+  DEALLOCATE( b_rcx)
+  DEALLOCATE( c_rcx)
+  DEALLOCATE( a_rcy)
+  DEALLOCATE( b_rcy)
+  DEALLOCATE( c_rcy)
+  DEALLOCATE( alp_rcx)
+  DEALLOCATE( bta_rcx)
+  DEALLOCATE( alp_rcy)
+  DEALLOCATE( bta_rcy)
   
   if(MyId .eq. 0) write(*,*) ' DEALLOCATION DONE'
   

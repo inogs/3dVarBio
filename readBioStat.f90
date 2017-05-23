@@ -43,12 +43,14 @@ subroutine readBioStat
    
   CHARACTER(LEN=51)  :: RstFileName
   CHARACTER(LEN=3)   :: MyVarName
-  REAL(4), ALLOCATABLE :: x3(:,:,:), SumChl(:,:,:)
+  REAL(4), ALLOCATABLE :: x3(:,:,:)
 
   ALLOCATE(x3(grd%im, grd%jm, grd%km))
-  ALLOCATE(SumChl(grd%im, grd%jm, grd%km))
+  ALLOCATE(bio%InitialChl(grd%im, grd%jm, grd%km)) ; bio%InitialChl(:,:,:) = 0.0
+  ! Allocate quotas arrys
+  ALLOCATE(bio%pquot( grd%im, grd%jm, grd%km, bio%nphy)) ; bio%pquot(:,:,:,:) = 0.0
+  ALLOCATE(bio%cquot( grd%im, grd%jm, grd%km, bio%nphy, bio%ncmp)) ; bio%cquot(:,:,:,:,:) = 0.0
 
-  SumChl(:,:,:) = 0.0
   x3(:,:,:)     = 0.0
 
   bio%DA_VarList( 1)='P1l'
@@ -72,10 +74,6 @@ subroutine readBioStat
   bio%DA_VarList(16)='P4p'
 
   bio%DA_VarList(17)='P1s'
-  
-  ! Allocate quotas arrys
-  ALLOCATE ( bio%pquot( grd%im, grd%jm, grd%km, bio%nphy)) ; bio%pquot(:,:,:,:) = 0.0
-  ALLOCATE ( bio%cquot( grd%im, grd%jm, grd%km, bio%nphy, bio%ncmp)) ; bio%cquot(:,:,:,:,:) = 0.0
 
   do m=1,bio%ncmp
     do l=1,bio%nphy
@@ -106,7 +104,7 @@ subroutine readBioStat
             do i=1,grd%im
               ! bio%pquot(i,j,k,l) = grd%msk(i,j,k) * x3(i,j,k)
               bio%pquot(i,j,k,l) = x3(i,j,k)
-              SumChl(i,j,k) = SumChl(i,j,k) + x3(i,j,k)
+              bio%InitialChl(i,j,k) = bio%InitialChl(i,j,k) + x3(i,j,k)
 
               ! debug print
               ! if((l.eq.3) .and. (i.eq.181) .and. (j.eq.158) .and. (k.eq.22)) &
@@ -146,8 +144,8 @@ subroutine readBioStat
     do k=1,grd%km
       do j=1,grd%jm
         do i=1,grd%im
-          if(SumChl(i,j,k).ne.0) &
-            bio%pquot(i,j,k,l) = bio%pquot(i,j,k,l) / SumChl(i,j,k)
+          if(bio%InitialChl(i,j,k).ne.0) &
+            bio%pquot(i,j,k,l) = bio%pquot(i,j,k,l) / bio%InitialChl(i,j,k)
         enddo
       enddo
     enddo
@@ -159,6 +157,6 @@ subroutine readBioStat
     write(drv%dia,*)'Number of phytoplankton components is ', bio%ncmp
   endif
 
-  DEALLOCATE(x3, SumChl)
+  DEALLOCATE(x3)
 
 end subroutine readBioStat
