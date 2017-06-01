@@ -48,7 +48,6 @@ subroutine readBioStat
 
   ALLOCATE(x3(grd%im, grd%jm, grd%km))
   ALLOCATE(bio%InitialChl(grd%im, grd%jm, grd%km)) ; bio%InitialChl(:,:,:) = 0.0
-  ! Allocate quotas arrys
   ALLOCATE(bio%pquot( grd%im, grd%jm, grd%km, bio%nphy)) ; bio%pquot(:,:,:,:) = 0.0
   ALLOCATE(bio%cquot( grd%im, grd%jm, grd%km, bio%nphy, bio%ncmp)) ; bio%cquot(:,:,:,:,:) = 0.0
 
@@ -81,13 +80,25 @@ subroutine readBioStat
         do k=1,grd%km
           do j=1,grd%jm
             do i=1,grd%im
-              ! bio%pquot(i,j,k,l) = grd%msk(i,j,k) * x3(i,j,k)
-              bio%pquot(i,j,k,l) = x3(i,j,k)
-              bio%InitialChl(i,j,k) = bio%InitialChl(i,j,k) + x3(i,j,k)
 
-              ! debug print
-              ! if((l.eq.3) .and. (i.eq.181) .and. (j.eq.158) .and. (k.eq.22)) &
-              !   print*, "pquot ", bio%pquot(181,158,22,3)
+              bio%pquot(i,j,k,l) = x3(i,j,k)
+
+              if(x3(i,j,k) .lt. 1.e20) then
+
+                bio%InitialChl(i,j,k) = bio%InitialChl(i,j,k) + x3(i,j,k)
+              
+              else
+                bio%InitialChl(i,j,k) = x3(i,j,k)
+                if(grd%msk(i,j,k) .eq. 1) then
+                  write(*,*) "Warning!! Bad mask point in bio structure!"
+                  write(*,*) "i=",i," j=",j," k=",k
+                  write(*,*) "grd%msk(i,j,k)=",grd%msk
+                  write(*,*) "bio%InitialChl(i,j,k)=",bio%InitialChl(i,j,k)
+                  write(*,*) "Aborting.."
+                  call MPI_Abort(Var3DCommunicator, -1, ierr)
+                endif
+              endif
+
             enddo
           enddo
         enddo
@@ -97,12 +108,7 @@ subroutine readBioStat
         do j=1,grd%jm
           do i=1,grd%im
             if(bio%pquot(i,j,k,l).ne.0) &
-              bio%cquot(i,j,k,l,m) = x3(i,j,k) / bio%pquot(i,j,k,l) ! grd%msk(i,j,k) * x3(i,j,k) / bio%pquot(i,j,k,l)
-
-            ! debug print
-            ! if(bio%cquot(i,j,k,l,m) .gt. 1.e6) write(*,*) "i ", i, " j ", j, " k ", k, " l ", l, " m ", m, " bio%cquot ", bio%cquot(i,j,k,l,m)
-            ! if((l.eq.3) .and. (i.eq.181) .and. (j.eq.158) .and. (k.eq.22) .and. (m.eq.4)) &
-            !   print*, "cquot ", bio%cquot(181,158,22,3,4), " x3 ", x3(181,158,22)
+              bio%cquot(i,j,k,l,m) = x3(i,j,k) / bio%pquot(i,j,k,l)
           enddo
         enddo
       enddo
@@ -123,8 +129,11 @@ subroutine readBioStat
     do k=1,grd%km
       do j=1,grd%jm
         do i=1,grd%im
-          if(bio%InitialChl(i,j,k).ne.0) &
+          if( (bio%InitialChl(i,j,k) .lt. 1.e20) .and. (bio%InitialChl(i,j,k) .gt. 0)) then
             bio%pquot(i,j,k,l) = bio%pquot(i,j,k,l) / bio%InitialChl(i,j,k)
+          else
+            bio%pquot(i,j,k,l) = 0.
+          endif
         enddo
       enddo
     enddo
