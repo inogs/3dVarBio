@@ -1,10 +1,12 @@
 program ocean_var
 use filenames
+use da_params
 implicit none
 
 integer :: ierr
 
 call SETFILENAMES
+call SET_DA_PARAMS
 
 ! init of the MPI environment
 ! in case of standalone usage

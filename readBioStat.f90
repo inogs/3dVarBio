@@ -29,7 +29,8 @@ subroutine readBioStat
 ! This routine will have effect only if compiled with netcdf library.  !
 !-----------------------------------------------------------------------
 
-  use filenames
+  ! use filenames
+  use da_params
   use bio_str
   use grd_str
   use drv_str
@@ -53,35 +54,13 @@ subroutine readBioStat
 
   x3(:,:,:)     = 0.0
 
-  bio%DA_VarList( 1)='P1l'
-  bio%DA_VarList( 2)='P2l'
-  bio%DA_VarList( 3)='P3l'
-  bio%DA_VarList( 4)='P4l'
-
-  bio%DA_VarList( 5)='P1n'
-  bio%DA_VarList( 6)='P2n'
-  bio%DA_VarList( 7)='P3n'
-  bio%DA_VarList( 8)='P4n'
-
-  bio%DA_VarList( 9)='P1c'
-  bio%DA_VarList(10)='P2c'
-  bio%DA_VarList(11)='P3c'
-  bio%DA_VarList(12)='P4c'
-
-  bio%DA_VarList(13)='P1p'
-  bio%DA_VarList(14)='P2p'
-  bio%DA_VarList(15)='P3p'
-  bio%DA_VarList(16)='P4p'
-
-  bio%DA_VarList(17)='P1s'
-
   do m=1,bio%ncmp
     do l=1,bio%nphy
       iVar = l + bio%nphy*(m-1)
 
-      if(iVar .gt. 17) cycle
+      if(iVar .gt. NBioVar) cycle
 
-      MyVarName = bio%DA_VarList(iVar)
+      MyVarName = DA_VarList(iVar)
       RstFileName = 'DA__FREQ_1/RST.'//DA_DATE//'.'//MyVarName//'.nc'
 
       if(drv%Verbose .eq. 1) then
@@ -92,7 +71,7 @@ subroutine readBioStat
       ierr = nf90mpi_open(Var3DCommunicator, trim(RstFileName), NF90_NOWRITE, MPI_INFO_NULL, ncid)
       if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_open RST', ierr)
 
-      ierr = nf90mpi_inq_varid (ncid, bio%DA_VarList(iVar), VarId)
+      ierr = nf90mpi_inq_varid (ncid, DA_VarList(iVar), VarId)
       if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_inq_varid', ierr)
       ierr = nfmpi_get_vara_real_all (ncid, VarId, MyStart, MyCount, x3)
       if (ierr .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all RST', ierr)
@@ -118,7 +97,7 @@ subroutine readBioStat
         do j=1,grd%jm
           do i=1,grd%im
             if(bio%pquot(i,j,k,l).ne.0) &
-              bio%cquot(i,j,k,l,m) = grd%msk(i,j,k) * x3(i,j,k) / bio%pquot(i,j,k,l)
+              bio%cquot(i,j,k,l,m) = x3(i,j,k) / bio%pquot(i,j,k,l) ! grd%msk(i,j,k) * x3(i,j,k) / bio%pquot(i,j,k,l)
 
             ! debug print
             ! if(bio%cquot(i,j,k,l,m) .gt. 1.e6) write(*,*) "i ", i, " j ", j, " k ", k, " l ", l, " m ", m, " bio%cquot ", bio%cquot(i,j,k,l,m)

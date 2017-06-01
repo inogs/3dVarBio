@@ -8,6 +8,7 @@ subroutine readGrid
   use pnetcdf
   use cns_str
   use bio_str
+  use da_params
 
   implicit none
 
@@ -36,6 +37,31 @@ subroutine readGrid
 
   call MyGetDimension(ncid, 'km', MyOffset)
   grd%km = MyOffset
+
+  if(grd%km .ne. jpk_200) then
+    if(grd%km .gt. jpk_200) then
+      if(MyId .eq. 0) then
+        write(drv%dia,*) "WARNING!! grd%km differs from jpk_200!!"
+        write(drv%dia,*) "grd%km = ", grd%km
+        write(drv%dia,*) "jpk_200 = ", jpk_200
+        write(drv%dia,*) ""
+        write(*,*) "WARNING!! grd%km differs from jpk_200!!"
+      endif
+    else
+      if(MyId .eq. 0) then
+        write(drv%dia,*) "Error! grd%km .lt. jpk_200! Aborting"
+        write(drv%dia,*) "grd%km = ", grd%km
+        write(drv%dia,*) "jpk_200 = ", jpk_200
+        write(drv%dia,*) ""
+        write(*,*) "Error! grd%km .lt. jpk_200! Aborting"
+        write(*,*) "grd%km = ", grd%km
+        write(*,*) "jpk_200 = ", jpk_200
+        write(*,*) ""
+      endif
+      call MPI_Barrier(Var3DCommunicator, ierr)
+      call MPI_Abort(Var3DCommunicator,-1,ierr)
+    endif
+  endif
 
   if(MyId .eq. 0) then
      write(drv%dia,*)'Grid dimensions are: ',GlobalRow,GlobalCol,grd%km

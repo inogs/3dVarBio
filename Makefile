@@ -52,6 +52,7 @@ KNDSTR  =  \
 	set_knd.o
 OBJSTR  =  \
     filename_mod.o\
+		da_params.o\
 	drv_str.o\
 	cns_str.o\
 	obs_str.o\
