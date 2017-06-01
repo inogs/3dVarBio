@@ -39,27 +39,6 @@ subroutine wrt_bio_stat
   MyStartSingle(1) = 1
   TimeArr(1) = DA_JulianDate
 
-  ! check obtained values and eventually
-  ! correct them in order to avoid negative concentrations
-  do k=1,grd%km
-    do j=1,grd%jm
-      do i=1,grd%im
-
-        ! value obtained with the assimilation algorithm
-        TmpVal = bio%InitialChl(i,j,k) + grd%chl(i,j,k)
-
-        if(TmpVal .lt. 0) then
-          ! negative values are not allowed
-          ! therefore the correction must be reduced
-          do l=1,bio%nphy
-            bio%phy(i,j,k,l,1) = 0.01*bio%pquot(i,j,k,l)*bio%InitialChl(i,j,k)
-          enddo
-        endif
-
-      enddo
-    enddo
-  enddo
-
   do m=1,bio%ncmp
     do l=1,bio%nphy
       iVar = l + bio%nphy*(m-1)
@@ -100,13 +79,13 @@ subroutine wrt_bio_stat
         do j=1,grd%jm
           do i=1,grd%im
 
-            ! if(bio%cquot(i,j,k,l,2).gt.MAX_N_CHL .or. bio%cquot(i,j,k,l,4) .and. grd%chl(i,j,k) .gt. 0.) then
-            ! endif
-            
             if(bio%InitialChl(i,j,k) .lt. 1.e20) then
 
               if(grd%msk(i,j,k).eq.1) then
 
+                ! check obtained values and eventually
+                ! correct them in order to avoid negative concentrations
+                ! if the correction is negative, the correction must be reduced
                 TmpVal = bio%InitialChl(i,j,k) + grd%chl(i,j,k)
                 if(TmpVal .lt. 0 .and. m .eq. 1) then
                   TmpVal = 0.01*bio%pquot(i,j,k,l)*bio%InitialChl(i,j,k)
