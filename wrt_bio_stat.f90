@@ -10,7 +10,7 @@ subroutine wrt_bio_stat
 
   implicit none
 
-  INTEGER(i4)        :: ncid, ierr, i, j, k, l, m
+  INTEGER(i4)        :: ncid, ierr, i, j, k, l, m, mm
   INTEGER(i4)        :: idP, iVar
   INTEGER(I4)        :: xid,yid,depid,timeId, idTim
 
@@ -20,10 +20,11 @@ subroutine wrt_bio_stat
   CHARACTER(LEN=6)   :: MyVarName
 
   real(r8)           :: TmpVal
-  real(r8), allocatable, dimension(:,:,:) :: DumpBio
+  real(r8), allocatable, dimension(:,:,:) :: DumpBio, ValuesToTest
   real(r8) :: TimeArr(1)
   
   ALLOCATE(DumpBio(grd%im,grd%jm,grd%km)); DumpBio(:,:,:) = 1.e20
+  ALLOCATE(ValuesToTest(grd%im,grd%jm,grd%km)); ValuesToTest(:,:,:) = dble(0.)
 
   if(MyId .eq. 0) then
      write(drv%dia,*) 'writing bio structure'     
@@ -38,6 +39,33 @@ subroutine wrt_bio_stat
   MyCountSingle(1) = 1
   MyStartSingle(1) = 1
   TimeArr(1) = DA_JulianDate
+
+  do k=1,grd%km
+    do j=1,grd%jm
+      do i=1,grd%im
+
+        if(bio%InitialChl(i,j,k) .lt. 1.e20) then
+          ! check obtained values and eventually
+          ! correct them in order to avoid negative concentrations
+          ! if the correction is negative, the correction must be reduced
+          ValuesToTest(i,j,k) = bio%InitialChl(i,j,k) + grd%chl(i,j,k)
+          if(bio%ApplyConditions) then
+            if(ValuesToTest(i,j,k) .gt. 10*bio%InitialChl(i,j,k)) then
+
+              do m=1,bio%ncmp
+                do l=1,bio%nphy
+                  bio%phy(i,j,k,l,m) = 9.*bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*bio%InitialChl(i,j,k)
+                enddo
+              enddo
+
+            endif
+          endif
+        endif
+      enddo
+    enddo
+  enddo
+
+
 
   do m=1,bio%ncmp
     do l=1,bio%nphy
@@ -83,16 +111,15 @@ subroutine wrt_bio_stat
 
               if(grd%msk(i,j,k).eq.1) then
 
-                ! check obtained values and eventually
-                ! correct them in order to avoid negative concentrations
-                ! if the correction is negative, the correction must be reduced
-                TmpVal = bio%InitialChl(i,j,k) + grd%chl(i,j,k)
-                if(TmpVal .lt. 0 .and. m .eq. 1) then
+                if(ValuesToTest(i,j,k) .lt. 0 .and. m .eq. 1) then
                   TmpVal = 0.01*bio%pquot(i,j,k,l)*bio%InitialChl(i,j,k)
                   DumpBio(i,j,k) = TmpVal
                   bio%phy(i,j,k,l,1) = TmpVal - bio%pquot(i,j,k,l)*bio%InitialChl(i,j,k)
+                  do mm=2,bio%ncmp
+                    bio%phy(i,j,k,l,mm) = bio%cquot(i,j,k,l,mm)*bio%phy(i,j,k,l,1)
+                  enddo
                 else
-                  TmpVal = bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*bio%InitialChl(i,j,k) + bio%phy(i,j,k,l,1)
+                  TmpVal = bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*bio%InitialChl(i,j,k) + bio%phy(i,j,k,l,m)
                   DumpBio(i,j,k) = TmpVal
                 endif
               else

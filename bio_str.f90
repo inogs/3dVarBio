@@ -44,6 +44,8 @@ public
 
         INTEGER               ::  nphy                 ! number of phytoplankton types
         INTEGER               ::  ncmp                 ! No. of phytoplankton components
+
+        LOGICAL               ::  ApplyConditions       ! Apply conditions in snutell operations
         
    END TYPE bio_t
 

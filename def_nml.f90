@@ -40,7 +40,7 @@ subroutine def_nml
 
   implicit none
 
-  LOGICAL       :: read_eof
+  LOGICAL       :: read_eof, ApplyConditions
   INTEGER(i4)   :: neof, nreg, rcf_ntr
   INTEGER(i4)   :: ctl_m, bio_assim
   INTEGER(i4)   :: biol, bphy, nphyto, uniformL, anisL, verbose
@@ -49,7 +49,7 @@ subroutine def_nml
   
   NAMELIST /ctllst/ ctl_tol, ctl_per
   NAMELIST /covlst/ neof, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
-  NAMELIST /biolst/ bio_assim, nphyto, chl_dep, ncmp
+  NAMELIST /biolst/ bio_assim, nphyto, chl_dep, ncmp, ApplyConditions
   NAMELIST /params/ sat_obs, argo, uniformL, anisL, verbose
 
 
@@ -127,6 +127,7 @@ subroutine def_nml
     write(drv%dia,*) ' Number of phytoplankton species  nphyt    = ', nphyto
     write(drv%dia,*) ' Minimum depth for chlorophyll    chl_dep  = ', chl_dep
     write(drv%dia,*) ' Number of phytoplankton components  ncmp  = ', ncmp
+    write(drv%dia,*) ' Apply conditions flag     ApplyConditions = ', ApplyConditions
 
   endif
 
@@ -134,6 +135,7 @@ subroutine def_nml
   bio%nphy = nphyto
   sat%dep  = chl_dep
   bio%ncmp = ncmp
+  bio%ApplyConditions = ApplyConditions
 
   read(11,params)
 
