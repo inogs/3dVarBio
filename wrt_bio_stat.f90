@@ -22,8 +22,16 @@ subroutine wrt_bio_stat
   real(r8)           :: TmpVal, MyCorr, MyRatio
   real(r8), allocatable, dimension(:,:,:) :: DumpBio, ValuesToTest
   real(r8) :: TimeArr(1)
-  real(r4) :: LIM_THETA
+  real(r4) :: MAX_N_CHL, MAX_P_CHL, MAX_P_C, MAX_N_C
+  real(r4) :: OPT_N_C, OPT_P_C, OPT_S_C, LIM_THETA
 
+  MAX_N_CHL = 150.         ! Derived from max chl:c=0.02 (BFMconsortium)
+  MAX_P_CHL =  10.
+  MAX_P_C   =  7.86e-4*2   ! values from BFMconsortium parametrs document (P.Lazzari)
+  OPT_P_C   =  7.86e-4
+  MAX_N_C   =  1.26e-2*2   ! values from BFMconsortium parametrs document (P.Lazzari)
+  OPT_N_C   =  1.26e-2
+  OPT_S_C   =  0.01        ! values from BFMconsortium parametrs document (P.Lazzari)
   LIM_THETA =  0.01
   
   ALLOCATE(DumpBio(grd%im,grd%jm,grd%km)); DumpBio(:,:,:) = 1.e20
