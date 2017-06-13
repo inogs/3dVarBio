@@ -92,7 +92,7 @@ subroutine wrt_bio_stat
                   DumpBio(i,j,k) = TmpVal
                   bio%phy(i,j,k,l,1) = TmpVal - bio%pquot(i,j,k,l)*bio%InitialChl(i,j,k)
                 else
-                  TmpVal = bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*(bio%InitialChl(i,j,k) + bio%phy(i,j,k,l,1))
+                  TmpVal = bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*bio%InitialChl(i,j,k) + bio%phy(i,j,k,l,1)
                   DumpBio(i,j,k) = TmpVal
                 endif
               else
