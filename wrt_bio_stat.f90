@@ -19,9 +19,12 @@ subroutine wrt_bio_stat
   CHARACTER(LEN=37)  :: BioRestart
   CHARACTER(LEN=6)   :: MyVarName
 
-  real(r8)           :: TmpVal
+  real(r8)           :: TmpVal, MyCorr, MyRatio
   real(r8), allocatable, dimension(:,:,:) :: DumpBio, ValuesToTest
   real(r8) :: TimeArr(1)
+  real(r4) :: LIM_THETA
+
+  LIM_THETA =  0.01
   
   ALLOCATE(DumpBio(grd%im,grd%jm,grd%km)); DumpBio(:,:,:) = 1.e20
   ALLOCATE(ValuesToTest(grd%im,grd%jm,grd%km)); ValuesToTest(:,:,:) = dble(0.)
@@ -112,14 +115,38 @@ subroutine wrt_bio_stat
               if(grd%msk(i,j,k).eq.1) then
 
                 if(ValuesToTest(i,j,k) .lt. 0 .and. m .eq. 1) then
+                  ! Excluding negative concentrations
+                  ! This correction must be the first
+                  ! condition applied (before apply corrections
+                  ! on the other components)
                   TmpVal = 0.01*bio%pquot(i,j,k,l)*bio%InitialChl(i,j,k)
                   DumpBio(i,j,k) = TmpVal
+
+                  ! the positiveness is applied to
+                  ! the other components
                   bio%phy(i,j,k,l,1) = TmpVal - bio%pquot(i,j,k,l)*bio%InitialChl(i,j,k)
                   do mm=2,bio%ncmp
                     bio%phy(i,j,k,l,mm) = bio%cquot(i,j,k,l,mm)*bio%phy(i,j,k,l,1)
                   enddo
+
                 else
                   TmpVal = bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*bio%InitialChl(i,j,k) + bio%phy(i,j,k,l,m)
+
+                  if(bio%ApplyConditions) then
+                    ! limitations on carbon corrections
+                    ! when chl/carbon ratio is small
+                    if(m .eq. 2) then
+                      MyRatio = 1./bio%cquot(i,j,k,l,m)
+                      if(MyRatio .lt. LIM_THETA .and. bio%phy(i,j,k,l,m) .gt. 0) then
+                        MyCorr = bio%pquot(i,j,k,l)*bio%InitialChl(i,j,k) + bio%phy(i,j,k,l,1)
+                        MyCorr = MyCorr/LIM_THETA - bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*bio%InitialChl(i,j,k)
+                        bio%phy(i,j,k,l,m) = max(0., MyCorr)
+                        TmpVal = bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*bio%InitialChl(i,j,k) + bio%phy(i,j,k,l,m)
+                      endif
+                    endif
+
+                  endif ! ApplyConditions
+
                   DumpBio(i,j,k) = TmpVal
                 endif
               else
