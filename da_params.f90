@@ -28,15 +28,15 @@ MODULE DA_PARAMS
     DA_VarList( 3)='P3l'
     DA_VarList( 4)='P4l'
 
-    DA_VarList( 5)='P1n'
-    DA_VarList( 6)='P2n'
-    DA_VarList( 7)='P3n'
-    DA_VarList( 8)='P4n'
+    DA_VarList( 5)='P1c'
+    DA_VarList( 6)='P2c'
+    DA_VarList( 7)='P3c'
+    DA_VarList( 8)='P4c'
 
-    DA_VarList( 9)='P1c'
-    DA_VarList(10)='P2c'
-    DA_VarList(11)='P3c'
-    DA_VarList(12)='P4c'
+    DA_VarList( 9)='P1n'
+    DA_VarList(10)='P2n'
+    DA_VarList(11)='P3n'
+    DA_VarList(12)='P4n'
 
     DA_VarList(13)='P1p'
     DA_VarList(14)='P2p'

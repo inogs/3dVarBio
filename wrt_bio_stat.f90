@@ -138,10 +138,9 @@ subroutine wrt_bio_stat
                   enddo
 
                 else
-                  TmpVal = bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*bio%InitialChl(i,j,k) + bio%phy(i,j,k,l,m)
 
                   if(bio%ApplyConditions) then
-                    ! limitations on carbon corrections
+                    ! limitation on carbon corrections
                     ! when chl/carbon ratio is small
                     if(m .eq. 2) then
                       MyRatio = 1./bio%cquot(i,j,k,l,m)
@@ -149,13 +148,25 @@ subroutine wrt_bio_stat
                         MyCorr = bio%pquot(i,j,k,l)*bio%InitialChl(i,j,k) + bio%phy(i,j,k,l,1)
                         MyCorr = MyCorr/LIM_THETA - bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*bio%InitialChl(i,j,k)
                         bio%phy(i,j,k,l,m) = max(0., MyCorr)
-                        TmpVal = bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*bio%InitialChl(i,j,k) + bio%phy(i,j,k,l,m)
                       endif
+                    endif
+
+                    ! limitation on Nitrogen corrections
+                    ! to the optimal N/C ratio
+                    if(m .eq. 3) then
+                      ! compute N/C fraction
+                      MyRatio = bio%cquot(i,j,k,l,m)/bio%cquot(i,j,k,l,2)
+                      if(MyRatio .gt. OPT_N_C .and. bio%phy(i,j,k,l,m) .gt. 0) then
+                        MyCorr = bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,2)*bio%InitialChl(i,j,k) + bio%phy(i,j,k,l,2)
+                        MyCorr = MyCorr*OPT_N_C - bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*bio%InitialChl(i,j,k)
+                        bio%phy(i,j,k,l,m) = max(0., MyCorr)
+                      endif
+
                     endif
 
                   endif ! ApplyConditions
 
-                  DumpBio(i,j,k) = TmpVal
+                  DumpBio(i,j,k) = bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*bio%InitialChl(i,j,k) + bio%phy(i,j,k,l,m)
                 endif
               else
                 DumpBio(i,j,k) = bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*bio%InitialChl(i,j,k)
