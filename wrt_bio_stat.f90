@@ -140,8 +140,8 @@ subroutine wrt_bio_stat
                 else
 
                   if(bio%ApplyConditions) then
-                    ! limitation on carbon corrections
-                    ! when chl/carbon ratio is small
+                    ! limitation on Carbon corrections
+                    ! when chl/Carbon ratio is small
                     if(m .eq. 2) then
                       MyRatio = 1./bio%cquot(i,j,k,l,m)
                       if(MyRatio .lt. LIM_THETA .and. bio%phy(i,j,k,l,m) .gt. 0) then
@@ -159,6 +159,32 @@ subroutine wrt_bio_stat
                       if(MyRatio .gt. OPT_N_C .and. bio%phy(i,j,k,l,m) .gt. 0) then
                         MyCorr = bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,2)*bio%InitialChl(i,j,k) + bio%phy(i,j,k,l,2)
                         MyCorr = MyCorr*OPT_N_C - bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*bio%InitialChl(i,j,k)
+                        bio%phy(i,j,k,l,m) = max(0., MyCorr)
+                      endif
+
+                    endif
+
+                    ! limitation on Phosphorus corrections
+                    ! to the optimal P/C ratio
+                    if(m .eq. 4) then
+                      ! compute P/C fraction
+                      MyRatio = bio%cquot(i,j,k,l,m)/bio%cquot(i,j,k,l,2)
+                      if(MyRatio .gt. OPT_P_C .and. bio%phy(i,j,k,l,m) .gt. 0) then
+                        MyCorr = bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,2)*bio%InitialChl(i,j,k) + bio%phy(i,j,k,l,2)
+                        MyCorr = MyCorr*OPT_P_C - bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*bio%InitialChl(i,j,k)
+                        bio%phy(i,j,k,l,m) = max(0., MyCorr)
+                      endif
+
+                    endif
+
+                    ! limitation on Silicon corrections
+                    ! to the optimal Si/C ratio
+                    if(m .eq. 5) then
+                      ! compute Si/C fraction
+                      MyRatio = bio%cquot(i,j,k,l,m)/bio%cquot(i,j,k,l,2)
+                      if(MyRatio .gt. OPT_S_C .and. bio%phy(i,j,k,l,m) .gt. 0) then
+                        MyCorr = bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,2)*bio%InitialChl(i,j,k) + bio%phy(i,j,k,l,2)
+                        MyCorr = MyCorr*OPT_S_C - bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*bio%InitialChl(i,j,k)
                         bio%phy(i,j,k,l,m) = max(0., MyCorr)
                       endif
 
