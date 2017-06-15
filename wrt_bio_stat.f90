@@ -16,8 +16,9 @@ subroutine wrt_bio_stat
 
   INTEGER(kind=MPI_OFFSET_KIND) :: global_im, global_jm, global_km, MyTime
   INTEGER(KIND=MPI_OFFSET_KIND) :: MyCountSingle(1), MyStartSingle(1)
-  CHARACTER(LEN=37)  :: BioRestart
-  CHARACTER(LEN=6)   :: MyVarName
+  CHARACTER(LEN=37)    :: BioRestart
+  CHARACTER(LEN=6)     :: MyVarName
+  LOGICAL, ALLOCATABLE :: MyConditions(:,:,:,:)
 
   real(r8)           :: TmpVal, MyCorr, MyRatio
   real(r8), allocatable, dimension(:,:,:) :: DumpBio, ValuesToTest
@@ -25,7 +26,7 @@ subroutine wrt_bio_stat
   real(r4) :: MAX_N_CHL, MAX_P_CHL, MAX_P_C, MAX_N_C
   real(r4) :: OPT_N_C, OPT_P_C, OPT_S_C, LIM_THETA
 
-  MAX_N_CHL = 150.         ! Derived from max chl:c=0.02 (BFMconsortium)
+  MAX_N_CHL =  150.        ! Derived from max chl:c=0.02 (BFMconsortium)
   MAX_P_CHL =  10.
   MAX_P_C   =  7.86e-4*2   ! values from BFMconsortium parametrs document (P.Lazzari)
   OPT_P_C   =  7.86e-4
@@ -36,6 +37,7 @@ subroutine wrt_bio_stat
   
   ALLOCATE(DumpBio(grd%im,grd%jm,grd%km)); DumpBio(:,:,:) = 1.e20
   ALLOCATE(ValuesToTest(grd%im,grd%jm,grd%km)); ValuesToTest(:,:,:) = dble(0.)
+  ALLOCATE(MyConditions(grd%im,grd%jm,grd%km,bio%nphy))
 
   if(MyId .eq. 0) then
      write(drv%dia,*) 'writing bio structure'     
@@ -70,6 +72,14 @@ subroutine wrt_bio_stat
               enddo
 
             endif
+            
+            ! limitations in case of high nutrient contents
+            do l=1,bio%nphy
+              MyConditions(i,j,k,l) = bio%cquot(i,j,k,l,3) .gt. MAX_N_CHL
+              MyConditions(i,j,k,l) = MyConditions(i,j,k,l) .or. (bio%cquot(i,j,k,l,4) .gt. MAX_P_CHL)
+              MyConditions(i,j,k,l) = MyConditions(i,j,k,l) .or. (bio%cquot(i,j,k,l,3)/bio%cquot(i,j,k,l,2) .gt. (4*MAX_N_C))
+              MyConditions(i,j,k,l) = MyConditions(i,j,k,l) .or. (bio%cquot(i,j,k,l,4)/bio%cquot(i,j,k,l,2) .gt. (4*MAX_P_C))
+            enddo
           endif
         endif
       enddo
@@ -140,6 +150,11 @@ subroutine wrt_bio_stat
                 else
 
                   if(bio%ApplyConditions) then
+
+                    if(bio%phy(i,j,k,l,m) .gt. 0 .and. MyConditions(i,j,k,l)) then
+                      bio%phy(i,j,k,l,m) = 0.
+                    endif
+
                     ! limitation on Carbon corrections
                     ! when chl/Carbon ratio is small
                     if(m .eq. 2) then
@@ -215,6 +230,6 @@ subroutine wrt_bio_stat
     enddo ! l
   enddo ! m
 
-  DEALLOCATE(DumpBio)
+  DEALLOCATE(DumpBio, ValuesToTest, MyConditions)
 
 end subroutine wrt_bio_stat
