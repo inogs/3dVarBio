@@ -418,6 +418,8 @@ subroutine def_cov
   ALLOCATE ( bta_rcy(localRow,grd%jmax,nthreads)) ; bta_rcy = huge(bta_rcy(1,1,1))
 
   DEALLOCATE(rcf%Lxyz, rcf%L_x, rcf%L_y)
+  DEALLOCATE(SendCountX2D, SendDisplX2D)
+  DEALLOCATE( RecCountX2D, RecDisplX2D)
   
   ! read ratios for biological repartition
   ! of the chlorophyll

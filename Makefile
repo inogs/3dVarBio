@@ -35,10 +35,7 @@ ifndef NETCDF_LIB
 endif
 $(info $$NETCDF_INC  = ${NETCDF_INC})
 $(info $$NETCDF_LIB  = ${NETCDF_LIB})
-$(info $$LIBFEXIT    = ${LIBFEXIT})
 $(info $$LIBNCMEDLEV = ${LIBNCMEDLEV})
-
-LDFLAGS += -L$(LIBFEXIT) -lf_exit
 
 EXEC = var_3d
 LIB  = libvar_3d.a
@@ -46,7 +43,7 @@ LIB  = libvar_3d.a
 RM      = rm -f
 MV      = mv -f
 
-LIBDEP = libf_exit.a libnc-medlevel.a
+LIBDEP = libnc-medlevel.a
 
 KNDSTR  =  \
 	set_knd.o
@@ -189,14 +186,10 @@ libnc-medlevel.a :
 
 clean:
 	$(RM) *.o *.mod cpp.* *.L
-	cd $(LIBFEXIT) && $(MAKE) erase
-	cd ..
 	cd $(LIBNCMEDLEV) && $(MAKE) erase
 	cd ..
 
 erase:
 	$(RM) *.o *.mod cpp.* *.L $(EXEC)
-	cd $(LIBFEXIT) && $(MAKE) erase
-	cd ..
 	cd $(LIBNCMEDLEV) && $(MAKE) erase
 	cd ..

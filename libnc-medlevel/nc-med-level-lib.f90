@@ -462,13 +462,14 @@ if(status .ne. nf90_NoErr)  then
    write(*,*)  'file :', fileNetCDF
    write(*,*) nf90_strerror(status)
    write(*,*) 'Stopped'
-   call f_exit(1)
+   call MPI_Abort(MPI_COMM_WORLD, -1, status)
 endif
 end
 
 
         subroutine handle_err2(status,fileNetCDF,varname)
         USE netcdf
+        use mpi
         integer status
         character fileNetCDF*(*) ,varname*(*)
         if(status .ne. nf90_NoErr)  then

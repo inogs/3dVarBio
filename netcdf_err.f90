@@ -23,6 +23,7 @@ subroutine netcdf_err(errcode)
 
   use set_knd
   use netcdf
+  use mpi_str
 
   implicit none
 
@@ -31,7 +32,7 @@ subroutine netcdf_err(errcode)
   if(errcode /= nf90_noerr) then
      print*,'Netcdf Error: ', trim(nf90_strerror(errcode))
      !stop "Stopped"
-     call f_exit(24)
+     call MPI_Abort(Var3DCommunicator, -1, errcode)
   endif
 
 end subroutine netcdf_err
