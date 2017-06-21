@@ -4,7 +4,8 @@ MODULE DA_PARAMS
 
   PUBLIC
 
-    character (LEN=15)             :: DA_DATE          != '20130102-120000'
+    character (LEN=17)             :: DA_DATE          != '20130102-120000'
+    character (LEN=15)             :: ShortDate        != '20130102-120000'
     integer                        :: jpk_200          != 26
     integer                        :: NBioVar          ! number of biological variables
     CHARACTER(LEN=3), allocatable  :: DA_VarList(:)    ! name of DA biological variables
@@ -14,7 +15,8 @@ MODULE DA_PARAMS
 
   SUBROUTINE SET_DA_PARAMS
 
-    DA_DATE = '20130101-120000'
+    DA_DATE = '20130101-12:00:00'
+    ShortDate = DA_DATE(1:11)//DA_DATE(13:14)//DA_DATE(16:17)
     jpk_200 = 26
     NBioVar = 17
 

@@ -60,7 +60,7 @@ subroutine readBioStat
       if(iVar .gt. NBioVar) cycle
 
       MyVarName = DA_VarList(iVar)
-      RstFileName = 'DA__FREQ_1/RST.'//DA_DATE//'.'//MyVarName//'.nc'
+      RstFileName = 'DA__FREQ_1/RST.'//ShortDate//'.'//MyVarName//'.nc'
 
       if(drv%Verbose .eq. 1) then
         if(MyId .eq. 0) &

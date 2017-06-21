@@ -13,15 +13,17 @@ subroutine wrt_bio_stat
   INTEGER(i4)        :: ncid, ierr, i, j, k, l, m, mm
   INTEGER(i4)        :: idP, iVar
   INTEGER(I4)        :: xid,yid,depid,timeId, idTim
+  INTEGER            :: system, SysErr
 
   INTEGER(kind=MPI_OFFSET_KIND) :: global_im, global_jm, global_km, MyTime
   INTEGER(KIND=MPI_OFFSET_KIND) :: MyCountSingle(1), MyStartSingle(1)
   CHARACTER(LEN=37)    :: BioRestart
+  CHARACTER(LEN=39)    :: BioRestartLong
   CHARACTER(LEN=6)     :: MyVarName
   LOGICAL, ALLOCATABLE :: MyConditions(:,:,:,:)
 
   real(r8)           :: TmpVal, MyCorr, MyRatio
-  real(r8), allocatable, dimension(:,:,:) :: DumpBio, ValuesToTest
+  real(r4), allocatable, dimension(:,:,:) :: DumpBio, ValuesToTest
   real(r8) :: TimeArr(1)
   real(r4) :: MAX_N_CHL, MAX_P_CHL, MAX_P_C, MAX_N_C
   real(r4) :: OPT_N_C, OPT_P_C, OPT_S_C, LIM_THETA
@@ -94,7 +96,8 @@ subroutine wrt_bio_stat
 
       if(iVar .gt. NBioVar) CYCLE
 
-      BioRestart = 'RESTARTS/RST.'//DA_DATE//'.'//DA_VarList(iVar)//'.nc'
+      BioRestart = 'RESTARTS/RST.'//ShortDate//'.'//DA_VarList(iVar)//'.nc'
+      BioRestartLong = 'RESTARTS/RST.'//DA_DATE//'.'//DA_VarList(iVar)//'.nc'
 
       if(drv%Verbose .eq. 1 .and. MyId .eq. 0) &
         print*, "Writing BioRestart ", BioRestart
@@ -113,7 +116,7 @@ subroutine wrt_bio_stat
 
       MyVarName='TRN'//DA_VarList(iVar)
 
-      ierr = nf90mpi_def_var(ncid, MyVarName, nf90_double, (/xid,yid,depid,timeId/), idP )
+      ierr = nf90mpi_def_var(ncid, MyVarName, nf90_float, (/xid,yid,depid,timeId/), idP )
       if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_def_var', ierr)
       
       ierr = nf90mpi_def_var(ncid,'time'   , nf90_double,  (/timeid/)  , idTim)
@@ -226,7 +229,13 @@ subroutine wrt_bio_stat
 
       ierr = nf90mpi_close(ncid)
       if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_close '//BioRestart, ierr)
-      
+
+      call MPI_Barrier(Var3DCommunicator, ierr)
+      ! only process 0 creates link to restart files
+      if(MyId .eq. 0) then
+        SysErr = system("ln -sf $PWD/"//BioRestart//" "//BioRestartLong)
+        if(SysErr /= 0) call MPI_Abort(MPI_COMM_WORLD, -1, SysErr)
+      endif
     enddo ! l
   enddo ! m
 
