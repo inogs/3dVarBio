@@ -41,7 +41,21 @@ subroutine cnv_inn
   ! --------
   ! Convert the control vector to v
   call cnv_ctv
-
-  call ver_hor
   
+  if(drv%chl .eq. 1) then
+    call ver_hor_chl
+  endif
+  if(drv%nut .eq. 1) then
+    if(bio%N1p) then
+      call ver_hor_nut(grd%n1p)
+    endif
+    if(bio%O2o .eq. 1) then
+      call ver_hor_nut(grd%o2o)
+    endif
+  endif
+  
+  ! ---
+  ! Apply biological repartition of the chlorophyll
+  call bio_mod
+
 end subroutine cnv_inn

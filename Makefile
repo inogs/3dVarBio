@@ -113,18 +113,22 @@ OBJS    =  \
 	obs_vec.o\
 	ini_cfn.o\
 	cnv_ctv.o\
-	ver_hor.o\
+	ver_hor_chl.o\
+	ver_hor_nut.o\
 	rcfl_x.o\
 	rcfl_y.o\
-	veof.o\
+	veof_chl.o\
+	veof_nut.o\
 	obsop.o\
 	obs_arg.o\
 	resid.o\
 	res_inc.o\
 	obsop_ad.o\
 	obs_arg_ad.o\
-	veof_ad.o\
-	ver_hor_ad.o\
+	veof_chl_ad.o\
+	veof_nut_ad.o\
+	ver_hor_chl_ad.o\
+	ver_hor_nut_ad.o\
 	rcfl_x_ad.o\
 	rcfl_y_ad.o\
 	rcfl_y_ad_init.o\

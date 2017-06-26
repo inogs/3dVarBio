@@ -83,11 +83,9 @@ subroutine sav_itr
   DEALLOCATE( ctl%x_c, ctl%g_c)
 
   ! Bio structure
-  if(drv%bio_assim .eq. 1) then
-    DEALLOCATE( bio%phy, bio%phy_ad)
-    DEALLOCATE( bio%cquot, bio%pquot)
-    DEALLOCATE( bio%InitialChl)
-  endif
+  DEALLOCATE( bio%phy, bio%phy_ad)
+  DEALLOCATE( bio%cquot, bio%pquot)
+  DEALLOCATE( bio%InitialChl)
 
   DEALLOCATE(SurfaceWaterPoints)  
   

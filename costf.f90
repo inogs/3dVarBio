@@ -57,7 +57,21 @@ subroutine costf
   
   ! --------
   ! Control to physical space 
-  call ver_hor
+  if(drv%chl .eq. 1) then
+    call ver_hor_chl
+  endif
+  if(drv%nut .eq. 1) then
+    if(bio%N1p) then
+      call ver_hor_nut(grd%n1p)
+    endif
+    if(bio%O2o .eq. 1) then
+      call ver_hor_nut(grd%o2o)
+    endif
+  endif
+  
+  ! ---
+  ! Apply biological repartition of the chlorophyll
+  call bio_mod
   
   ! --------
   ! Apply observational operators
@@ -93,9 +107,25 @@ subroutine costf
   ! Observational operators
   call obsop_ad
   
+  call bio_mod_ad
   ! --------
   ! Control to physical space 
-  call ver_hor_ad
+  if(drv%chl .eq. 1) then
+    call ver_hor_chl_ad
+  endif
+  if(drv%nut .eq. 1) then
+    if(bio%N1p) then
+      call ver_hor_nut_ad(grd%n1p)
+    endif
+    if(bio%O2o .eq. 1) then
+      call ver_hor_nut_ad(grd%o2o)
+    endif
+  endif
+  
+  ! ---
+  ! Apply biological repartition of the chlorophyll
+  call bio_mod
+
   
   !   write(*,*) 'COSTF sum(ro_ad) = ' , sum(grd%ro_ad)
   ! --------
