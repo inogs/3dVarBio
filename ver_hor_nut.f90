@@ -1,4 +1,4 @@
-subroutine ver_hor_nut
+subroutine ver_hor_nut(NutArray, NutArrayAd)
 
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -50,19 +50,20 @@ subroutine ver_hor_nut
   type(DoubleGrid), allocatable, dimension(:,:,:) :: SendBuf3D
   type(DoubleGrid), allocatable, dimension(:)       :: RecBuf1D(:)
   REAL(r8), allocatable, dimension(:,:,:) :: DefBufChl, DefBufChlAd
+  REAL(r8) :: NutArray(grd%im,grd%jm,grd%km), NutArrayAd(grd%im,grd%jm,grd%km)
   
   ione = 1
 
   ! ---
   ! Vertical EOFs
-  call veof_nut
+  call veof_nut(NutArray)
   !return
   ! goto 103 !No Vh
   
   ! ---
   ! Load temporary arrays
   do k=1,grd%km
-     grd%chl_ad(:,:,k) = grd%chl(:,:,k)
+     NutArrayAd(:,:,k) = NutArray(:,:,k)
   enddo
   
   !********** APPLY RECURSIVE FILTERS ********** !
@@ -74,11 +75,11 @@ subroutine ver_hor_nut
   ! ---
   ! Scale by the scaling factor
   do k=1,grd%km
-     grd%chl_ad(:,:,k) = grd%chl_ad(:,:,k) * grd%scy(:,:,k)
+     NutArrayAd(:,:,k) = NutArrayAd(:,:,k) * grd%scy(:,:,k)
   enddo
   
   ! Apply recursive filter in y direction
-  call rcfl_y_ad( localRow, GlobalCol, grd%km, grd%jmax, grd%aey, grd%bey, grd%chl_ad, grd%jnx, grd%jmx)
+  call rcfl_y_ad( localRow, GlobalCol, grd%km, grd%jmax, grd%aey, grd%bey, NutArrayAd, grd%jnx, grd%jmx)
   
   ! ---
   ! x direction
@@ -91,14 +92,14 @@ subroutine ver_hor_nut
      do k=1,grd%km
         do j=1,grd%jm
            do i=1,grd%im
-              SendBuf3D(k,i,j)%chl = grd%chl(i,j,k)
+              SendBuf3D(k,i,j)%chl = NutArray(i,j,k)
            end do
         end do
      end do
      do k=1,grd%km
         do j=1,grd%jm
            do i=1,grd%im
-              SendBuf3D(k,i,j)%chl_ad = grd%chl_ad(i,j,k)
+              SendBuf3D(k,i,j)%chl_ad = NutArrayAd(i,j,k)
            end do
         end do
      end do
@@ -143,10 +144,10 @@ subroutine ver_hor_nut
      ! ---
      ! Scale by the scaling factor
      do k=1,grd%km
-        grd%chl_ad(:,:,k) = grd%chl_ad(:,:,k) * grd%scx(:,:,k)
+        NutArrayAd(:,:,k) = NutArrayAd(:,:,k) * grd%scx(:,:,k)
      enddo
      
-     call rcfl_x_ad( GlobalRow, localCol, grd%km, grd%imax, grd%aex, grd%bex, grd%chl_ad, grd%inx, grd%imx)
+     call rcfl_x_ad( GlobalRow, localCol, grd%km, grd%imax, grd%aex, grd%bex, NutArrayAd, grd%inx, grd%imx)
      
   end if
 
@@ -192,7 +193,7 @@ subroutine ver_hor_nut
            do j=1,SendCountX3D(iProc+1)/SurfaceIndex
               LinearIndex = (j-1)*grd%km +(i-1)*SendCountX3D(iProc+1)/grd%im + SendDisplX3D(iProc+1)
               do k=1,grd%km
-                 grd%chl(i, j + TmpOffset,k) = RecBuf1D(k + LinearIndex)%chl
+                 NutArray(i, j + TmpOffset,k) = RecBuf1D(k + LinearIndex)%chl
               end do
            end do
         end do
@@ -203,7 +204,7 @@ subroutine ver_hor_nut
            do j=1,SendCountX3D(iProc+1)/SurfaceIndex
               LinearIndex = (j-1)*grd%km +(i-1)*SendCountX3D(iProc+1)/grd%im + SendDisplX3D(iProc+1)
               do k=1,grd%km
-                 grd%chl_ad(i, j + TmpOffset,k) = RecBuf1D(k + LinearIndex)%chl_ad
+                 NutArrayAd(i, j + TmpOffset,k) = RecBuf1D(k + LinearIndex)%chl_ad
               end do
            end do
         end do
@@ -213,10 +214,10 @@ subroutine ver_hor_nut
      
   else ! NumProcI .eq. 1
      
-     call rcfl_x( GlobalRow, localCol, grd%km, grd%imax, grd%aex, grd%bex, grd%chl, grd%inx, grd%imx)
+     call rcfl_x( GlobalRow, localCol, grd%km, grd%imax, grd%aex, grd%bex, NutArray, grd%inx, grd%imx)
      
      do k=1,grd%km
-        grd%chl(:,:,k) = grd%chl(:,:,k) * grd%scx(:,:,k)
+        NutArray(:,:,k) = NutArray(:,:,k) * grd%scx(:,:,k)
      enddo
      
   end if
@@ -224,24 +225,24 @@ subroutine ver_hor_nut
   ! ---
   ! y direction
   ! Apply recursive filter in y direction
-  call rcfl_y( localRow, GlobalCol, grd%km, grd%jmax, grd%aey, grd%bey, grd%chl, grd%jnx, grd%jmx)
+  call rcfl_y( localRow, GlobalCol, grd%km, grd%jmax, grd%aey, grd%bey, NutArray, grd%jnx, grd%jmx)
   
   ! ---
   ! Scale by the scaling factor
   do k=1,grd%km
-     grd%chl(:,:,k) = grd%chl(:,:,k) * grd%scy(:,:,k)
+     NutArray(:,:,k) = NutArray(:,:,k) * grd%scy(:,:,k)
   enddo
   
   ! ---
   ! Average
   do k=1,grd%km
-     grd%chl(:,:,k)   = (grd%chl(:,:,k) + grd%chl_ad(:,:,k) ) * 0.5
+     NutArray(:,:,k)   = (NutArray(:,:,k) + NutArrayAd(:,:,k) ) * 0.5
   enddo
   
   ! ---
   ! Scale for boundaries
   do k=1,grd%km
-     grd%chl(:,:,k)   = grd%chl(:,:,k) * grd%msk(:,:,k)
+     NutArray(:,:,k)   = NutArray(:,:,k) * grd%msk(:,:,k)
   enddo
   
   ! 103 continue

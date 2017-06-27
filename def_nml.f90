@@ -42,14 +42,14 @@ subroutine def_nml
 
   LOGICAL       :: read_eof, ApplyConditions
   INTEGER(i4)   :: neof, nreg, rcf_ntr
-  INTEGER(i4)   :: ctl_m, bio_assim
+  INTEGER(i4)   :: ctl_m, chl_assim, nut, N3n, O2o
   INTEGER(i4)   :: biol, bphy, nphyto, uniformL, anisL, verbose
   REAL(r8)      :: rcf_L, ctl_tol, ctl_per, rcf_efc, chl_dep
   INTEGER(i4)   :: argo, sat_obs, ncmp
   
   NAMELIST /ctllst/ ctl_tol, ctl_per
   NAMELIST /covlst/ neof, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
-  NAMELIST /biolst/ bio_assim, nphyto, chl_dep, ncmp, ApplyConditions
+  NAMELIST /biolst/ chl_assim, nut, nphyto, chl_dep, ncmp, ApplyConditions, N3n, O2o
   NAMELIST /params/ sat_obs, argo, uniformL, anisL, verbose
 
 
@@ -123,19 +123,25 @@ subroutine def_nml
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) ' BIOLOGY NAMELIST INPUT: '
-    write(drv%dia,*) ' Biological repartition of the chlorophyll = ', bio_assim
-    write(drv%dia,*) ' Number of phytoplankton species  nphyt    = ', nphyto
-    write(drv%dia,*) ' Minimum depth for chlorophyll    chl_dep  = ', chl_dep
-    write(drv%dia,*) ' Number of phytoplankton components  ncmp  = ', ncmp
+    write(drv%dia,*) ' Chlorophyll assimilation        chl_assim = ', chl_assim
+    write(drv%dia,*) ' Nutrient assimilation                 nut = ', nut
+    write(drv%dia,*) ' Number of phytoplankton species     nphyt = ', nphyto
+    write(drv%dia,*) ' Minimum depth for chlorophyll     chl_dep = ', chl_dep
+    write(drv%dia,*) ' Number of phytoplankton components   ncmp = ', ncmp
     write(drv%dia,*) ' Apply conditions flag     ApplyConditions = ', ApplyConditions
+    write(drv%dia,*) ' N3n assimilation                      N3n = ', N3n
+    write(drv%dia,*) ' O2o assimilation                      O2o = ', O2o
 
   endif
 
-  drv%bio_assim = bio_assim
+  drv%chl_assim  = chl_assim
+  drv%nut  = nut
   bio%nphy = nphyto
   sat%dep  = chl_dep
   bio%ncmp = ncmp
   bio%ApplyConditions = ApplyConditions
+  bio%N3n = N3n
+  bio%O2o = O2o
 
   read(11,params)
 

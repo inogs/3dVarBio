@@ -120,8 +120,20 @@ subroutine readGrid
   ALLOCATE ( grd%inx(GlobalRow,localCol,grd%km))   ; grd%inx  = huge(grd%inx(1,1,1))
   ALLOCATE ( grd%jnx(localRow,GlobalCol,grd%km))   ; grd%jnx  = huge(grd%jnx(1,1,1))
 
-  ALLOCATE ( grd%chl(grd%im,grd%jm,grd%km) )    ; grd%chl    = huge(grd%chl(1,1,1))
-  ALLOCATE ( grd%chl_ad(grd%im,grd%jm,grd%km) ) ; grd%chl_ad = huge(grd%chl_ad(1,1,1))
+  if(drv%chl_assim .eq. 1) then
+    ALLOCATE ( grd%chl(grd%im,grd%jm,grd%km) )    ; grd%chl    = huge(grd%chl(1,1,1))
+    ALLOCATE ( grd%chl_ad(grd%im,grd%jm,grd%km) ) ; grd%chl_ad = huge(grd%chl_ad(1,1,1))
+  endif
+  if(drv%nut .eq. 1) then
+    if(bio%N3n .eq. 1) then
+      ALLOCATE ( grd%n3n(grd%im,grd%jm,grd%km) )    ; grd%n3n    = huge(grd%n3n(1,1,1))
+      ALLOCATE ( grd%n3n_ad(grd%im,grd%jm,grd%km) ) ; grd%n3n_ad = huge(grd%n3n_ad(1,1,1))
+    endif
+    if(bio%O2o .eq. 1) then
+      ALLOCATE ( grd%o2o(grd%im,grd%jm,grd%km) )    ; grd%o2o    = huge(grd%o2o(1,1,1))
+      ALLOCATE ( grd%o2o_ad(grd%im,grd%jm,grd%km) ) ; grd%o2o_ad = huge(grd%o2o_ad(1,1,1))
+    endif
+  endif
 
   ALLOCATE ( bio%phy(grd%im,grd%jm,grd%km,bio%nphy,bio%ncmp) ) ; bio%phy = huge(bio%phy(1,1,1,1,1))
   ALLOCATE ( bio%phy_ad(grd%im,grd%jm,grd%km,bio%nphy,bio%ncmp) ) ; bio%phy_ad = huge(bio%phy_ad(1,1,1,1,1))

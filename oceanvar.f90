@@ -96,14 +96,11 @@ subroutine oceanvar
   ! ---
   ! Convert to innovations
   call cnv_inn
+  
   ! ---
   ! Write outputs and diagnostics
-  if(drv%bio_assim .eq. 0) then
-    call wrt_dia
-  else
-    call wrt_bio_stat
-  endif
-
+  call wrt_dia
+  call wrt_bio_stat
   call sav_itr
   if(MyId .eq. 0) write(drv%dia,*) 'out of sav_itr '
   

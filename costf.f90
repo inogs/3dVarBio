@@ -36,6 +36,7 @@ subroutine costf
   use eof_str
   use ctl_str
   use mpi_str
+  use bio_str
   
   implicit none
   integer :: ierr
@@ -57,15 +58,15 @@ subroutine costf
   
   ! --------
   ! Control to physical space 
-  if(drv%chl .eq. 1) then
+  if(drv%chl_assim .eq. 1) then
     call ver_hor_chl
   endif
   if(drv%nut .eq. 1) then
-    if(bio%N1p) then
-      call ver_hor_nut(grd%n1p)
+    if(bio%N3n .eq. 1) then
+      call ver_hor_nut(grd%n3n, grd%n3n_ad)
     endif
     if(bio%O2o .eq. 1) then
-      call ver_hor_nut(grd%o2o)
+      call ver_hor_nut(grd%o2o, grd%o2o_ad)
     endif
   endif
   
@@ -110,15 +111,15 @@ subroutine costf
   call bio_mod_ad
   ! --------
   ! Control to physical space 
-  if(drv%chl .eq. 1) then
+  if(drv%chl_assim .eq. 1) then
     call ver_hor_chl_ad
   endif
   if(drv%nut .eq. 1) then
-    if(bio%N1p) then
-      call ver_hor_nut_ad(grd%n1p)
+    if(bio%N3n .eq. 1) then
+      call ver_hor_nut_ad(grd%n3n, grd%n3n_ad)
     endif
     if(bio%O2o .eq. 1) then
-      call ver_hor_nut_ad(grd%o2o)
+      call ver_hor_nut_ad(grd%o2o, grd%o2o_ad)
     endif
   endif
   

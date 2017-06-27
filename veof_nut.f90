@@ -1,4 +1,4 @@
-subroutine veof_nut
+subroutine veof_nut(NutArray)
 !anna
 !---------------------------------------------------------------------------
 !                                                                          !
@@ -38,9 +38,10 @@ subroutine veof_nut
   
   INTEGER(i4)     :: i, j, k, l,n, k1
   REAL(r8), DIMENSION ( grd%im, grd%jm)  :: egm
+  REAL(r8) :: NutArray(grd%im,grd%jm,grd%km)
   
   
-  grd%chl(:,:,:) = 0.0
+  NutArray(:,:,:) = 0.0
   
   !cdir noconcur
   do n=1,ros%neof
@@ -63,9 +64,9 @@ subroutine veof_nut
         do j=1,grd%jm
            do i=1,grd%im
 #ifdef opt_huge_memory
-              grd%chl(i,j,k) = grd%chl(i,j,k) + ros%evc( i, j, k1, n)  * egm(i,j)
+              NutArray(i,j,k) = NutArray(i,j,k) + ros%evc( i, j, k1, n)  * egm(i,j)
 #else
-              grd%chl(i,j,k) = grd%chl(i,j,k) + ros%evc(grd%reg(i,j),k,n) * egm(i,j)
+              NutArray(i,j,k) = NutArray(i,j,k) + ros%evc(grd%reg(i,j),k,n) * egm(i,j)
 #endif
            enddo
         enddo

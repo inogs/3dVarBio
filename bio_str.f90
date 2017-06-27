@@ -47,7 +47,7 @@ public
 
         LOGICAL               ::  ApplyConditions      ! Apply conditions in snutell operations
 
-        INTEGER(i4)           ::  N1p                  ! N1p assimilation
+        INTEGER(i4)           ::  N3n                  ! N3n assimilation
         INTEGER(i4)           ::  O2o                  ! O2o assimilation
         
    END TYPE bio_t

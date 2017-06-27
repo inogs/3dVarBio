@@ -1,4 +1,4 @@
-subroutine veof_nut_ad
+subroutine veof_nut_ad(NutArrayAd)
 
 !---------------------------------------------------------------------------
 !                                                                          !
@@ -38,6 +38,7 @@ subroutine veof_nut_ad
 
  INTEGER(i4)             :: i, j, k, l, n, k1
  REAL(r8), DIMENSION ( grd%im, grd%jm)  :: egm
+ REAL(r8) :: NutArrayAd(grd%im,grd%jm,grd%km)
 
   grd%ro_ad(:,:,:) = 0.0 ! OMP
 
@@ -57,9 +58,9 @@ subroutine veof_nut_ad
       do j=1,grd%jm
          do i=1,grd%im
 #ifdef opt_huge_memory
-            egm(i,j) = egm(i,j) + ros%evc( i, j, k1,n) * grd%chl_ad(i,j,k)
+            egm(i,j) = egm(i,j) + ros%evc( i, j, k1,n) * NutArrayAd(i,j,k)
 #else
-            egm(i,j) = egm(i,j) + ros%evc(grd%reg(i,j), k,n) * grd%chl_ad(i,j,k)
+            egm(i,j) = egm(i,j) + ros%evc(grd%reg(i,j), k,n) * NutArrayAd(i,j,k)
 #endif
          enddo
       enddo

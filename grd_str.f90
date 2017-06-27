@@ -51,6 +51,11 @@ MODULE grd_str
 
      REAL(r8),    POINTER     ::  chl(:,:,:)    ! chlorophyll
      REAL(r8),    POINTER     ::  chl_ad(:,:,:) ! chlorophyll adjoint variable
+     REAL(r8),    POINTER     ::  n3n(:,:,:)    ! n3n
+     REAL(r8),    POINTER     ::  n3n_ad(:,:,:) ! n3n adjoint variable
+     REAL(r8),    POINTER     ::  o2o(:,:,:)    ! o2o
+     REAL(r8),    POINTER     ::  o2o_ad(:,:,:) ! o2o adjoint variable
+     
 
      REAL(r8),    POINTER     ::  dep(:)       ! Depth
 
