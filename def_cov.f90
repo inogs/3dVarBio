@@ -422,8 +422,10 @@ subroutine def_cov
   ALLOCATE ( grd%ro(    grd%im, grd%jm, ros%neof))   ; grd%ro    = 0.0
   ALLOCATE ( grd%ro_ad( grd%im, grd%jm, ros%neof))   ; grd%ro_ad = 0.0
   
-  if(MyId .eq. 0) &
+  if(MyId .eq. 0) then
        write(*,*) 'rcfl allocation :', grd%jmax, grd%imax, nthreads
+       write(*,*) 'Total number of eofs: ', ros%neof
+  endif
   ALLOCATE ( a_rcx(localCol,grd%imax,nthreads)) ; a_rcx = huge(a_rcx(1,1,1))
   ALLOCATE ( b_rcx(localCol,grd%imax,nthreads)) ; b_rcx = huge(b_rcx(1,1,1))
   ALLOCATE ( c_rcx(localCol,grd%imax,nthreads)) ; c_rcx = huge(c_rcx(1,1,1))

@@ -100,7 +100,7 @@ subroutine oceanvar
   ! ---
   ! Write outputs and diagnostics
   call wrt_dia
-  call wrt_bio_stat
+  call wrt_chl_stat
   call sav_itr
   if(MyId .eq. 0) write(drv%dia,*) 'out of sav_itr '
   

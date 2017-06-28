@@ -144,7 +144,7 @@ OBJS    =  \
 	bio_mod.o\
 	bio_mod_ad.o\
 	readBioStat.o\
-	wrt_bio_stat.o\
+	wrt_chl_stat.o\
 	costf.o\
 	obs_sat.o\
 	bio_conv.o\

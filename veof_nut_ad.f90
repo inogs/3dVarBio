@@ -42,8 +42,6 @@ subroutine veof_nut_ad(NutArrayAd, Var)
  CHARACTER :: Var
  INTEGER   :: MyNEofs
 
-  grd%ro_ad(:,:,:) = 0.0 ! OMP
-  
   offset = 0
   if(Var .eq. 'N') then
       MyNEofs = ros%neof_n3n
@@ -52,6 +50,10 @@ subroutine veof_nut_ad(NutArrayAd, Var)
       MyNEofs = ros%neof_o2o
       offset = ros%neof_chl + ros%neof_n3n
   endif
+
+  do n=1,MyNEofs
+    grd%ro_ad(:,:,n+offset) = 0.0 ! OMP
+  enddo
 
 !$OMP PARALLEL  &
 !$OMP PRIVATE(i,j,k,k1,n) &
@@ -90,7 +92,7 @@ subroutine veof_nut_ad(NutArrayAd, Var)
    
    do j=1,grd%jm
       do i=1,grd%im
-         grd%ro_ad(i,j,n+offset) = grd%ro_ad(i,j,n) + egm(i,j) 
+         grd%ro_ad(i,j,n+offset) = grd%ro_ad(i,j,n+offset) + egm(i,j) 
       enddo
    enddo
    

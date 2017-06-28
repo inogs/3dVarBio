@@ -1,4 +1,4 @@
-subroutine wrt_bio_stat
+subroutine wrt_chl_stat
 
   use set_knd
   use grd_str
@@ -241,4 +241,4 @@ subroutine wrt_bio_stat
 
   DEALLOCATE(DumpBio, ValuesToTest, MyConditions)
 
-end subroutine wrt_bio_stat
+end subroutine wrt_chl_stat

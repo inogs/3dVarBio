@@ -39,7 +39,9 @@ subroutine veof_chl_ad
  INTEGER(i4)             :: i, j, k, l, n, k1
  REAL(r8), DIMENSION ( grd%im, grd%jm)  :: egm
 
-  grd%ro_ad(:,:,:) = 0.0 ! OMP
+do n=1,ros%neof_chl
+  grd%ro_ad(:,:,n) = 0.0 ! OMP
+enddo
 
 !$OMP PARALLEL  &
 !$OMP PRIVATE(i,j,k,k1,n) &

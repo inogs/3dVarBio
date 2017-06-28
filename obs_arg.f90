@@ -34,6 +34,8 @@ subroutine obs_arg
   use grd_str
   use obs_str
   use mpi_str
+  use drv_str
+  use bio_str
   
   implicit none
   
@@ -45,7 +47,7 @@ subroutine obs_arg
   
   do kk = 1,arg%no
      
-    if(arg%flc(kk).eq.1 .and. arg%par(kk).eq.0)then
+    if(arg%flc(kk).eq.1 .and. arg%par(kk).eq.0 .and. drv%chl_assim.eq.1)then
         
       i=arg%ib(kk)
       j=arg%jb(kk)
@@ -83,7 +85,7 @@ subroutine obs_arg
           DEALLOCATE(GetData)
       endif
 
-    else if(arg%flc(kk).eq.1 .and. arg%par(kk).eq.1) then
+    else if(arg%flc(kk).eq.1 .and. arg%par(kk).eq.1 .and. drv%nut.eq.1 .and. bio%n3n.eq.1) then
         
       i=arg%ib(kk)
       j=arg%jb(kk)
@@ -121,7 +123,7 @@ subroutine obs_arg
           DEALLOCATE(GetData)
       endif
         
-    else if(arg%flc(kk).eq.1 .and. arg%par(kk).eq.2) then
+    else if(arg%flc(kk).eq.1 .and. arg%par(kk).eq.2 .and. drv%nut.eq.1 .and. bio%o2o.eq.1) then
         
       i=arg%ib(kk)
       j=arg%jb(kk)

@@ -11,13 +11,15 @@ subroutine tao_minimizer
 
 #include "petsc/finclude/petsctao.h"
 
-  PetscErrorCode  ::   ierr
-  Tao             ::   tao
-  Vec             ::   MyState    ! array that stores the (temporary) state
-  PetscInt        ::   n, M, GlobalStart, MyEnd
-  PetscScalar     ::   MyTolerance
-  integer(i4)     ::   j
-  real(8)         ::   MaxGrad
+  PetscErrorCode     ::   ierr
+  Tao                ::   tao
+  Vec                ::   MyState    ! array that stores the (temporary) state
+  PetscInt           ::   n, M, GlobalStart, MyEnd, iter
+  PetscReal          ::   fval, gnorm, cnorm, xdiff
+  PetscScalar        ::   MyTolerance
+  TaoConvergedReason ::   reason
+  integer(i4)        ::   j
+  real(8)            ::   MaxGrad
 
   ! Working arrays
   PetscInt, allocatable, dimension(:)     :: loc
@@ -126,6 +128,16 @@ subroutine tao_minimizer
   endif
 
   call TaoView(tao, PETSC_VIEWER_STDOUT_WORLD, ierr)
+
+  call TaoGetSolutionStatus(tao, iter, fval, gnorm, cnorm, xdiff, reason, ierr)
+  if(reason .lt. 0) then
+    if(MyId .eq. 0) then
+      print*, "TAO failed to find a solution"
+      print*, "Aborting.."
+    endif
+    call MPI_Barrier(Var3DCommunicator, ierr)
+    call MPI_Abort(Var3DCommunicator, -1, ierr)
+  endif
 
   ! Get the solution and copy into ctl%x_c array
   call TaoGetSolutionVector(tao, MyState, ierr)

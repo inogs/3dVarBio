@@ -366,7 +366,7 @@ subroutine int_par_arg
      print*,'Good argo observations: ',arg%nc_global
   end if
 
-  DEALLOCATE ( arg%ino, arg%flg, arg%par)  
+  DEALLOCATE ( arg%ino, arg%flg)  
   DEALLOCATE ( arg%lon, arg%lat, arg%dpt, arg%tim)
   DEALLOCATE ( arg%pb, arg%qb, arg%rb)
 

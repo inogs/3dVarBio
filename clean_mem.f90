@@ -51,6 +51,7 @@ subroutine clean_mem
      DEALLOCATE ( arg%ib, arg%jb, arg%kb)
      DEALLOCATE ( arg%pq1, arg%pq2, arg%pq3, arg%pq4)
      DEALLOCATE ( arg%pq5, arg%pq6, arg%pq7, arg%pq8)
+     DEALLOCATE ( arg%par)
      DEALLOCATE (grd%lon, grd%lat)
   endif
 
