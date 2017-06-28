@@ -47,51 +47,139 @@ subroutine obs_arg_ad
   
   do kk = 1,arg%no
      
-     if(arg%flc(kk).eq.1)then
+    if(arg%flc(kk).eq.1 .and. arg%par(kk).eq.0)then
         
-        obs%k = obs%k + 1
+      obs%k = obs%k + 1
         
-        i=arg%ib(kk)
-        j=arg%jb(kk)
-        k=arg%kb(kk)
+      i=arg%ib(kk)
+      j=arg%jb(kk)
+      k=arg%kb(kk)
         
-        if(i .lt. grd%im) then
-           
-           grd%chl_ad(i  ,j  ,k  ) = grd%chl_ad(i  ,j  ,k  ) + arg%pq1(kk) * obs%gra(obs%k)
-           grd%chl_ad(i+1,j  ,k  ) = grd%chl_ad(i+1,j  ,k  ) + arg%pq2(kk) * obs%gra(obs%k)
-           grd%chl_ad(i  ,j+1,k  ) = grd%chl_ad(i  ,j+1,k  ) + arg%pq3(kk) * obs%gra(obs%k)
-           grd%chl_ad(i+1,j+1,k  ) = grd%chl_ad(i+1,j+1,k  ) + arg%pq4(kk) * obs%gra(obs%k)
-           grd%chl_ad(i  ,j  ,k+1) = grd%chl_ad(i  ,j  ,k+1) + arg%pq5(kk) * obs%gra(obs%k)
-           grd%chl_ad(i+1,j  ,k+1) = grd%chl_ad(i+1,j  ,k+1) + arg%pq6(kk) * obs%gra(obs%k)
-           grd%chl_ad(i  ,j+1,k+1) = grd%chl_ad(i  ,j+1,k+1) + arg%pq7(kk) * obs%gra(obs%k)
-           grd%chl_ad(i+1,j+1,k+1) = grd%chl_ad(i+1,j+1,k+1) + arg%pq8(kk) * obs%gra(obs%k)
-           
-        else
+      if(i .lt. grd%im) then
+          
+          grd%chl_ad(i  ,j  ,k  ) = grd%chl_ad(i  ,j  ,k  ) + arg%pq1(kk) * obs%gra(obs%k)
+          grd%chl_ad(i+1,j  ,k  ) = grd%chl_ad(i+1,j  ,k  ) + arg%pq2(kk) * obs%gra(obs%k)
+          grd%chl_ad(i  ,j+1,k  ) = grd%chl_ad(i  ,j+1,k  ) + arg%pq3(kk) * obs%gra(obs%k)
+          grd%chl_ad(i+1,j+1,k  ) = grd%chl_ad(i+1,j+1,k  ) + arg%pq4(kk) * obs%gra(obs%k)
+          grd%chl_ad(i  ,j  ,k+1) = grd%chl_ad(i  ,j  ,k+1) + arg%pq5(kk) * obs%gra(obs%k)
+          grd%chl_ad(i+1,j  ,k+1) = grd%chl_ad(i+1,j  ,k+1) + arg%pq6(kk) * obs%gra(obs%k)
+          grd%chl_ad(i  ,j+1,k+1) = grd%chl_ad(i  ,j+1,k+1) + arg%pq7(kk) * obs%gra(obs%k)
+          grd%chl_ad(i+1,j+1,k+1) = grd%chl_ad(i+1,j+1,k+1) + arg%pq8(kk) * obs%gra(obs%k)
+          
+      else
 
-           ALLOCATE(MatrixToSum(NextLocalRow,grd%jm,2))
-           MatrixToSum(:,:,:) = dble(0)
-           
-           grd%chl_ad(i  ,j  ,k  ) = grd%chl_ad(i  ,j  ,k  ) + arg%pq1(kk) * obs%gra(obs%k)
-           grd%chl_ad(i  ,j+1,k  ) = grd%chl_ad(i  ,j+1,k  ) + arg%pq3(kk) * obs%gra(obs%k)
-           grd%chl_ad(i  ,j  ,k+1) = grd%chl_ad(i  ,j  ,k+1) + arg%pq5(kk) * obs%gra(obs%k)
-           grd%chl_ad(i  ,j+1,k+1) = grd%chl_ad(i  ,j+1,k+1) + arg%pq7(kk) * obs%gra(obs%k)
-           
-           MatrixToSum(1,j  ,1) = arg%pq2(kk) * obs%gra(obs%k)
-           MatrixToSum(1,j+1,1) = arg%pq4(kk) * obs%gra(obs%k)
-           MatrixToSum(1,j  ,2) = arg%pq6(kk) * obs%gra(obs%k)
-           MatrixToSum(1,j+1,2) = arg%pq8(kk) * obs%gra(obs%k)
-           
-           call MPI_Win_lock (MPI_LOCK_EXCLUSIVE, ProcBottom, 0, MpiWinChlAd, ierr )
-           NData = NextLocalRow*grd%jm*2
-           TargetOffset = (k-1)*grd%jm*NextLocalRow
-           call MPI_Accumulate (MatrixToSum, NData, MPI_REAL8, ProcBottom, TargetOffset, NData, MPI_REAL8, MPI_SUM, MpiWinChlAd, ierr)
-           
-           call MPI_Win_unlock(ProcBottom, MpiWinChlAd, ierr)
-           DEALLOCATE(MatrixToSum)
+          ALLOCATE(MatrixToSum(NextLocalRow,grd%jm,2))
+          MatrixToSum(:,:,:) = dble(0)
+          
+          grd%chl_ad(i  ,j  ,k  ) = grd%chl_ad(i  ,j  ,k  ) + arg%pq1(kk) * obs%gra(obs%k)
+          grd%chl_ad(i  ,j+1,k  ) = grd%chl_ad(i  ,j+1,k  ) + arg%pq3(kk) * obs%gra(obs%k)
+          grd%chl_ad(i  ,j  ,k+1) = grd%chl_ad(i  ,j  ,k+1) + arg%pq5(kk) * obs%gra(obs%k)
+          grd%chl_ad(i  ,j+1,k+1) = grd%chl_ad(i  ,j+1,k+1) + arg%pq7(kk) * obs%gra(obs%k)
+          
+          MatrixToSum(1,j  ,1) = arg%pq2(kk) * obs%gra(obs%k)
+          MatrixToSum(1,j+1,1) = arg%pq4(kk) * obs%gra(obs%k)
+          MatrixToSum(1,j  ,2) = arg%pq6(kk) * obs%gra(obs%k)
+          MatrixToSum(1,j+1,2) = arg%pq8(kk) * obs%gra(obs%k)
+          
+          call MPI_Win_lock (MPI_LOCK_EXCLUSIVE, ProcBottom, 0, MpiWinChlAd, ierr )
+          NData = NextLocalRow*grd%jm*2
+          TargetOffset = (k-1)*grd%jm*NextLocalRow
+          call MPI_Accumulate (MatrixToSum, NData, MPI_REAL8, ProcBottom, TargetOffset, NData, MPI_REAL8, MPI_SUM, MpiWinChlAd, ierr)
+          
+          call MPI_Win_unlock(ProcBottom, MpiWinChlAd, ierr)
+          DEALLOCATE(MatrixToSum)
 
-        endif
+      endif
+
+    else if(arg%flc(kk).eq.1 .and. arg%par(kk).eq.1) then
         
-     endif
+      obs%k = obs%k + 1
+        
+      i=arg%ib(kk)
+      j=arg%jb(kk)
+      k=arg%kb(kk)
+        
+      if(i .lt. grd%im) then
+          
+          grd%n3n_ad(i  ,j  ,k  ) = grd%n3n_ad(i  ,j  ,k  ) + arg%pq1(kk) * obs%gra(obs%k)
+          grd%n3n_ad(i+1,j  ,k  ) = grd%n3n_ad(i+1,j  ,k  ) + arg%pq2(kk) * obs%gra(obs%k)
+          grd%n3n_ad(i  ,j+1,k  ) = grd%n3n_ad(i  ,j+1,k  ) + arg%pq3(kk) * obs%gra(obs%k)
+          grd%n3n_ad(i+1,j+1,k  ) = grd%n3n_ad(i+1,j+1,k  ) + arg%pq4(kk) * obs%gra(obs%k)
+          grd%n3n_ad(i  ,j  ,k+1) = grd%n3n_ad(i  ,j  ,k+1) + arg%pq5(kk) * obs%gra(obs%k)
+          grd%n3n_ad(i+1,j  ,k+1) = grd%n3n_ad(i+1,j  ,k+1) + arg%pq6(kk) * obs%gra(obs%k)
+          grd%n3n_ad(i  ,j+1,k+1) = grd%n3n_ad(i  ,j+1,k+1) + arg%pq7(kk) * obs%gra(obs%k)
+          grd%n3n_ad(i+1,j+1,k+1) = grd%n3n_ad(i+1,j+1,k+1) + arg%pq8(kk) * obs%gra(obs%k)
+          
+      else
+
+          ALLOCATE(MatrixToSum(NextLocalRow,grd%jm,2))
+          MatrixToSum(:,:,:) = dble(0)
+          
+          grd%n3n_ad(i  ,j  ,k  ) = grd%n3n_ad(i  ,j  ,k  ) + arg%pq1(kk) * obs%gra(obs%k)
+          grd%n3n_ad(i  ,j+1,k  ) = grd%n3n_ad(i  ,j+1,k  ) + arg%pq3(kk) * obs%gra(obs%k)
+          grd%n3n_ad(i  ,j  ,k+1) = grd%n3n_ad(i  ,j  ,k+1) + arg%pq5(kk) * obs%gra(obs%k)
+          grd%n3n_ad(i  ,j+1,k+1) = grd%n3n_ad(i  ,j+1,k+1) + arg%pq7(kk) * obs%gra(obs%k)
+          
+          MatrixToSum(1,j  ,1) = arg%pq2(kk) * obs%gra(obs%k)
+          MatrixToSum(1,j+1,1) = arg%pq4(kk) * obs%gra(obs%k)
+          MatrixToSum(1,j  ,2) = arg%pq6(kk) * obs%gra(obs%k)
+          MatrixToSum(1,j+1,2) = arg%pq8(kk) * obs%gra(obs%k)
+          
+          call MPI_Win_lock (MPI_LOCK_EXCLUSIVE, ProcBottom, 0, MpiWinN3nAd, ierr )
+          NData = NextLocalRow*grd%jm*2
+          TargetOffset = (k-1)*grd%jm*NextLocalRow
+          call MPI_Accumulate (MatrixToSum, NData, MPI_REAL8, ProcBottom, TargetOffset, NData, MPI_REAL8, MPI_SUM, MpiWinN3nAd, ierr)
+          
+          call MPI_Win_unlock(ProcBottom, MpiWinN3nAd, ierr)
+          DEALLOCATE(MatrixToSum)
+
+      endif
+
+    else if(arg%flc(kk).eq.1 .and. arg%par(kk).eq.2) then
+        
+      obs%k = obs%k + 1
+        
+      i=arg%ib(kk)
+      j=arg%jb(kk)
+      k=arg%kb(kk)
+        
+      if(i .lt. grd%im) then
+          
+          grd%o2o_ad(i  ,j  ,k  ) = grd%o2o_ad(i  ,j  ,k  ) + arg%pq1(kk) * obs%gra(obs%k)
+          grd%o2o_ad(i+1,j  ,k  ) = grd%o2o_ad(i+1,j  ,k  ) + arg%pq2(kk) * obs%gra(obs%k)
+          grd%o2o_ad(i  ,j+1,k  ) = grd%o2o_ad(i  ,j+1,k  ) + arg%pq3(kk) * obs%gra(obs%k)
+          grd%o2o_ad(i+1,j+1,k  ) = grd%o2o_ad(i+1,j+1,k  ) + arg%pq4(kk) * obs%gra(obs%k)
+          grd%o2o_ad(i  ,j  ,k+1) = grd%o2o_ad(i  ,j  ,k+1) + arg%pq5(kk) * obs%gra(obs%k)
+          grd%o2o_ad(i+1,j  ,k+1) = grd%o2o_ad(i+1,j  ,k+1) + arg%pq6(kk) * obs%gra(obs%k)
+          grd%o2o_ad(i  ,j+1,k+1) = grd%o2o_ad(i  ,j+1,k+1) + arg%pq7(kk) * obs%gra(obs%k)
+          grd%o2o_ad(i+1,j+1,k+1) = grd%o2o_ad(i+1,j+1,k+1) + arg%pq8(kk) * obs%gra(obs%k)
+          
+      else
+
+          ALLOCATE(MatrixToSum(NextLocalRow,grd%jm,2))
+          MatrixToSum(:,:,:) = dble(0)
+          
+          grd%o2o_ad(i  ,j  ,k  ) = grd%o2o_ad(i  ,j  ,k  ) + arg%pq1(kk) * obs%gra(obs%k)
+          grd%o2o_ad(i  ,j+1,k  ) = grd%o2o_ad(i  ,j+1,k  ) + arg%pq3(kk) * obs%gra(obs%k)
+          grd%o2o_ad(i  ,j  ,k+1) = grd%o2o_ad(i  ,j  ,k+1) + arg%pq5(kk) * obs%gra(obs%k)
+          grd%o2o_ad(i  ,j+1,k+1) = grd%o2o_ad(i  ,j+1,k+1) + arg%pq7(kk) * obs%gra(obs%k)
+          
+          MatrixToSum(1,j  ,1) = arg%pq2(kk) * obs%gra(obs%k)
+          MatrixToSum(1,j+1,1) = arg%pq4(kk) * obs%gra(obs%k)
+          MatrixToSum(1,j  ,2) = arg%pq6(kk) * obs%gra(obs%k)
+          MatrixToSum(1,j+1,2) = arg%pq8(kk) * obs%gra(obs%k)
+          
+          call MPI_Win_lock (MPI_LOCK_EXCLUSIVE, ProcBottom, 0, MpiWinO2oAd, ierr )
+          NData = NextLocalRow*grd%jm*2
+          TargetOffset = (k-1)*grd%jm*NextLocalRow
+          call MPI_Accumulate (MatrixToSum, NData, MPI_REAL8, ProcBottom, TargetOffset, NData, MPI_REAL8, MPI_SUM, MpiWinO2oAd, ierr)
+          
+          call MPI_Win_unlock(ProcBottom, MpiWinO2oAd, ierr)
+          DEALLOCATE(MatrixToSum)
+
+      endif
+        
+    endif
      
   enddo
   

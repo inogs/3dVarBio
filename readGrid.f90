@@ -445,7 +445,9 @@ subroutine CreateMpiWindows
 
   use grd_str
   use mpi_str
-
+  use drv_str
+  use bio_str
+  
   implicit none
   ! include "mpif.h"
   
@@ -456,7 +458,20 @@ subroutine CreateMpiWindows
   call MPI_Type_get_extent(MPI_REAL8, dummy, lenreal, ierr)
   nbytes = grd%im*grd%jm*grd%km*lenreal
 
-  call MPI_Win_create(grd%chl, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinChl, ierr)
-  call MPI_Win_create(grd%chl_ad, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinChlAd, ierr)
+  if(drv%chl_assim .eq. 1) then
+    call MPI_Win_create(grd%chl, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinChl, ierr)
+    call MPI_Win_create(grd%chl_ad, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinChlAd, ierr)
+  endif
+  if(drv%nut .eq. 1) then
+    if(bio%N3n .eq. 1) then
+      call MPI_Win_create(grd%n3n, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinN3n, ierr)
+      call MPI_Win_create(grd%n3n_ad, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinN3nAd, ierr)
+    endif
+    if(bio%O2o .eq. 1) then
+      call MPI_Win_create(grd%o2o, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinO2o, ierr)
+      call MPI_Win_create(grd%o2o_ad, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinO2oAd, ierr)
+    endif
+  endif
+  
 
 end subroutine CreateMpiWindows

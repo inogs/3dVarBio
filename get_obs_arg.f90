@@ -131,7 +131,7 @@ subroutine get_obs_arg
       arg%ino(Counter) = TmpIno(k)
     endif
 
-  enddo  
+  enddo
   
   ! DECOMMENT FOLLOWING TWO LINES TO MAKE FILTER TEST
   ! arg%res(:) = 1

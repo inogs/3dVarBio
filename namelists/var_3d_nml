@@ -34,7 +34,9 @@
 !
 ! ---
 &covlst
-   neof     = 4
+   neof_chl = 4
+   neof_n3n = 4
+   neof_o2o = 4
    nreg     = 63045
    read_eof = .true. 
    rcf_ntr  = 4
@@ -58,11 +60,14 @@
 !
 ! ---
 &biolst
- bio_assim = 1
+ chl_assim = 1
+    nut    = 0
    nphyto  = 4
    chl_dep = 0.0
    ncmp    = 5
 ApplyConditions = .true.
+    N3n    = 0
+    O2o    = 0
 /
 !------------------------------------------------------------
 !

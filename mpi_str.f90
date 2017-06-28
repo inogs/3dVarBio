@@ -25,6 +25,10 @@ MODULE mpi_str
   !     GlobalColOffset : offset needed to read grd%global_msk
   !     MpiWinChl : Window for one-sided communication on grd%chl array
   !     MpiWinChlAd : Window for one-sided communication on grd%chl_ad array
+  !     MpiWinN3n : Window for one-sided communication on grd%n3n array
+  !     MpiWinN3nAd : Window for one-sided communication on grd%n3n_ad array
+  !     MpiWinO2o : Window for one-sided communication on grd%o2o array
+  !     MpiWinO2oAd : Window for one-sided communication on grd%o2o_ad array
   !     NextLocalRow : size of the local number of row for the process "below" MyID
   !     
   !     Var3DCommunicator : MPI Communicator (useful for the "interaction" with ogstm)
@@ -39,6 +43,8 @@ MODULE mpi_str
   integer  :: GlobalRowOffset, GlobalColOffset
   integer  :: MyPair
   integer  :: MpiWinChl, MpiWinChlAd
+  integer  :: MpiWinN3n, MpiWinN3nAd
+  integer  :: MpiWinO2o, MpiWinO2oAd
   integer  :: NextLocalRow
 
   integer  :: Var3DCommunicator

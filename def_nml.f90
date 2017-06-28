@@ -81,13 +81,11 @@ subroutine def_nml
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) ' MINIMIZER NAMELIST INPUT: '
-    write(drv%dia,*) ' Number of saved vectors:         ctl_m    = ', ctl_m
     write(drv%dia,*) ' Minimum gradient of J:           ctl_tol  = ', ctl_tol
     write(drv%dia,*) ' Percentage of initial gradient:  ctl_per  = ', ctl_per
 
   endif
 
-  ! ctl%m     = ctl_m
   ctl%pgtol = ctl_tol
   ctl%pgper = ctl_per
 

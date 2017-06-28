@@ -45,45 +45,121 @@ subroutine obs_arg
   
   do kk = 1,arg%no
      
-     if(arg%flc(kk).eq.1)then
+    if(arg%flc(kk).eq.1 .and. arg%par(kk).eq.0)then
         
-        i=arg%ib(kk)
-        j=arg%jb(kk)
-        k=arg%kb(kk)
+      i=arg%ib(kk)
+      j=arg%jb(kk)
+      k=arg%kb(kk)
         
-        if(i .lt. grd%im) then
-           arg%inc(kk) = arg%pq1(kk) * grd%chl(i  ,j  ,k) +       &
-                arg%pq2(kk) * grd%chl(i+1,j  ,k  ) +       &
-                arg%pq3(kk) * grd%chl(i  ,j+1,k  ) +       &
-                arg%pq4(kk) * grd%chl(i+1,j+1,k  ) +       &
-                arg%pq5(kk) * grd%chl(i  ,j  ,k+1) +       &
-                arg%pq6(kk) * grd%chl(i+1,j  ,k+1) +       &
-                arg%pq7(kk) * grd%chl(i  ,j+1,k+1) +       &
-                arg%pq8(kk) * grd%chl(i+1,j+1,k+1)  
-           
-        else
-           ALLOCATE(GetData(NextLocalRow,grd%jm,2))
-           
-           NData = NextLocalRow*grd%jm*2
-           call MPI_Win_lock (MPI_LOCK_EXCLUSIVE, ProcBottom, 0, MpiWinChl, ierr )
-           TargetOffset = (k-1)*grd%jm*NextLocalRow
-           call MPI_Get (GetData, NData, MPI_REAL8, ProcBottom, TargetOffset, NData, MPI_REAL8, MpiWinChl, ierr)
-           call MPI_Win_unlock(ProcBottom, MpiWinChl, ierr)
-           
-           arg%inc(kk) = arg%pq1(kk) * grd%chl(i  ,j  ,k) +       &
-                arg%pq2(kk) * GetData(1  ,j  ,1  ) +       &
-                arg%pq3(kk) * grd%chl(i  ,j+1,k  ) +       &
-                arg%pq4(kk) * GetData(1  ,j+1,1  ) +       &
-                arg%pq5(kk) * grd%chl(i  ,j  ,k+1) +       &
-                arg%pq6(kk) * GetData(1  ,j  ,2  ) +       &
-                arg%pq7(kk) * grd%chl(i  ,j+1,k+1) +       &
-                arg%pq8(kk) * GetData(1  ,j+1,2  )  
-           
-           
-           DEALLOCATE(GetData)
-        endif
+      if(i .lt. grd%im) then
+        arg%inc(kk) = arg%pq1(kk) * grd%chl(i  ,j  ,k) +       &
+          arg%pq2(kk) * grd%chl(i+1,j  ,k  ) +       &
+          arg%pq3(kk) * grd%chl(i  ,j+1,k  ) +       &
+          arg%pq4(kk) * grd%chl(i+1,j+1,k  ) +       &
+          arg%pq5(kk) * grd%chl(i  ,j  ,k+1) +       &
+          arg%pq6(kk) * grd%chl(i+1,j  ,k+1) +       &
+          arg%pq7(kk) * grd%chl(i  ,j+1,k+1) +       &
+          arg%pq8(kk) * grd%chl(i+1,j+1,k+1)  
+          
+      else
+        ALLOCATE(GetData(NextLocalRow,grd%jm,2))
+          
+        NData = NextLocalRow*grd%jm*2
+        call MPI_Win_lock (MPI_LOCK_EXCLUSIVE, ProcBottom, 0, MpiWinChl, ierr )
+        TargetOffset = (k-1)*grd%jm*NextLocalRow
+        call MPI_Get (GetData, NData, MPI_REAL8, ProcBottom, TargetOffset, NData, MPI_REAL8, MpiWinChl, ierr)
+        call MPI_Win_unlock(ProcBottom, MpiWinChl, ierr)
         
-     endif
+        arg%inc(kk) = arg%pq1(kk) * grd%chl(i  ,j  ,k) +       &
+          arg%pq2(kk) * GetData(1  ,j  ,1  ) +       &
+          arg%pq3(kk) * grd%chl(i  ,j+1,k  ) +       &
+          arg%pq4(kk) * GetData(1  ,j+1,1  ) +       &
+          arg%pq5(kk) * grd%chl(i  ,j  ,k+1) +       &
+          arg%pq6(kk) * GetData(1  ,j  ,2  ) +       &
+          arg%pq7(kk) * grd%chl(i  ,j+1,k+1) +       &
+          arg%pq8(kk) * GetData(1  ,j+1,2  )  
+          
+          
+          DEALLOCATE(GetData)
+      endif
+
+    else if(arg%flc(kk).eq.1 .and. arg%par(kk).eq.1) then
+        
+      i=arg%ib(kk)
+      j=arg%jb(kk)
+      k=arg%kb(kk)
+        
+      if(i .lt. grd%im) then
+        arg%inc(kk) = arg%pq1(kk) * grd%n3n(i  ,j  ,k) +       &
+          arg%pq2(kk) * grd%n3n(i+1,j  ,k  ) +       &
+          arg%pq3(kk) * grd%n3n(i  ,j+1,k  ) +       &
+          arg%pq4(kk) * grd%n3n(i+1,j+1,k  ) +       &
+          arg%pq5(kk) * grd%n3n(i  ,j  ,k+1) +       &
+          arg%pq6(kk) * grd%n3n(i+1,j  ,k+1) +       &
+          arg%pq7(kk) * grd%n3n(i  ,j+1,k+1) +       &
+          arg%pq8(kk) * grd%n3n(i+1,j+1,k+1)  
+          
+      else
+        ALLOCATE(GetData(NextLocalRow,grd%jm,2))
+          
+        NData = NextLocalRow*grd%jm*2
+        call MPI_Win_lock (MPI_LOCK_EXCLUSIVE, ProcBottom, 0, MpiWinN3n, ierr )
+        TargetOffset = (k-1)*grd%jm*NextLocalRow
+        call MPI_Get (GetData, NData, MPI_REAL8, ProcBottom, TargetOffset, NData, MPI_REAL8, MpiWinN3n, ierr)
+        call MPI_Win_unlock(ProcBottom, MpiWinN3n, ierr)
+        
+        arg%inc(kk) = arg%pq1(kk) * grd%n3n(i  ,j  ,k) +       &
+          arg%pq2(kk) * GetData(1  ,j  ,1  ) +       &
+          arg%pq3(kk) * grd%n3n(i  ,j+1,k  ) +       &
+          arg%pq4(kk) * GetData(1  ,j+1,1  ) +       &
+          arg%pq5(kk) * grd%n3n(i  ,j  ,k+1) +       &
+          arg%pq6(kk) * GetData(1  ,j  ,2  ) +       &
+          arg%pq7(kk) * grd%n3n(i  ,j+1,k+1) +       &
+          arg%pq8(kk) * GetData(1  ,j+1,2  )  
+          
+          
+          DEALLOCATE(GetData)
+      endif
+        
+    else if(arg%flc(kk).eq.1 .and. arg%par(kk).eq.2) then
+        
+      i=arg%ib(kk)
+      j=arg%jb(kk)
+      k=arg%kb(kk)
+        
+      if(i .lt. grd%im) then
+        arg%inc(kk) = arg%pq1(kk) * grd%o2o(i  ,j  ,k) +       &
+          arg%pq2(kk) * grd%o2o(i+1,j  ,k  ) +       &
+          arg%pq3(kk) * grd%o2o(i  ,j+1,k  ) +       &
+          arg%pq4(kk) * grd%o2o(i+1,j+1,k  ) +       &
+          arg%pq5(kk) * grd%o2o(i  ,j  ,k+1) +       &
+          arg%pq6(kk) * grd%o2o(i+1,j  ,k+1) +       &
+          arg%pq7(kk) * grd%o2o(i  ,j+1,k+1) +       &
+          arg%pq8(kk) * grd%o2o(i+1,j+1,k+1)  
+          
+      else
+        ALLOCATE(GetData(NextLocalRow,grd%jm,2))
+          
+        NData = NextLocalRow*grd%jm*2
+        call MPI_Win_lock (MPI_LOCK_EXCLUSIVE, ProcBottom, 0, MpiWinO2o, ierr )
+        TargetOffset = (k-1)*grd%jm*NextLocalRow
+        call MPI_Get (GetData, NData, MPI_REAL8, ProcBottom, TargetOffset, NData, MPI_REAL8, MpiWinO2o, ierr)
+        call MPI_Win_unlock(ProcBottom, MpiWinO2o, ierr)
+        
+        arg%inc(kk) = arg%pq1(kk) * grd%o2o(i  ,j  ,k) +       &
+          arg%pq2(kk) * GetData(1  ,j  ,1  ) +       &
+          arg%pq3(kk) * grd%o2o(i  ,j+1,k  ) +       &
+          arg%pq4(kk) * GetData(1  ,j+1,1  ) +       &
+          arg%pq5(kk) * grd%o2o(i  ,j  ,k+1) +       &
+          arg%pq6(kk) * GetData(1  ,j  ,2  ) +       &
+          arg%pq7(kk) * grd%o2o(i  ,j+1,k+1) +       &
+          arg%pq8(kk) * GetData(1  ,j+1,2  )  
+          
+          
+          DEALLOCATE(GetData)
+      endif
+        
+    endif
      
   enddo
 

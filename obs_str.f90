@@ -59,7 +59,7 @@ MODULE obs_str
      REAL(r8)                 ::  dep        ! Minimum depth for observations
      INTEGER(i8)              ::  kdp        ! Model level corresponding to dep
      INTEGER(i8), POINTER     ::  ino(:)     ! Float number
-     INTEGER(i8), POINTER     ::  par(:)     ! Parameter flag (1-temperature, 2-salinity)
+     INTEGER(i8), POINTER     ::  par(:)     ! Parameter flag (0-chl, 1-N3n, 2-O2o)
      INTEGER(i8), POINTER     ::  flg(:)     ! Quality flag
      INTEGER(i8), POINTER     ::  flc(:)     ! Temporary flag for multigrid
      REAL(r8),    POINTER     ::  lon(:)     ! Longitute
