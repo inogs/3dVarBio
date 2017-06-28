@@ -37,7 +37,11 @@ MODULE eof_str
   TYPE eof_t
      
      LOGICAL               ::  read_eof     ! Read EOFs from file
-     INTEGER(i4)           ::  neof         ! No. of EOFs
+     INTEGER(i4)           ::  neof         ! Total No. of EOFs
+     INTEGER(i4)           ::  neof_chl     ! No. of EOFs for chl
+     INTEGER(i4)           ::  neof_nut     ! No. of EOFs for nutrients
+     INTEGER(i4)           ::  neof_n3n     ! No. of EOFs for N3n
+     INTEGER(i4)           ::  neof_o2o     ! No. of EOFs for O2o
      INTEGER(i4)           ::  nreg         ! No. of regions
      INTEGER(i4)           ::  kmt          ! No. of levels of EOFs
      REAL(r8),    POINTER  ::  evcr(:,:,:)  ! Eigenvectors on regions
@@ -47,8 +51,12 @@ MODULE eof_str
      REAL(r8),    POINTER  ::  evc(:,:,:,:) ! Eigenvectors
      REAL(r8),    POINTER  ::  eva(:,:,:)   ! Eigenvalues
 #else
-     REAL(r8),    POINTER  ::  evc(:,:,:)   ! Eigenvectors
-     REAL(r8),    POINTER  ::  eva(:,:)     ! Eigenvalues
+     REAL(r8),    POINTER  ::  evc_chl(:,:,:)   ! Eigenvectors
+     REAL(r8),    POINTER  ::  eva_chl(:,:)     ! Eigenvalues
+     REAL(r8),    POINTER  ::  evc_n3n(:,:,:)   ! Eigenvectors
+     REAL(r8),    POINTER  ::  eva_n3n(:,:)     ! Eigenvalues
+     REAL(r8),    POINTER  ::  evc_o2o(:,:,:)   ! Eigenvectors
+     REAL(r8),    POINTER  ::  eva_o2o(:,:)     ! Eigenvalues
 #endif
      
      

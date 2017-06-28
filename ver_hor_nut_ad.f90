@@ -1,4 +1,4 @@
-subroutine ver_hor_nut_ad(NutArray, NutArrayAd)
+subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
   
   !-----------------------------------------------------------------------
   !                                                                      !
@@ -30,7 +30,8 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd)
   type(DoubleGrid), allocatable, dimension(:)       :: RecBuf1D
   REAL(r8), allocatable, dimension(:,:,:) :: DefBufChl, DefBufChlAd  
   REAL(r8) :: NutArray(grd%im,grd%jm,grd%km), NutArrayAd(grd%im,grd%jm,grd%km)
-  
+  CHARACTER :: Var
+
   ione = 1
 
   ! goto 103 ! No Vh
@@ -222,6 +223,6 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd)
   ! 103 continue
   ! ---
   ! Vertical EOFs
-  call veof_nut_ad(NutArrayAd)
+  call veof_nut_ad(NutArrayAd, Var)
   
 end subroutine ver_hor_nut_ad

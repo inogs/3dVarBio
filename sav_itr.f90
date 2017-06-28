@@ -77,7 +77,17 @@ subroutine sav_itr
   ! Covariances structure
   DEALLOCATE( grd%ro)
   DEALLOCATE( grd%ro_ad)
-  DEALLOCATE( ros%evc, ros%eva )
+  if(drv%chl_assim .eq. 1) then
+    DEALLOCATE( ros%evc_chl, ros%eva_chl )
+  endif
+  if(drv%nut .eq. 1) then
+    if(bio%N3n .eq. 1) then
+      DEALLOCATE( ros%evc_n3n, ros%eva_n3n )
+    endif
+    if(bio%O2o .eq. 1) then
+      DEALLOCATE( ros%evc_o2o, ros%eva_o2o )
+    endif
+  endif
 
   ! Control structure
   DEALLOCATE( ctl%x_c, ctl%g_c)

@@ -197,9 +197,12 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
   ! and set it in ctl%x_c array in order to compute
   ! the actual value of Cost Function and the gradient
   ! with costf subroutine
+  ! VecGetArrayReadF90 function puts MyState (provided by TAO)
+  ! into xtmp pointer -> Now we can access to MyState values :)
   call VecGetArrayReadF90(MyState, xtmp, ierr)
   CHKERRQ(ierr)
 
+  ! access to MyState values
   do j=1,ctl%n
      ctl%x_c(j) = xtmp(j)
   end do

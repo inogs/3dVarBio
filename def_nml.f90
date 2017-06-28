@@ -41,14 +41,14 @@ subroutine def_nml
   implicit none
 
   LOGICAL       :: read_eof, ApplyConditions
-  INTEGER(i4)   :: neof, nreg, rcf_ntr
+  INTEGER(i4)   :: neof_chl, neof_n3n, neof_o2o, nreg, rcf_ntr
   INTEGER(i4)   :: ctl_m, chl_assim, nut, N3n, O2o
   INTEGER(i4)   :: biol, bphy, nphyto, uniformL, anisL, verbose
   REAL(r8)      :: rcf_L, ctl_tol, ctl_per, rcf_efc, chl_dep
   INTEGER(i4)   :: argo, sat_obs, ncmp
   
   NAMELIST /ctllst/ ctl_tol, ctl_per
-  NAMELIST /covlst/ neof, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
+  NAMELIST /covlst/ neof_chl, neof_n3n, neof_o2o, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
   NAMELIST /biolst/ chl_assim, nut, nphyto, chl_dep, ncmp, ApplyConditions, N3n, O2o
   NAMELIST /params/ sat_obs, argo, uniformL, anisL, verbose
 
@@ -99,7 +99,9 @@ subroutine def_nml
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) ' COVARIANCE NAMELIST INPUT: '
-    write(drv%dia,*) ' Number of EOFs:                  neof     = ', neof
+    write(drv%dia,*) ' Number of EOFs for chl:          neof_chl = ', neof_chl
+    write(drv%dia,*) ' Number of EOFs for N3n:          neof_n3n = ', neof_n3n
+    write(drv%dia,*) ' Number of EOFs for O2o:          neof_o2o = ', neof_o2o
     write(drv%dia,*) ' Number of regions:               nreg     = ', nreg
     write(drv%dia,*) ' Read EOFs from a file:           read_eof = ', read_eof
     write(drv%dia,*) ' Half number of iterations:       rcf_ntr  = ', rcf_ntr
@@ -108,7 +110,9 @@ subroutine def_nml
 
   endif
 
-  ros%neof     = neof
+  ros%neof_chl = neof_chl
+  ros%neof_n3n = neof_n3n
+  ros%neof_o2o = neof_o2o
   ros%nreg     = nreg
   ros%read_eof = read_eof
   rcf%ntr      = rcf_ntr

@@ -1,4 +1,4 @@
-subroutine rdeofs
+subroutine rdeofs_o2o
   
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -45,8 +45,7 @@ subroutine rdeofs
   integer(KIND=MPI_OFFSET_KIND)  :: GlobalStart(3), GlobalCount(3)
   real(4), allocatable           :: x3(:,:,:), x2(:,:)
   
-  ! stat = nf90_open(trim(EOF_FILE), NF90_NOWRITE, ncid)
-  stat = nf90mpi_open(Var3DCommunicator, trim(EOF_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
+  stat = nf90mpi_open(Var3DCommunicator, trim(EOF_FILE_O2O), NF90_NOWRITE, MPI_INFO_NULL, ncid)
   if (stat /= nf90_noerr) call handle_err("nf90mpi_open", stat)
   
   ! Get dimensions 
@@ -64,8 +63,8 @@ subroutine rdeofs
   if (stat /= nf90_noerr) call handle_err("nfmpi_inq_dimlen neofs", stat)
 
   if(MyId .eq. 0) then
-     write(drv%dia,*)'Eof dimensions are: ',ros%nreg, ros%kmt, neofs
-     write(drv%dia,*)'Uses ',ros%neof,' eofs.'
+     write(drv%dia,*)'Eof dimensions for O2o are: ',ros%nreg, ros%kmt, neofs
+     write(drv%dia,*)'Uses ',ros%neof_o2o,' eofs.'
   endif
   
   if(ros%nreg .ne. nregs) then
@@ -77,19 +76,23 @@ subroutine rdeofs
      
   endif
   
-  if(ros%neof .gt. neofs) then
+  if(ros%neof_o2o .gt. neofs) then
 
      if(MyId .eq. 0) &
           write(drv%dia,*)'Error: Requires more Eofs than available in the input file.'
      call MPI_Abort(Var3DCommunicator, -1, stat)
      
-  else if(ros%neof .lt. neofs) then
+  else if(ros%neof_o2o .lt. neofs) then
      
      if(MyId .eq. 0) then
-        write(drv%dia,*)'Warning: ros%neof < neofs!'
-        write(drv%dia,*)'ros%neof =', ros%neof
+        write(drv%dia,*)'Warning: ros%neof_o2o < neofs!'
+        write(drv%dia,*)'ros%neof_o2o =', ros%neof_o2o
         write(drv%dia,*)'neofs =', neofs
-        write(drv%dia,*)'continue using ros%neof'
+        write(drv%dia,*)'continue using ros%neof_o2o'
+        write(*,*)'Warning: ros%neof_o2o < neofs!'
+        write(*,*)'ros%neof_o2o =', ros%neof_o2o
+        write(*,*)'neofs =', neofs
+        write(*,*)'continue using ros%neof_o2o'
      endif
   endif
   
@@ -101,40 +104,40 @@ subroutine rdeofs
   endif
   
   !  Allocate eof arrays and get data
-  ALLOCATE ( ros%evc( ros%nreg, ros%kmt, ros%neof) )  ; ros%evc = huge(ros%evc(1,1,1))
-  ALLOCATE ( ros%eva( ros%nreg, ros%neof) )           ; ros%eva = huge(ros%eva(1,1))
-  ALLOCATE ( x3( ros%nreg, ros%kmt, ros%neof) )
-  ALLOCATE ( x2( ros%nreg, ros%neof) )
+  ALLOCATE ( ros%evc_o2o( ros%nreg, ros%kmt, ros%neof_o2o) )  ; ros%evc_o2o = huge(ros%evc_o2o(1,1,1))
+  ALLOCATE ( ros%eva_o2o( ros%nreg, ros%neof_o2o) )           ; ros%eva_o2o = huge(ros%eva_o2o(1,1))
+  ALLOCATE ( x3( ros%nreg, ros%kmt, ros%neof_o2o) )
+  ALLOCATE ( x2( ros%nreg, ros%neof_o2o) )
   GlobalStart(:) = 1
   GlobalCount(1) = ros%nreg
   GlobalCount(2) = ros%kmt
-  GlobalCount(3) = ros%neof
+  GlobalCount(3) = ros%neof_o2o
   
   stat = nf90mpi_inq_varid(ncid, 'evc', idvar)
   if (stat /= nf90_noerr) call handle_err("nf90mpi_inq_varid evc", stat)
   stat = nfmpi_get_vara_real_all(ncid,idvar,GlobalStart, GlobalCount, x3)
   if (stat /= nf90_noerr) call handle_err("nfmpi_get_vara_real_all eva", stat)
 
-  ros%evc(:,:,:) = x3(:,:,:)
+  ros%evc_o2o(:,:,:) = x3(:,:,:)
   
   GlobalCount(1) = ros%nreg
-  GlobalCount(2) = ros%neof
+  GlobalCount(2) = ros%neof_o2o
 
   stat = nf90mpi_inq_varid(ncid, 'eva', idvar)
   if (stat /= nf90_noerr) call handle_err("nf90mpi_inq_varid eva", stat)
   stat = nfmpi_get_vara_real_all(ncid,idvar,GlobalStart(1:2), GlobalCount(1:2), x2)
   if (stat /= nf90_noerr) call handle_err("nfmpi_get_vara_real_all", stat)
-  ros%eva(:,:) = x2(:,:)
+  ros%eva_o2o(:,:) = x2(:,:)
   
   ! DECOMMENT FOLLOWING TWO LINES TO MAKE FILTER TEST
-  ! ros%evc(:,:,:) = 1.
-  ! ros%eva(:,:) = 1.
+  ! ros%evc_o2o(:,:,:) = 1.
+  ! ros%eva_o2o(:,:) = 1.
   
   stat = nf90mpi_close(ncid)
   if (stat /= nf90_noerr) call handle_err("nf90mpi_close", stat)
 
   DEALLOCATE(x3, x2)
   
-end subroutine rdeofs
+end subroutine rdeofs_o2o
 
 

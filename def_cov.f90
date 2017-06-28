@@ -35,6 +35,7 @@ subroutine def_cov
   use cns_str
   use rcfl
   use mpi_str
+  use bio_str
   
   implicit none
   
@@ -395,7 +396,28 @@ subroutine def_cov
            
   ros%kmt = grd%km
 
-  call rdeofs
+  if(drv%chl_assim .eq. 1) then
+    call rdeofs_chl
+  else
+    ros%neof_chl = 0
+  endif
+
+  if(drv%nut .eq. 1) then
+    if(bio%n3n .eq. 1) then
+      call rdeofs_n3n
+    else
+      ros%neof_n3n = 0
+    endif
+    if(bio%o2o .eq. 1) then
+      call rdeofs_o2o
+    else
+      ros%neof_o2o = 0
+    endif
+    ros%neof_nut = ros%neof_n3n + ros%neof_o2o
+  else
+    ros%neof_nut = 0
+  endif
+  ros%neof = ros%neof_chl + ros%neof_nut
   
   ALLOCATE ( grd%ro(    grd%im, grd%jm, ros%neof))   ; grd%ro    = 0.0
   ALLOCATE ( grd%ro_ad( grd%im, grd%jm, ros%neof))   ; grd%ro_ad = 0.0

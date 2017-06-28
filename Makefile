@@ -102,9 +102,11 @@ OBJS    =  \
 	def_nml.o\
 	def_grd.o\
 	sav_itr.o\
-	rdeofs.o\
-    rdrcorr.o\
-    mean_rdr.o\
+	rdeofs_chl.o\
+	rdeofs_n3n.o\
+	rdeofs_o2o.o\
+  rdrcorr.o\
+  mean_rdr.o\
 	netcdf_err.o\
 	get_obs.o\
 	get_obs_arg.o\

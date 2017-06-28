@@ -43,31 +43,23 @@ subroutine veof_chl
   grd%chl(:,:,:) = 0.0
   
   !cdir noconcur
-  do n=1,ros%neof
+  do n=1,ros%neof_chl
      
      egm(:,:) = 0.0
      
      do j=1,grd%jm
         do i=1,grd%im
-#ifdef opt_huge_memory
-           egm(i,j) = ros%eva( i, j, n) *  grd%ro( i, j, n)
-#else
-           egm(i,j) = ros%eva(grd%reg(i,j),n) * grd%ro( i, j, n)
-#endif
+           egm(i,j) = ros%eva_chl(grd%reg(i,j),n) * grd%ro( i, j, n)
         enddo
      enddo
           
      ! 3D variables
      do k=1,grd%km ! OMP
-        k1 = k1 + 1
+      k1 = k1 + 1
         do j=1,grd%jm
-           do i=1,grd%im
-#ifdef opt_huge_memory
-              grd%chl(i,j,k) = grd%chl(i,j,k) + ros%evc( i, j, k1, n)  * egm(i,j)
-#else
-              grd%chl(i,j,k) = grd%chl(i,j,k) + ros%evc(grd%reg(i,j),k,n) * egm(i,j)
-#endif
-           enddo
+          do i=1,grd%im
+            grd%chl(i,j,k) = grd%chl(i,j,k) + ros%evc_chl(grd%reg(i,j),k,n) * egm(i,j)
+          enddo
         enddo
      enddo
   enddo

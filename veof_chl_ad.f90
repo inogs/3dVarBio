@@ -45,7 +45,7 @@ subroutine veof_chl_ad
 !$OMP PRIVATE(i,j,k,k1,n) &
 !$OMP PRIVATE(egm) 
 !$OMP DO
-  do n=1,ros%neof
+  do n=1,ros%neof_chl
 
    egm(:,:) = 0.0
 
@@ -56,11 +56,7 @@ subroutine veof_chl_ad
       k1 = k1 + 1
       do j=1,grd%jm
          do i=1,grd%im
-#ifdef opt_huge_memory
-            egm(i,j) = egm(i,j) + ros%evc( i, j, k1,n) * grd%chl_ad(i,j,k)
-#else
-            egm(i,j) = egm(i,j) + ros%evc(grd%reg(i,j), k,n) * grd%chl_ad(i,j,k)
-#endif
+            egm(i,j) = egm(i,j) + ros%evc_chl(grd%reg(i,j), k,n) * grd%chl_ad(i,j,k)
          enddo
       enddo
    enddo
@@ -68,11 +64,7 @@ subroutine veof_chl_ad
    
    do j=1,grd%jm
       do i=1,grd%im
-#ifdef opt_huge_memory
-         egm(i,j) = ros%eva( i, j, n) * egm(i,j) 
-#else
-         egm(i,j) = ros%eva(grd%reg(i,j),n) * egm(i,j) 
-#endif
+         egm(i,j) = ros%eva_chl(grd%reg(i,j),n) * egm(i,j) 
       enddo
    enddo
    
@@ -81,11 +73,7 @@ subroutine veof_chl_ad
    !  do l=n,ros%neof
    do j=1,grd%jm
       do i=1,grd%im
-#ifdef opt_huge_memory
-         grd%ro_ad(i,j,n) = grd%ro_ad(i,j,n) + egm(i,j) ! * ros%cor( i, j, n, l) 
-#else
-         grd%ro_ad(i,j,n) = grd%ro_ad(i,j,n) + egm(i,j) ! * ros%cor( grd%reg(i,j), n, l) 
-#endif
+         grd%ro_ad(i,j,n) = grd%ro_ad(i,j,n) + egm(i,j)
       enddo
    enddo
    !  enddo

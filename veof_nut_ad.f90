@@ -1,4 +1,4 @@
-subroutine veof_nut_ad(NutArrayAd)
+subroutine veof_nut_ad(NutArrayAd, Var)
 
 !---------------------------------------------------------------------------
 !                                                                          !
@@ -36,17 +36,28 @@ subroutine veof_nut_ad(NutArrayAd)
 
  implicit none
 
- INTEGER(i4)             :: i, j, k, l, n, k1
+ INTEGER(i4)             :: i, j, k, l, n, k1, offset
  REAL(r8), DIMENSION ( grd%im, grd%jm)  :: egm
  REAL(r8) :: NutArrayAd(grd%im,grd%jm,grd%km)
+ CHARACTER :: Var
+ INTEGER   :: MyNEofs
 
   grd%ro_ad(:,:,:) = 0.0 ! OMP
+  
+  offset = 0
+  if(Var .eq. 'N') then
+      MyNEofs = ros%neof_n3n
+      offset = ros%neof_chl
+  else
+      MyNEofs = ros%neof_o2o
+      offset = ros%neof_chl + ros%neof_n3n
+  endif
 
 !$OMP PARALLEL  &
 !$OMP PRIVATE(i,j,k,k1,n) &
 !$OMP PRIVATE(egm) 
 !$OMP DO
-  do n=1,ros%neof
+  do n=1,MyNEofs
 
    egm(:,:) = 0.0
 
@@ -57,11 +68,11 @@ subroutine veof_nut_ad(NutArrayAd)
       k1 = k1 + 1
       do j=1,grd%jm
          do i=1,grd%im
-#ifdef opt_huge_memory
-            egm(i,j) = egm(i,j) + ros%evc( i, j, k1,n) * NutArrayAd(i,j,k)
-#else
-            egm(i,j) = egm(i,j) + ros%evc(grd%reg(i,j), k,n) * NutArrayAd(i,j,k)
-#endif
+            if(Var .eq. 'N') then
+                  egm(i,j) = egm(i,j) + ros%evc_n3n(grd%reg(i,j), k,n) * NutArrayAd(i,j,k)
+            else
+                  egm(i,j) = egm(i,j) + ros%evc_o2o(grd%reg(i,j), k,n) * NutArrayAd(i,j,k)
+            endif
          enddo
       enddo
    enddo
@@ -69,28 +80,19 @@ subroutine veof_nut_ad(NutArrayAd)
    
    do j=1,grd%jm
       do i=1,grd%im
-#ifdef opt_huge_memory
-         egm(i,j) = ros%eva( i, j, n) * egm(i,j) 
-#else
-         egm(i,j) = ros%eva(grd%reg(i,j),n) * egm(i,j) 
-#endif
+         if(Var .eq. 'N') then
+            egm(i,j) = ros%eva_n3n(grd%reg(i,j),n) * egm(i,j) 
+         else
+            egm(i,j) = ros%eva_o2o(grd%reg(i,j),n) * egm(i,j) 
+         endif         
       enddo
    enddo
    
-   !cdir serial
-   ! 3D variables
-   !  do l=n,ros%neof
    do j=1,grd%jm
       do i=1,grd%im
-#ifdef opt_huge_memory
-         grd%ro_ad(i,j,n) = grd%ro_ad(i,j,n) + egm(i,j) ! * ros%cor( i, j, n, l) 
-#else
-         grd%ro_ad(i,j,n) = grd%ro_ad(i,j,n) + egm(i,j) ! * ros%cor( grd%reg(i,j), n, l) 
-#endif
+         grd%ro_ad(i,j,n+offset) = grd%ro_ad(i,j,n) + egm(i,j) 
       enddo
    enddo
-   !  enddo
-   !cdir end serial
    
 enddo
 !$OMP END DO

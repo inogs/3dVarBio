@@ -1,4 +1,4 @@
-subroutine veof_nut(NutArray)
+subroutine veof_nut(NutArray, Var)
 !anna
 !---------------------------------------------------------------------------
 !                                                                          !
@@ -39,22 +39,32 @@ subroutine veof_nut(NutArray)
   INTEGER(i4)     :: i, j, k, l,n, k1
   REAL(r8), DIMENSION ( grd%im, grd%jm)  :: egm
   REAL(r8) :: NutArray(grd%im,grd%jm,grd%km)
-  
+  INTEGER(I4) :: MyNEofs, offset  
+  CHARACTER   :: Var
   
   NutArray(:,:,:) = 0.0
+
+  offset = 0
+  if(Var .eq. 'N') then
+      MyNEofs = ros%neof_n3n
+      offset = ros%neof_chl
+  else
+      MyNEofs = ros%neof_o2o
+      offset = ros%neof_chl + ros%neof_n3n
+  endif
   
   !cdir noconcur
-  do n=1,ros%neof
+  do n=1,MyNEofs
      
      egm(:,:) = 0.0
      
      do j=1,grd%jm
         do i=1,grd%im
-#ifdef opt_huge_memory
-           egm(i,j) = ros%eva( i, j, n) *  grd%ro( i, j, n)
-#else
-           egm(i,j) = ros%eva(grd%reg(i,j),n) * grd%ro( i, j, n)
-#endif
+          if(Var .eq. 'N') then
+            egm(i,j) = ros%eva_n3n(grd%reg(i,j),n) * grd%ro( i, j, n+offset)
+          else
+            egm(i,j) = ros%eva_o2o(grd%reg(i,j),n) * grd%ro( i, j, n+offset)
+          endif
         enddo
      enddo
           
@@ -63,11 +73,11 @@ subroutine veof_nut(NutArray)
         k1 = k1 + 1
         do j=1,grd%jm
            do i=1,grd%im
-#ifdef opt_huge_memory
-              NutArray(i,j,k) = NutArray(i,j,k) + ros%evc( i, j, k1, n)  * egm(i,j)
-#else
-              NutArray(i,j,k) = NutArray(i,j,k) + ros%evc(grd%reg(i,j),k,n) * egm(i,j)
-#endif
+            if(Var .eq. 'N') then
+              NutArray(i,j,k) = NutArray(i,j,k) + ros%evc_n3n(grd%reg(i,j),k,n) * egm(i,j)
+            else
+              NutArray(i,j,k) = NutArray(i,j,k) + ros%evc_o2o(grd%reg(i,j),k,n) * egm(i,j)
+            endif
            enddo
         enddo
      enddo
