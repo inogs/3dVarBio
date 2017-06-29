@@ -98,9 +98,13 @@ subroutine oceanvar
   call cnv_inn
   
   ! ---
-  ! Write outputs and diagnostics
+  ! Write corr.nc
   call wrt_dia
-  call wrt_chl_stat
+
+  ! Write restarts for chl and related variables
+  if(drv%chl_assim .eq. 1) &
+    call wrt_chl_stat
+
   call sav_itr
   if(MyId .eq. 0) write(drv%dia,*) 'out of sav_itr '
   

@@ -34,6 +34,7 @@ subroutine get_obs_arg
   use obs_str
   use mpi_str
   use filenames
+  use bio_str
   
   implicit none
   
@@ -97,7 +98,11 @@ subroutine get_obs_arg
   do k=1,GlobalArgNum
     if( TmpLon(k) .ge. grd%lon(1,1) .and. TmpLon(k) .lt. grd%NextLongitude .and. &
         TmpLat(k) .ge. grd%lat(1,1) .and. TmpLat(k) .lt. grd%lat(grd%im,grd%jm) ) then
-      Counter = Counter + 1
+        if((TmpPar(k).eq.0 .and. drv%chl_assim.eq.1) .or. &
+          (TmpPar(k).eq.1 .and. drv%nut.eq.1 .and. bio%n3n.eq.1) .or. &
+          (TmpPar(k).eq.2 .and. drv%nut.eq.1 .and. bio%o2o.eq.1)) then
+            Counter = Counter + 1
+        endif
     endif
   enddo
 
@@ -120,15 +125,19 @@ subroutine get_obs_arg
   do k=1,GlobalArgNum
     if( TmpLon(k) .ge. grd%lon(1,1) .and. TmpLon(k) .lt. grd%NextLongitude .and. &
         TmpLat(k) .ge. grd%lat(1,1) .and. TmpLat(k) .lt. grd%lat(grd%im,grd%jm) ) then
-      Counter = Counter + 1
-      arg%flc(Counter) = TmpFlc(k)
-      arg%par(Counter) = TmpPar(k)
-      arg%lon(Counter) = TmpLon(k)
-      arg%lat(Counter) = TmpLat(k)
-      arg%dpt(Counter) = TmpDpt(k)
-      arg%res(Counter) = TmpRes(k)
-      arg%err(Counter) = TmpErr(k)
-      arg%ino(Counter) = TmpIno(k)
+        if((TmpPar(k).eq.0 .and. drv%chl_assim.eq.1) .or. &
+          (TmpPar(k).eq.1 .and. drv%nut.eq.1 .and. bio%n3n.eq.1) .or. &
+          (TmpPar(k).eq.2 .and. drv%nut.eq.1 .and. bio%o2o.eq.1)) then
+            Counter = Counter + 1
+            arg%flc(Counter) = TmpFlc(k)
+            arg%par(Counter) = TmpPar(k)
+            arg%lon(Counter) = TmpLon(k)
+            arg%lat(Counter) = TmpLat(k)
+            arg%dpt(Counter) = TmpDpt(k)
+            arg%res(Counter) = TmpRes(k)
+            arg%err(Counter) = TmpErr(k)
+            arg%ino(Counter) = TmpIno(k)
+        endif
     endif
 
   enddo

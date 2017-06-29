@@ -61,13 +61,13 @@
 ! ---
 &biolst
  chl_assim = 1
-    nut    = 0
+    nut    = 1
    nphyto  = 4
    chl_dep = 0.0
    ncmp    = 5
 ApplyConditions = .true.
-    N3n    = 0
-    O2o    = 0
+    N3n    = 1
+    O2o    = 1
 /
 !------------------------------------------------------------
 !
@@ -89,7 +89,7 @@ ApplyConditions = .true.
 ! ---
 &params
  sat_obs  = 1
-  argo    = 0
+  argo    = 1
  uniformL = 0
   anisL   = 0
  verbose  = 1

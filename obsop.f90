@@ -42,7 +42,8 @@ subroutine obsop
 
   ! ---
   ! Apply biological repartition of the chlorophyll
-  call bio_conv
+  if(drv%chl_assim .eq. 1) &
+    call bio_conv
 
   ! ---
   ! Observations by ARGO floats

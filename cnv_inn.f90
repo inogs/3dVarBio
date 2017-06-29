@@ -57,6 +57,7 @@ subroutine cnv_inn
   
   ! ---
   ! Apply biological repartition of the chlorophyll
-  call bio_mod
+  if(drv%chl_assim .eq. 1) &
+    call bio_mod
 
 end subroutine cnv_inn

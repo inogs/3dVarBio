@@ -52,7 +52,8 @@ subroutine obsop_ad
 
   ! ---
   ! Apply biological repartition of the chlorophyll
-  call bio_conv_ad
+  if(drv%chl_assim .eq. 1) &
+    call bio_conv_ad
 
   call MPI_Barrier(Var3DCommunicator, ierr)
   
