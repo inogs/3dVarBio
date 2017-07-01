@@ -9,7 +9,7 @@ MODULE DA_PARAMS
     integer                        :: jpk_200          != 26
     integer                        :: NBioVar          ! number of biological variables
     CHARACTER(LEN=3), allocatable  :: DA_VarList(:)    ! name of DA biological variables
-    integer                        :: DA_JulianDate    ! julian date
+    double precision               :: DA_JulianDate    ! julian date
 
   CONTAINS
 
@@ -57,3 +57,4 @@ MODULE DA_PARAMS
   END SUBROUTINE CLEAN_DA_PARAMS
 
 END MODULE DA_PARAMS
+
