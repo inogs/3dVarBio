@@ -35,7 +35,7 @@ subroutine wrt_bio_stat
   MAX_N_C   =  1.26e-2*2   ! values from BFMconsortium parametrs document (P.Lazzari)
   OPT_N_C   =  1.26e-2
   OPT_S_C   =  0.01        ! values from BFMconsortium parametrs document (P.Lazzari)
-  LIM_THETA =  0.01
+  LIM_THETA =  0.001
   
   ALLOCATE(DumpBio(grd%im,grd%jm,grd%km)); DumpBio(:,:,:) = 1.e20
   ALLOCATE(ValuesToTest(grd%im,grd%jm,grd%km)); ValuesToTest(:,:,:) = dble(0.)
@@ -242,3 +242,4 @@ subroutine wrt_bio_stat
   DEALLOCATE(DumpBio, ValuesToTest, MyConditions)
 
 end subroutine wrt_bio_stat
+
