@@ -2,16 +2,17 @@ subroutine ver_hor
 
   !---------------------------------------------------------------------------
   !                                                                          !
-  !    Copyright 2006 Srdjan Dobricic, CMCC, Bologna                         !
+  !    Copyright 2018 Anna Teruzzi, OGS, Trieste                         !
   !                                                                          !
-  !    This file is part of OceanVar.                                          !
+  !    This file is part of 3DVarBio.
+  !    3DVarBio is based on OceanVar (Dobricic, 2006)                                          !
   !                                                                          !
-  !    OceanVar is free software: you can redistribute it and/or modify.     !
+  !    3DVarBio is  free software: you can redistribute it and/or modify.     !
   !    it under the terms of the GNU General Public License as published by  !
   !    the Free Software Foundation, either version 3 of the License, or     !
   !    (at your option) any later version.                                   !
   !                                                                          !
-  !    OceanVar is distributed in the hope that it will be useful,           !
+  !    3DVarBio is  distributed in the hope that it will be useful,           !
   !    but WITHOUT ANY WARRANTY; without even the implied warranty of        !
   !    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         !
   !    GNU General Public License for more details.                          !
@@ -25,11 +26,10 @@ subroutine ver_hor
   !                                                                      !
   ! Apply horizontal filter                                              !
   !                                                                      !
-  ! Version 1: S.Dobricic 2006                                           !
-  ! Version 2: S.Dobricic 2007                                           !
+  !                                           !
+  ! Version 1: A. Teruzzi 2018                                           !
   !     Symmetric calculation in presence of coastal boundaries          !
-  !     eta_ad, tem_ad, and sal_ad are here temporary arrays             !
-  ! Version 3: A. Teruzzi 2013                                           !
+  !     eta_ad, tem_ad, and sal_ad are here temporary arrays             !                                         
   !     Attenuation of correction near the cost where d<200m             !
   !-----------------------------------------------------------------------
 

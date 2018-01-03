@@ -2,16 +2,17 @@ subroutine cnv_ctv
 
 !---------------------------------------------------------------------------
 !                                                                          !
-!    Copyright 2006 Srdjan Dobricic, CMCC, Bologna                         !
+!    Copyright 2018 Anna Teruzzi, OGS, Trieste                         !
 !                                                                          !
-!    This file is part of OceanVar.                                          !
+!    This file is part of 3DVarBio.
+  !    3DVarBio is based on OceanVar (Dobricic, 2006)                                          !
 !                                                                          !
-!    OceanVar is free software: you can redistribute it and/or modify.     !
+!    3DVarBio is  free software: you can redistribute it and/or modify.     !
 !    it under the terms of the GNU General Public License as published by  !
 !    the Free Software Foundation, either version 3 of the License, or     !
 !    (at your option) any later version.                                   !
 !                                                                          !
-!    OceanVar is distributed in the hope that it will be useful,           !
+!    3DVarBio is  distributed in the hope that it will be useful,           !
 !    but WITHOUT ANY WARRANTY; without even the implied warranty of        !
 !    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         !
 !    GNU General Public License for more details.                          !
@@ -25,7 +26,7 @@ subroutine cnv_ctv
 !                                                                      !
 ! Convert from control to v                                            !
 !                                                                      !
-! Version 1: S.Dobricic 2006                                           !
+! Version 1: A. Teruzzi 2018                                           !
 !-----------------------------------------------------------------------
 
 
