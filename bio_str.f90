@@ -41,6 +41,8 @@ public
         REAL(r8),    POINTER  ::  phy(:,:,:,:,:)       ! biogeochemical variables 
         REAL(r8),    POINTER  ::  phy_ad(:,:,:,:,:)    ! biogeochemical adjoint variables
         REAL(r8),    POINTER  ::  InitialChl(:,:,:)    ! initial amount of chlorophyll
+        REAL(r8),    POINTER  ::  InitialNut(:,:,:,:)  ! initial amount of nutrients
+        REAL(r8),    POINTER  ::  covN3n_n1p(:,:,:,:)  ! initial amount of nutrients
 
         INTEGER               ::  nphy                 ! number of phytoplankton types
         INTEGER               ::  ncmp                 ! No. of phytoplankton components
@@ -48,8 +50,9 @@ public
         LOGICAL               ::  ApplyConditions      ! Apply conditions in snutell operations
 
         INTEGER(i4)           ::  N3n                  ! N3n assimilation
+        INTEGER(i4)           ::  updateN1p            ! N1p update based on N3n assimilation
         INTEGER(i4)           ::  O2o                  ! O2o assimilation
-        
+
    END TYPE bio_t
 
    TYPE (bio_t)                 :: bio

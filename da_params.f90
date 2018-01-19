@@ -7,7 +7,8 @@ MODULE DA_PARAMS
     character (LEN=17)             :: DA_DATE          != '20130102-120000'
     character (LEN=15)             :: ShortDate        != '20130102-120000'
     integer                        :: jpk_200          != 26
-    integer                        :: NBioVar          ! number of biological variables
+    integer                        :: NPhytoVar        ! number of phytoplankton variables
+    integer                        :: NNutVar          ! number of nutrient variables
     CHARACTER(LEN=3), allocatable  :: DA_VarList(:)    ! name of DA biological variables
     integer                        :: DA_JulianDate    ! julian date
 
@@ -18,12 +19,14 @@ MODULE DA_PARAMS
     DA_DATE = '20130101-12:00:00'
     ShortDate = DA_DATE(1:11)//DA_DATE(13:14)//DA_DATE(16:17)
     jpk_200 = 26
-    NBioVar = 17
+    NPhytoVar = 17
+    NNutVar = 1
+    NBioVar = NPhytoVar + NNutVar
 
     allocate(DA_VarList(NBioVar))
 
     ! DA_VarList init
-    ! It must be consistent with NBioVar value
+    ! It must be consistent with NPhytoVar and NNutVar values
 
     DA_VarList( 1)='P1l'
     DA_VarList( 2)='P2l'
@@ -46,6 +49,8 @@ MODULE DA_PARAMS
     DA_VarList(16)='P4p'
 
     DA_VarList(17)='P1s'
+
+    DA_VarList(18)='N3n'
 
 
   END SUBROUTINE SET_DA_PARAMS

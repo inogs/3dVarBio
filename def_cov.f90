@@ -447,6 +447,15 @@ subroutine def_cov
   
   ! read ratios for biological repartition
   ! of the chlorophyll
-  call readBioStat
+  if drv%chl_assim.eq.1 then
+    call readChlStat
+  endif
+
+  if drv%nut.eq.1 then
+    call readNutStat
+    if bio%N3n.eq.1 .AND. bio%updateN1p.eq.1 then
+      call readNutCov
+    endif
+  endif
 
 end subroutine def_cov

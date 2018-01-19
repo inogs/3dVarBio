@@ -22,7 +22,7 @@ subroutine wrt_chl_stat
   CHARACTER(LEN=6)     :: MyVarName
   LOGICAL, ALLOCATABLE :: MyConditions(:,:,:,:)
 
-  real(r8)           :: TmpVal, MyCorr, MyRatio
+  real(r8)           :: TmpVal, MyCorr, MyRatio,SMALL
   real(r4), allocatable, dimension(:,:,:) :: DumpBio, ValuesToTest
   real(r8) :: TimeArr(1)
   real(r4) :: MAX_N_CHL, MAX_P_CHL, MAX_P_C, MAX_N_C
@@ -36,14 +36,15 @@ subroutine wrt_chl_stat
   OPT_N_C   =  1.26e-2
   OPT_S_C   =  0.01        ! values from BFMconsortium parametrs document (P.Lazzari)
   LIM_THETA =  0.01
+  SMALL     =  1.e-5
   
   ALLOCATE(DumpBio(grd%im,grd%jm,grd%km)); DumpBio(:,:,:) = 1.e20
   ALLOCATE(ValuesToTest(grd%im,grd%jm,grd%km)); ValuesToTest(:,:,:) = dble(0.)
   ALLOCATE(MyConditions(grd%im,grd%jm,grd%km,bio%nphy))
 
   if(MyId .eq. 0) then
-     write(drv%dia,*) 'writing bio structure'     
-     write(*,*) 'writing bio structure'     
+     write(drv%dia,*) 'writing chl structure'     
+     write(*,*) 'writing chl structure'     
   endif
 
   global_im = GlobalRow
@@ -100,7 +101,7 @@ subroutine wrt_chl_stat
       BioRestartLong = 'RESTARTS/RST.'//DA_DATE//'.'//DA_VarList(iVar)//'.nc'
 
       if(drv%Verbose .eq. 1 .and. MyId .eq. 0) &
-        print*, "Writing BioRestart ", BioRestart
+        print*, "Writing Phyto Restart ", BioRestart
       
       ierr = nf90mpi_create(Var3DCommunicator, BioRestart, NF90_CLOBBER, MPI_INFO_NULL, ncid)
       if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_create '//BioRestart, ierr)
@@ -141,6 +142,9 @@ subroutine wrt_chl_stat
                   ! condition applied (before apply corrections
                   ! on the other components)
                   TmpVal = 0.01*bio%pquot(i,j,k,l)*bio%InitialChl(i,j,k)
+                  if TmpVal.gt.SMALL then
+                    TmpVal = SMALL
+                  endif
                   DumpBio(i,j,k) = TmpVal
 
                   ! the positiveness is applied to

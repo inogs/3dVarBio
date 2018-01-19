@@ -104,6 +104,9 @@ subroutine oceanvar
   ! Write restarts for chl and related variables
   if(drv%chl_assim .eq. 1) &
     call wrt_chl_stat
+  
+  if (drv%nut .eq. 1) &
+    call wrt_nut_stat
 
   call sav_itr
   if(MyId .eq. 0) write(drv%dia,*) 'out of sav_itr '

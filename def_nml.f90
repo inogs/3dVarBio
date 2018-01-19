@@ -125,14 +125,15 @@ subroutine def_nml
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) '------------------------------------------------------------'
     write(drv%dia,*) ' BIOLOGY NAMELIST INPUT: '
-    write(drv%dia,*) ' Chlorophyll assimilation        chl_assim = ', chl_assim
-    write(drv%dia,*) ' Nutrient assimilation                 nut = ', nut
-    write(drv%dia,*) ' Number of phytoplankton species     nphyt = ', nphyto
-    write(drv%dia,*) ' Minimum depth for chlorophyll     chl_dep = ', chl_dep
-    write(drv%dia,*) ' Number of phytoplankton components   ncmp = ', ncmp
-    write(drv%dia,*) ' Apply conditions flag     ApplyConditions = ', ApplyConditions
-    write(drv%dia,*) ' N3n assimilation                      N3n = ', N3n
-    write(drv%dia,*) ' O2o assimilation                      O2o = ', O2o
+    write(drv%dia,*) ' Chlorophyll assimilation             chl_assim = ', chl_assim
+    write(drv%dia,*) ' Nutrient assimilation                      nut = ', nut
+    write(drv%dia,*) ' Number of phytoplankton species          nphyt = ', nphyto
+    write(drv%dia,*) ' Minimum depth for chlorophyll          chl_dep = ', chl_dep
+    write(drv%dia,*) ' Number of phytoplankton components        ncmp = ', ncmp
+    write(drv%dia,*) ' Apply conditions flag          ApplyConditions = ', ApplyConditions
+    write(drv%dia,*) ' N3n assimilation                           N3n = ', N3n
+    write(drv%dia,*) ' N1p update based on N3n assimilation updateN1p = ', updateN1p
+    write(drv%dia,*) ' O2o assimilation                           O2o = ', O2o
 
   endif
 
@@ -143,6 +144,7 @@ subroutine def_nml
   bio%ncmp = ncmp
   bio%ApplyConditions = ApplyConditions
   bio%N3n = N3n
+  bio%updateN1p = updateN1p
   bio%O2o = O2o
 
   read(11,params)

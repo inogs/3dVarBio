@@ -1,10 +1,10 @@
-subroutine readBioStat
+subroutine readChlStat
 
 !---------------------------------------------------------------------------
-!anna                                                                          !
+!                                                                          !
 !    Copyright 2006 Srdjan Dobricic, CMCC, Bologna                         !
 !                                                                          !
-!    This file is part of OceanVar.                                          !
+!    This file is part of OceanVar.                                        !
 !                                                                          !
 !    OceanVar is free software: you can redistribute it and/or modify.     !
 !    it under the terms of the GNU General Public License as published by  !
@@ -17,13 +17,13 @@ subroutine readBioStat
 !    GNU General Public License for more details.                          !
 !                                                                          !
 !    You should have received a copy of the GNU General Public License     !
-!    along with OceanVar.  If not, see <http://www.gnu.org/licenses/>.       !
+!    along with OceanVar.  If not, see <http://www.gnu.org/licenses/>.     !
 !                                                                          !
 !--------------------------------------------------------------------------- 
 
 !-----------------------------------------------------------------------
 !                                                                      !
-! READ quotas for biological variables                                 !
+! READ quotas for phytoplankton variables                              !
 !                                                                      !
 ! Version 1: A.Teruzzi 2012                                            !
 ! This routine will have effect only if compiled with netcdf library.  !
@@ -57,7 +57,7 @@ subroutine readBioStat
     do l=1,bio%nphy
       iVar = l + bio%nphy*(m-1)
 
-      if(iVar .gt. NBioVar) cycle
+      if(iVar .gt. NPhytoVar) cycle
 
       MyVarName = DA_VarList(iVar)
       RstFileName = 'DA__FREQ_1/RST.'//ShortDate//'.'//MyVarName//'.nc'
@@ -147,4 +147,4 @@ subroutine readBioStat
 
   DEALLOCATE(x3)
 
-end subroutine readBioStat
+end subroutine readChlStat

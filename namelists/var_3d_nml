@@ -50,13 +50,15 @@
 !
 !          Biological assimilation set-up
 !
-!  biol    -  1-biological variables in state vector, 
-!             0-no biological variables in state vector
-!  bphy    -  1-biological and physical variables in state vector,
-!             0-no physical variables in state vector
-!  nchl    -  Number of phytoplankton species
-!  chl_dep -  Minimum depth for chlorophyll assimilation
-!  lsize   -  size of the working block in the master-slave approach
+!  chl_assim       - Chlorophyll assimilation
+!  nut             - Nutrient assimilation
+!  nphyto          - Number of phytoplankton species
+!  chl_dep         - Minimum depth for chlorophyll
+!  ncmp            - Number of phytoplankton components
+!  ApplyConditions - Apply conditions flag
+!  N3n             - N3n assimilation
+!  updateN1p       - N1p update based on N3n assimilation updateN1p
+!  O2o             - O2o assimilation
 !
 ! ---
 &biolst
@@ -67,6 +69,7 @@
    ncmp    = 5
 ApplyConditions = .true.
     N3n    = 1
+    updateN1p = 0
     O2o    = 1
 /
 !------------------------------------------------------------

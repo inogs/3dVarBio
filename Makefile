@@ -143,8 +143,11 @@ OBJS    =  \
 	readAnisotropy.o\
 	bio_mod.o\
 	bio_mod_ad.o\
-	readBioStat.o\
+	readChlStat.o\
+	readNutStat.o\
+	readNutCov.o\
 	wrt_chl_stat.o\
+	wrt_nut_stat.o\
 	costf.o\
 	obs_sat.o\
 	bio_conv.o\
