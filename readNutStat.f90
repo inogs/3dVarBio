@@ -47,14 +47,14 @@ subroutine readNutStat
   REAL(4), ALLOCATABLE :: x3(:,:,:)
 
   ALLOCATE(x3(grd%im, grd%jm, grd%km))
-  ALLOCATE(bio%InitialNut(grd%im, grd%jm, grd%km, NVarNut)) ; bio%InitialNut(:,:,:,:) = 0.0
+  ALLOCATE(bio%InitialNut(grd%im, grd%jm, grd%km, NNutVar)) ; bio%InitialNut(:,:,:,:) = 0.0
   
   x3(:,:,:)     = 0.0
 
 
 
-  do l=1,NVarNut
-    iVar = NVarPhyto + l
+  do l=1,NNutVar
+    iVar = NPhytoVar + l
 
     if(iVar .gt. NBioVar) then
       if(MyId .eq. 0) &
@@ -114,7 +114,7 @@ subroutine readNutStat
   
 
   if(MyId .eq. 0) then
-    write(drv%dia,*)'Number of Nutrients is ', bio%nnut
+    write(drv%dia,*)'Number of Nutrients is ', NNutVar
   endif
 
   DEALLOCATE(x3)

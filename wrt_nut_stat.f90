@@ -40,7 +40,7 @@ subroutine wrt_nut_stat
   ! LIM_THETA =  0.01
   
   ALLOCATE(DumpBio(grd%im,grd%jm,grd%km)); DumpBio(:,:,:) = 1.e20
-  ALLOCATE(ValuesToTest(grd%im,grd%jm,grd%km,NVarNut)); ValuesToTest(:,:,:) = dble(0.)
+  ALLOCATE(ValuesToTest(grd%im,grd%jm,grd%km,NNutVar)); ValuesToTest(:,:,:,:) = dble(0.)
   ALLOCATE(MyConditions(grd%im,grd%jm,grd%km,bio%nphy))
 
   if(MyId .eq. 0) then
@@ -65,7 +65,7 @@ subroutine wrt_nut_stat
           ! correct them in order to avoid negative concentrations
           ! if the correction is negative, the correction must be reduced
           ValuesToTest(i,j,k,1) = bio%InitialNut(i,j,k,1) + grd%n3n(i,j,k)
-          if bio%updateN1p.eq.1 then
+          if(bio%updateN1p.eq.1) then
             ValuesToTest(i,j,k,2) = bio%InitialNut(i,j,k,2) + grd%n3n(i,j,k)*bio%covn3n_n1p(i,j,k)
           endif
         !   if(bio%ApplyConditions) then
@@ -94,8 +94,8 @@ subroutine wrt_nut_stat
 
 
 
-  do l=1,NVarNut
-    iVar = NVarPhyto + l
+  do l=1,NNutVar
+    iVar = NPhytoVar + l
 
     if(iVar .gt. NBioVar) then
       if(MyId .eq. 0) &
@@ -147,7 +147,7 @@ subroutine wrt_nut_stat
                 ! condition applied (before apply corrections
                 ! on the other components)
                 TmpVal = 0.01*bio%InitialNut(i,j,k,l)
-                if TmpVal.gt.SMALL then
+                if(TmpVal.gt.SMALL) then
                   TmpVal = SMALL
                 endif
                 DumpBio(i,j,k) = TmpVal

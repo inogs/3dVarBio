@@ -95,7 +95,7 @@ subroutine wrt_chl_stat
     do l=1,bio%nphy
       iVar = l + bio%nphy*(m-1)
 
-      if(iVar .gt. NBioVar) CYCLE
+      if(iVar .gt. NPhytoVar) CYCLE
 
       BioRestart = 'RESTARTS/RST.'//ShortDate//'.'//DA_VarList(iVar)//'.nc'
       BioRestartLong = 'RESTARTS/RST.'//DA_DATE//'.'//DA_VarList(iVar)//'.nc'
@@ -142,7 +142,7 @@ subroutine wrt_chl_stat
                   ! condition applied (before apply corrections
                   ! on the other components)
                   TmpVal = 0.01*bio%pquot(i,j,k,l)*bio%InitialChl(i,j,k)
-                  if TmpVal.gt.SMALL then
+                  if(TmpVal.gt.SMALL) then
                     TmpVal = SMALL
                   endif
                   DumpBio(i,j,k) = TmpVal

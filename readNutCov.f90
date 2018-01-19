@@ -1,4 +1,4 @@
-subroutine rdrcorr
+subroutine readNutCov
 
 !---------------------------------------------------------------------------
 !                                                                          !
@@ -29,8 +29,9 @@ subroutine rdrcorr
 
 
   !use set_knd
-  !use drv_str
-  !use grd_str
+  use drv_str
+  use grd_str
+  use bio_str
   !use cns_str
   use filenames
   !use rcfl
@@ -67,4 +68,4 @@ subroutine rdrcorr
 
   DEALLOCATE(x3)
 
-end subroutine rdrcorr
+end subroutine readNutCov

@@ -9,6 +9,7 @@ MODULE DA_PARAMS
     integer                        :: jpk_200          != 26
     integer                        :: NPhytoVar        ! number of phytoplankton variables
     integer                        :: NNutVar          ! number of nutrient variables
+    integer                        :: NBioVar          ! number of nutrient variables
     CHARACTER(LEN=3), allocatable  :: DA_VarList(:)    ! name of DA biological variables
     integer                        :: DA_JulianDate    ! julian date
 

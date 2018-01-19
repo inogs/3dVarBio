@@ -42,7 +42,7 @@ subroutine def_nml
 
   LOGICAL       :: read_eof, ApplyConditions
   INTEGER(i4)   :: neof_chl, neof_n3n, neof_o2o, nreg, rcf_ntr
-  INTEGER(i4)   :: ctl_m, chl_assim, nut, N3n, O2o
+  INTEGER(i4)   :: ctl_m, chl_assim, nut, N3n, O2o, updateN1p
   INTEGER(i4)   :: biol, bphy, nphyto, uniformL, anisL, verbose
   REAL(r8)      :: rcf_L, ctl_tol, ctl_per, rcf_efc, chl_dep
   INTEGER(i4)   :: argo, sat_obs, ncmp
