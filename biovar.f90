@@ -1,4 +1,4 @@
-subroutine oceanvar
+subroutine biovar
   
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -114,4 +114,4 @@ subroutine oceanvar
   !-----------------------------------------------------------------
   if(MyId .eq. 0) close(drv%dia)
 
-end subroutine oceanvar
+end subroutine biovar

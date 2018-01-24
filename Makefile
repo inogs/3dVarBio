@@ -148,7 +148,7 @@ OBJS    =  \
 	readGrid.o\
 	def_cov.o\
 	tao_minimizer.o\
-    oceanvar.o
+    biovar.o
 
 MAINEXE = main.o
 
