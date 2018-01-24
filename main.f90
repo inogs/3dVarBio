@@ -21,7 +21,7 @@
   !---------------------------------------------------------------------------
 
 
-program 3dvarbio
+program tredvarbio
 use filenames
 use da_params
 implicit none
@@ -40,4 +40,4 @@ call oceanvar
 ! finalizing the MPI environment
 call mpi_stop
 
-end program 3dvarbio
+end program tredvarbio

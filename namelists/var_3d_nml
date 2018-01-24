@@ -30,7 +30,6 @@
 !
 !             BFGS minimizers set-up
 !
-!  ctl_m   -  Number of copies saved in the minimizer
 !  ctl_tol -  Stopping criteria (absolute)
 !  ctl_per -  Stopping criteria (relative)
 !
@@ -47,7 +46,7 @@
 !             Covariance constants
 !
 !  neof     - Number of vertical EOFs 
-!  nreg    -  Number of regions
+!  nreg     -  Number of regions
 !  read_eof - Logical to read EOFs from files.
 !             See subroutine def_cov.f90       
 !  rcf_ntr -  Number of iterations of the recursive filter
@@ -60,7 +59,7 @@
    nreg     = 63045
    read_eof = .true. 
    rcf_ntr  = 4
-   rcf_L    = 5000.
+   rcf_L    = 10000.
    rcf_efc  = 5.0
 /
 !------------------------------------------------------------
@@ -70,19 +69,18 @@
 !
 !          Biological assimilation set-up
 !
-!  biol    -  1-biological variables in state vector, 
-!             0-no biological variables in state vector
-!  bphy    -  1-biological and physical variables in state vector,
-!             0-no physical variables in state vector
-!  nchl    -  Number of phytoplankton species
-!  chl_dep -  Minimum depth for chlorophyll assimilation
-!  lsize   -  size of the working block in the master-slave approach
+!  bio_assim -  1-updates for biological variables, 
+!               0-updates for total chlorophyll
+!  nchl      -  Number of phytoplankton species
+!  chl_dep   -  Minimum depth for chlorophyll assimilation
+!  ncmp      -  Number pf components of phytoplankton
+! ApplyConditions - Apply conditions for concistency of biogeochemical variables
 !
 ! ---
 &biolst
  bio_assim = 1
    nphyto  = 4
-   chl_dep = 0.0
+   chl_dep = 200.0
    ncmp    = 5
 ApplyConditions = .true.
 /
