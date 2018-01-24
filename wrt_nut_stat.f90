@@ -66,7 +66,8 @@ subroutine wrt_nut_stat
           ! if the correction is negative, the correction must be reduced
           ValuesToTest(i,j,k,1) = bio%InitialNut(i,j,k,1) + grd%n3n(i,j,k)
           if(bio%updateN1p.eq.1) then
-            ValuesToTest(i,j,k,2) = bio%InitialNut(i,j,k,2) + grd%n3n(i,j,k)*bio%covn3n_n1p(i,j,k)
+            ValuesToTest(i,j,k,2) = bio%InitialNut(i,j,k,2) + grd%n3n(i,j,k) !*bio%covn3n_n1p(i,j,k)
+            !ValuesToTest(i,j,k,2) = bio%InitialNut(i,j,k,2) + grd%n3n(i,j,k)*bio%covn3n_n1p(i,j,k)
           endif
         !   if(bio%ApplyConditions) then
         !     !if(ValuesToTest(i,j,k) .gt. 10*bio%InitialChl(i,j,k)) then

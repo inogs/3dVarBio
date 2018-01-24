@@ -49,7 +49,7 @@ subroutine def_nml
   
   NAMELIST /ctllst/ ctl_tol, ctl_per
   NAMELIST /covlst/ neof_chl, neof_n3n, neof_o2o, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
-  NAMELIST /biolst/ chl_assim, nut, nphyto, chl_dep, ncmp, ApplyConditions, N3n, O2o
+  NAMELIST /biolst/ chl_assim, nut, nphyto, chl_dep, ncmp, ApplyConditions, N3n, updateN1p, O2o
   NAMELIST /params/ sat_obs, argo, uniformL, anisL, verbose
 
 

@@ -45,6 +45,7 @@ subroutine rdeofs_n3n
   integer(KIND=MPI_OFFSET_KIND)  :: GlobalStart(3), GlobalCount(3)
   real(4), allocatable           :: x3(:,:,:), x2(:,:)
   
+
   stat = nf90mpi_open(Var3DCommunicator, trim(EOF_FILE_N3N), NF90_NOWRITE, MPI_INFO_NULL, ncid)
   if (stat /= nf90_noerr) call handle_err("nf90mpi_open", stat)
   
