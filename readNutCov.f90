@@ -28,13 +28,11 @@ subroutine readNutCov
 !---------------------------------------------------------------------------
 
 
-  !use set_knd
+  use set_knd
   use drv_str
   use grd_str
   use bio_str
-  !use cns_str
   use filenames
-  !use rcfl
 
   use mpi_str
   use pnetcdf
@@ -42,7 +40,8 @@ subroutine readNutCov
   implicit none
 
   integer(i4)            :: stat, ncid, idvar
-  integer(KIND=MPI_OFFSET_KIND)  :: GlobalStart(3), GlobalCount(3)
+  integer(i4)            :: i,j,k
+  !integer(KIND=MPI_OFFSET_KIND)  :: GlobalStart(3), GlobalCount(3)
   real(r4), ALLOCATABLE  :: x3(:,:,:)
 
 
@@ -50,18 +49,39 @@ subroutine readNutCov
   stat = nf90mpi_open(Var3DCommunicator, trim(NUTCOV_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
   if (stat /= nf90_noerr) call handle_err("nf90mpi_open",stat)
 
-  ALLOCATE ( x3(GlobalRow,GlobalCol,grd%km))
-  GlobalStart(:) = 1
-  GlobalCount(1) = GlobalRow
-  GlobalCount(2) = GlobalCol
-  GlobalCount(3) = grd%km
+  ALLOCATE ( x3(grd%im, grd%jm, grd%km))
+  ALLOCATE ( bio%covn3n_n1p(grd%im, grd%jm, grd%km)); bio%covn3n_n1p(:,:,:) = 0.0
+
+  x3(:,:,:) = 0.0
 
   stat = nf90mpi_inq_varid (ncid, 'covn3n_n1p', idvar)
   if (stat /= nf90_noerr) call handle_err("nf90mpi_inq_varid radius",stat)
-  stat = nfmpi_get_vara_real_all (ncid, idvar, GlobalStart, GlobalCount, x3)
+  stat = nfmpi_get_vara_real_all (ncid, idvar, MyStart, MyCount, x3)
   if (stat /= nf90_noerr) call handle_err("nfmpi_get_vara_real_all radius",stat)
 
-  bio%covn3n_n1p(:,:,:) = x3(:,:,:)
+  do k=1,grd%km
+    do j=1,grd%jm
+      do i=1,grd%im
+        if(x3(i,j,k) .lt. 1.e20) then
+          
+          bio%covn3n_n1p(i,j,k) = bio%covn3n_n1p(i,j,k) + x3(i,j,k)
+        
+        else
+          bio%covn3n_n1p(i,j,k) = x3(i,j,k)
+          if(grd%msk(i,j,k) .eq. 1) then
+            write(*,*) "Warning!! Bad mask point in N3n N1p covaraince!"
+            write(*,*) "i=",i," j=",j," k=",k
+            write(*,*) "grd%msk(i,j,k)=",grd%msk
+            write(*,*) "bio%covn3n_n1p(i,j,k)=",bio%covn3n_n1p(i,j,k)
+            write(*,*) "Aborting.."
+            call MPI_Abort(Var3DCommunicator, -1, stat)
+          endif
+
+        endif
+      
+      enddo
+    enddo
+  enddo
 
 
   stat = nf90mpi_close(ncid)

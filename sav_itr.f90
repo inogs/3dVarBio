@@ -110,6 +110,10 @@ subroutine sav_itr
     DEALLOCATE( bio%cquot, bio%pquot)
     DEALLOCATE( bio%InitialChl)
   endif
+  if(drv%nut .eq. 1) then
+    DEALLOCATE( bio%InitialNut)
+    DEALLOCATE( bio%covn3n_n1p)
+  endif
 
   DEALLOCATE(SurfaceWaterPoints)  
   
