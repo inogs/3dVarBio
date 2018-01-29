@@ -61,7 +61,7 @@ subroutine def_nml
   drv%dia = 12
 
   if(MyId .eq. 0) then
-    open ( drv%dia, file='OceanVar.diagnostics', form='formatted' )
+    open ( drv%dia, file='BioVar.diagnostics', form='formatted' )
   endif
 
 !---------------------------------------------------------------------
