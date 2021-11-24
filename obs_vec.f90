@@ -42,7 +42,7 @@ subroutine obs_vec
   ! -------
   ! Define observational vector
   
-  obs%no = sat%nc + arg%no
+  obs%no = sat%nc + arg%nc
 
   if(MyId .eq. 0) &
        write(drv%dia,*) ' Total number of observations: ', obs%no
@@ -70,7 +70,7 @@ subroutine obs_vec
     
  endif
  
- ! Observations of chlorophyll
+ ! Observations of satellite chlorophyll
  if(drv%sat_obs .eq. 1) then
   do i=1,sat%no
     if(sat%flc(i).eq.1)then

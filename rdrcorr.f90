@@ -38,9 +38,9 @@ subroutine rdrcorr
   integer(KIND=MPI_OFFSET_KIND)  :: GlobalStart(3), GlobalCount(3)
   real(r4), ALLOCATABLE  :: x3(:,:,:)
 
-  !write(*,*)trim(RCORR_FILE)
+  ! print*,RCORR_FILE
   stat = nf90mpi_open(Var3DCommunicator, trim(RCORR_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
-  if (stat /= nf90_noerr) call handle_err("nf90mpi_open",stat)
+  if (stat /= nf90_noerr) call handle_err("nf90mpi_open "//trim(RCORR_FILE),stat)
 
   ALLOCATE ( x3(GlobalRow,GlobalCol,grd%km))
   GlobalStart(:) = 1

@@ -1,4 +1,4 @@
-subroutine wrt_nut_stat
+subroutine cp_nut_stat
 
   use set_knd
   use grd_str
@@ -10,7 +10,7 @@ subroutine wrt_nut_stat
 
   implicit none
 
-  INTEGER(i4)        :: ncid, ierr, i, j, k, l, m, mm
+  INTEGER(i4)        :: ncid, ierr, i, j, k, l
   INTEGER(i4)        :: idP, iVar
   INTEGER(I4)        :: xid,yid,depid,timeId, idTim
   INTEGER            :: system, SysErr
@@ -22,16 +22,12 @@ subroutine wrt_nut_stat
   CHARACTER(LEN=6)     :: MyVarName
   ! LOGICAL, ALLOCATABLE :: MyConditions(:,:,:,:)
 
-  real(r8)           :: TmpVal, MyCorr, MyRatio!, SMALL
-  real(r4), allocatable, dimension(:,:,:,:) :: ValuesToTest
-
   ! bug fix Intel 2018
   real(r4), allocatable, dimension(:,:,:,:) :: DumpBio
   integer(KIND=MPI_OFFSET_KIND) :: MyStart_4d(4), MyCount_4d(4)
 
   real(r8) :: TimeArr(1)
 
-!  SMALL = 1.e-5
 
   MyStart_4d(1:3) = MyStart(:)
   MyStart_4d(4) = 1
@@ -40,12 +36,11 @@ subroutine wrt_nut_stat
 
   
   ALLOCATE(DumpBio(grd%im,grd%jm,grd%km,1)); DumpBio(:,:,:,:) = 1.e20
-  ALLOCATE(ValuesToTest(grd%im,grd%jm,grd%km,NNutVar)); ValuesToTest(:,:,:,:) = dble(0.)
   ! ALLOCATE(MyConditions(grd%im,grd%jm,grd%km,bio%nphy))
 
   if(MyId .eq. 0) then
-     write(drv%dia,*) 'writing nut structure'     
-     write(*,*) 'writing nut structure'     
+     write(drv%dia,*) 'writing nut structure (only copy from RSTbefore)'     
+     write(*,*) 'writing nut structure (only copy from RSTbefore)'          
   endif
 
   global_im = GlobalRow
@@ -56,30 +51,6 @@ subroutine wrt_nut_stat
   MyCountSingle(1) = 1
   MyStartSingle(1) = 1
   TimeArr(1) = DA_JulianDate
-
-  do k=1,grd%km
-    do j=1,grd%jm
-      do i=1,grd%im
-        if(bio%InitialNut(i,j,k,1) .lt. 1.e20) then
-          ! check obtained values and eventually
-          ! correct them in order to avoid negative concentrations
-          ! if the correction is negative, the correction must be reduced
-          ValuesToTest(i,j,k,1) = bio%InitialNut(i,j,k,1) + grd%n3n(i,j,k)
-          if(bio%updateN1p.eq.1) then
-            ValuesToTest(i,j,k,2) = bio%InitialNut(i,j,k,2) + grd%n3n(i,j,k)*bio%covn3n_n1p(i,j,k)
-          endif
-        !   if(bio%ApplyConditions) then
-        !     !if(ValuesToTest(i,j,k) .gt. 10*bio%InitialChl(i,j,k)) then
-
-        !  !   endif
-            
-        !   endif
-        endif
-      enddo
-    enddo
-  enddo
-
-
 
 
   do l=1,NNutVar
@@ -126,32 +97,9 @@ subroutine wrt_nut_stat
         do i=1,grd%im
 
           if(bio%InitialNut(i,j,k,1) .lt. 1.e20) then
-
-            if(grd%msk(i,j,k).eq.1) then
-
-              if(ValuesToTest(i,j,k,l) .lt. 0) then
-                ! Excluding negative concentrations
-                ! This correction must be the first
-                ! condition applied (before apply corrections
-                ! on the other components)
-                TmpVal = 0.1*bio%InitialNut(i,j,k,l)
-                ! if(TmpVal.gt.SMALL) then
-                !   TmpVal = SMALL
-                ! endif
-                DumpBio(i,j,k,1) = TmpVal
-
-              else
-                DumpBio(i,j,k,1) = ValuesToTest(i,j,k,l)
-                ! if(bio%ApplyConditions) then
-
-                ! endif ! ApplyConditions
-
-              endif
-            else
               DumpBio(i,j,k,1) = bio%InitialNut(i,j,k,l)
-            endif
-
           endif
+
         enddo
       enddo
     enddo
@@ -173,7 +121,7 @@ subroutine wrt_nut_stat
     endif
   enddo ! l
 
-  DEALLOCATE(DumpBio, ValuesToTest)
+  DEALLOCATE(DumpBio)
   ! DEALLOCATE(DumpBio, ValuesToTest, MyConditions)
 
-end subroutine wrt_nut_stat
+end subroutine cp_nut_stat

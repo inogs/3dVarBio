@@ -38,7 +38,7 @@ subroutine readAnisotropy
   real(r4), ALLOCATABLE  :: x2(:,:)
 
   stat = nf90mpi_open(Var3DCommunicator, trim(ANIS_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
-  if (stat /= nf90_noerr) call handle_err("nf90mpi_open",stat)
+  if (stat /= nf90_noerr) call handle_err("nf90mpi_open "//trim(ANIS_FILE),stat)
 
   ALLOCATE ( x2(GlobalRow,GlobalCol))
   GlobalStart(:) = 1

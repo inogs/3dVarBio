@@ -68,6 +68,7 @@ MODULE obs_str
      REAL(r8),    POINTER     ::  tim(:)     ! Time
      REAL(r8),    POINTER     ::  inc(:)     ! Increments
      REAL(r8),    POINTER     ::  err(:)     ! Observational error
+   !   REAL(r8),    POINTER     ::  std(:)     ! STD used for EOFs normalization
      REAL(r8),    POINTER     ::  res(:)     ! residual
      INTEGER(i8), POINTER     ::  ib(:)      ! i index of the nearest west point
      REAL(r8)   , POINTER     ::  pb(:)      ! distance from the nearest west point

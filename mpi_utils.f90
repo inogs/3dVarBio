@@ -1,6 +1,12 @@
 subroutine var3d_mpi_init()
 
+#include <petscversion.h>
+#if PETSC_VERSION_GE(3,8,0)
+#include "petsc/finclude/petscvec.h"
+#else
 #include "petsc/finclude/petscvecdef.h"
+#endif
+
   use mpi_str
   use drv_str
   use petscvec
@@ -93,9 +99,13 @@ subroutine my_3dvar_node()
   call MPI_TYPE_COMMIT(MyPair, ierr)
 
   ALLOCATE(SendCountX2D(NumProcI), SendCountX3D(NumProcI))
+  ALLOCATE(SendCountX3D_chl(NumProcI))
   ALLOCATE(SendDisplX2D(NumProcI), SendDisplX3D(NumProcI))
+  ALLOCATE(SendDisplX3D_chl(NumProcI))
   ALLOCATE(RecCountX2D(NumProcI), RecCountX3D(NumProcI))
+  ALLOCATE(RecCountX3D_chl(NumProcI))
   ALLOCATE(RecDisplX2D(NumProcI), RecDisplX3D(NumProcI))
+  ALLOCATE(RecDisplX3D_chl(NumProcI))
 
   ! print for debug 
   ! write(*,*) "MyId", MyId, "PosI", MyPosI, "PosJ", MyPosJ, "Left", ProcLeft, "Right", ProcRight, "Top", ProcTop, "Bottom", ProcBottom
@@ -136,7 +146,13 @@ end subroutine mpi_sync
 
 subroutine mpi_stop
 
+#include <petscversion.h>
+#if PETSC_VERSION_GE(3,8,0)
+#include "petsc/finclude/petscvec.h"
+#else
 #include "petsc/finclude/petscvecdef.h"
+#endif
+
   use mpi_str
   use petscvec
 

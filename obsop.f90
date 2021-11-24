@@ -42,7 +42,7 @@ subroutine obsop
 
   ! ---
   ! Apply biological repartition of the chlorophyll
-  if(drv%chl_assim .eq. 1) &
+  if((drv%chl_assim .eq. 1) .or. (drv%multiv .eq. 1)) &
     call bio_conv
 
   ! ---

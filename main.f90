@@ -15,6 +15,7 @@ call var3d_mpi_init
 call oceanvar
 
 ! finalizing the MPI environment
+call clean_da_params
 call mpi_stop
 
 end program ocean_var

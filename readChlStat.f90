@@ -42,7 +42,7 @@ subroutine readChlStat
   INTEGER(i4)        :: ncid, VarId, ierr, iVar
   INTEGER(i4)        :: i,j,k,l,m
    
-  CHARACTER(LEN=51)  :: RstFileName
+  CHARACTER(LEN=47)  :: RstFileName
   CHARACTER(LEN=3)   :: MyVarName
   REAL(4), ALLOCATABLE :: x3(:,:,:)
 
@@ -60,7 +60,7 @@ subroutine readChlStat
       if(iVar .gt. NPhytoVar) cycle
 
       MyVarName = DA_VarList(iVar)
-      RstFileName = 'DA__FREQ_1/RST.'//ShortDate//'.'//MyVarName//'.nc'
+      RstFileName = 'DA__FREQ_1/RSTbefore.'//ShortDate//'.'//MyVarName//'.nc'
 
       if(drv%Verbose .eq. 1) then
         if(MyId .eq. 0) &
@@ -92,7 +92,7 @@ subroutine readChlStat
                 if(grd%msk(i,j,k) .eq. 1) then
                   write(*,*) "Warning!! Bad mask point in bio structure!"
                   write(*,*) "i=",i," j=",j," k=",k
-                  write(*,*) "grd%msk(i,j,k)=",grd%msk
+                  write(*,*) "grd%msk(i,j,k)=",grd%msk(i,j,k)
                   write(*,*) "bio%InitialChl(i,j,k)=",bio%InitialChl(i,j,k)
                   write(*,*) "Aborting.."
                   call MPI_Abort(Var3DCommunicator, -1, ierr)

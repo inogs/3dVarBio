@@ -42,7 +42,9 @@ public
         REAL(r8),    POINTER  ::  phy_ad(:,:,:,:,:)    ! biogeochemical adjoint variables
         REAL(r8),    POINTER  ::  InitialChl(:,:,:)    ! initial amount of chlorophyll
         REAL(r8),    POINTER  ::  InitialNut(:,:,:,:)  ! initial amount of nutrients
-        REAL(r8),    POINTER  ::  covn3n_n1p(:,:,:)    ! initial amount of nutrients
+        REAL(r8),    POINTER  ::  covn3n_n1p(:,:,:)    ! covariance n3n n1p
+        REAL(r8),    POINTER  ::  covn3n_chl(:,:,:)    ! covariance n3n chl
+        REAL(r8),    POINTER  ::  covn1p_chl(:,:,:)    ! covariance n3n chl
 
         INTEGER               ::  nphy                 ! number of phytoplankton types
         INTEGER               ::  ncmp                 ! No. of phytoplankton components

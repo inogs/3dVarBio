@@ -71,6 +71,8 @@ MODULE grd_str
 
      INTEGER(i4)              ::  imax         ! Maximum number of extended points
      INTEGER(i4)              ::  jmax         ! Maximum number of extended points
+     INTEGER(i4)              ::  imax_chl     ! Maximum number of extended points until depth pf chl for multivariate
+     INTEGER(i4)              ::  jmax_chl     ! Maximum number of extended points until depth of chl for multivariete
      INTEGER(i4), POINTER     ::  imx(:)       ! Max. no. of extended pnts at each level
      INTEGER(i4), POINTER     ::  jmx(:)       ! Max. no. of extended pnts at each level
      INTEGER(i4), POINTER     ::  istp(:,:,:)    ! Extended points

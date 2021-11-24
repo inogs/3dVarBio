@@ -29,16 +29,22 @@ subroutine bio_conv_ad
   !-----------------------------------------------------------------------
 
   use grd_str
+  use eof_str
   use bio_str
+  use drv_str
 
   implicit none
 
-  INTEGER(i4)   ::  i, j, k, l
+  INTEGER(i4)   ::  i, j, k, l, my_km
 
   bio%phy_ad(:,:,:,:,:) = 0.0
 
+  my_km = grd%km
+  if(drv%multiv .eq. 1) &
+    my_km = ros%kmchl
+
   do l = 1,bio%nphy
-    do k = 1,grd%km
+    do k = 1,my_km
       do j = 1,grd%jm
         do i = 1,grd%im
           bio%phy_ad(i,j,k,l,1) = bio%phy_ad(i,j,k,l,1) + grd%chl_ad(i,j,k)

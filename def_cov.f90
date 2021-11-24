@@ -36,10 +36,12 @@ subroutine def_cov
   use rcfl
   use mpi_str
   use bio_str
+  use da_params
   
   implicit none
   
   INTEGER(i4)                 :: k, nspl, i, j, kk, l
+  INTEGER(i4)                 :: nsplvec(1)
   REAL(r8)                    :: E, dst, Lmean, mean_rad
   REAL(r8)    , ALLOCATABLE   :: sfct(:), al(:), bt(:)
   INTEGER(i4) , ALLOCATABLE   :: jnxx(:)
@@ -108,6 +110,7 @@ subroutine def_cov
   
   !nspl = max(grd%jm,grd%im)
   nspl = max(GlobalRow,GlobalCol)
+  nsplvec(:) = nspl
   ALLOCATE ( sfct(nspl)) ; sfct = huge(sfct(1))
   ALLOCATE ( jnxx(nspl)) ; jnxx = huge(jnxx(1))
   ALLOCATE ( al(nspl))   ; al   = huge(al(1))
@@ -154,8 +157,8 @@ subroutine def_cov
                 jnxx(j) = j
         enddo
         sfct(nspl/2+1) = 1.
-        call rcfl_y_init    ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
-        call rcfl_y_ad_init ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
+        call rcfl_y_init    ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nsplvec)
+        call rcfl_y_ad_init ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nsplvec)
         rcf%sc(k,l) = sfct(nspl/2+1)
     enddo
   enddo
@@ -232,8 +235,8 @@ subroutine def_cov
                   jnxx(j) = j
           enddo
           sfct(nspl/2+1) = 1.
-          call rcfl_y_init    ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
-          call rcfl_y_ad_init ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nspl)
+          call rcfl_y_init    ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nsplvec)
+          call rcfl_y_ad_init ( 1, nspl, 1, nspl, al, bt, sfct, jnxx, nsplvec)
           rcf%sc(k,l) = sfct(nspl/2+1)
       enddo
     enddo
@@ -330,6 +333,57 @@ subroutine def_cov
      
   enddo
 
+
+
+  if (drv%multiv.eq.1) then
+    grd%imax_chl = 0
+    grd%jmax_chl = 0
+
+      do k = 1, ros%kmchl
+         
+         grd%imx(k) = 0
+         do j = 1, localCol
+            kk = grd%istp(1,j,k)
+            if( grd%global_msk(1,j+GlobalColOffset,k).eq.1. ) kk = kk + 1
+            grd%inx(1,j,k) = kk
+            do i = 2, GlobalRow
+               if( grd%global_msk(i,j+GlobalColOffset,k).eq.0. .and. grd%global_msk(i-1,j+GlobalColOffset,k).eq.1. ) then
+                  kk = kk + grd%istp(i,j,k)
+               else if( grd%global_msk(i,j+GlobalColOffset,k).eq.1. .and. grd%global_msk(i-1,j+GlobalColOffset,k).eq.0. ) then
+                  kk = kk + grd%istp(i,j,k) + 1
+               else if( grd%global_msk(i,j+GlobalColOffset,k).eq.1. ) then
+                  kk = kk + 1
+               endif
+               grd%inx(i,j,k) = kk
+            enddo
+            grd%imx(k) = max( grd%imx(k), kk+grd%istp(GlobalRow,j,k))
+         enddo
+         grd%imax   = max( grd%imax, grd%imx(k))
+         
+         grd%jmx(k) = 0
+         do i = 1, localRow
+            kk = grd%jstp(i,1,k)
+            if( grd%global_msk(i+GlobalRowOffset,1,k).eq.1. ) kk = kk + 1
+            grd%jnx(i,1,k) = kk
+            do j = 2, GlobalCol
+               if( grd%global_msk(i+GlobalRowOffset,j,k).eq.0. .and. grd%global_msk(i+GlobalRowOffset,j-1,k).eq.1. ) then
+                  kk = kk + grd%jstp(i,j,k)
+               else if( grd%global_msk(i+GlobalRowOffset,j,k).eq.1. .and. grd%global_msk(i+GlobalRowOffset,j-1,k).eq.0. ) then
+                  kk = kk + grd%jstp(i,j,k) + 1
+               else if( grd%global_msk(i+GlobalRowOffset,j,k).eq.1. ) then
+                  kk = kk + 1
+               endif
+               grd%jnx(i,j,k) = kk
+            enddo
+            grd%jmx(k) = max( grd%jmx(k), kk+grd%jstp(i,GlobalCol,k))
+         enddo
+         grd%jmax   = max( grd%jmax, grd%jmx(k))
+         
+      enddo
+   call MPI_Allreduce(MPI_IN_PLACE, grd%imax_chl, 1, MPI_INT, MPI_MAX, Var3DCommunicator, ierr)
+   call MPI_Allreduce(MPI_IN_PLACE, grd%jmax_chl, 1, MPI_INT, MPI_MAX, Var3DCommunicator, ierr)
+  endif ! if drv%multiv
+
   call MPI_Allreduce(MPI_IN_PLACE, grd%imax, 1, MPI_INT, MPI_MAX, Var3DCommunicator, ierr)
   call MPI_Allreduce(MPI_IN_PLACE, grd%jmax, 1, MPI_INT, MPI_MAX, Var3DCommunicator, ierr)
   
@@ -396,28 +450,40 @@ subroutine def_cov
            
   ros%kmt = grd%km
 
-  if(drv%chl_assim .eq. 1) then
-    call rdeofs_chl
-  else
+  if (drv%multiv .eq. 0) then
+    ros%neof_multi = 0
+
+    if(drv%chl_assim .eq. 1) then
+      call rdeofs_chl
+    else
+      ros%neof_chl = 0
+    endif
+
+    if(drv%nut .eq. 1) then
+      if(bio%n3n .eq. 1) then
+        call rdeofs_n3n
+      else
+         ros%neof_n3n = 0
+      endif
+      if(bio%o2o .eq. 1) then
+        call rdeofs_o2o
+      else
+        ros%neof_o2o = 0
+      endif
+      ros%neof_nut = ros%neof_n3n + ros%neof_o2o
+    else
+      ros%neof_nut = 0
+    endif
+   
+  else if(drv%multiv .eq. 1) then
     ros%neof_chl = 0
+    ros%neof_n3n = 0
+    ros%neof_o2o = 0
+    call rdeofs_multi
   endif
 
-  if(drv%nut .eq. 1) then
-    if(bio%n3n .eq. 1) then
-      call rdeofs_n3n
-    else
-      ros%neof_n3n = 0
-    endif
-    if(bio%o2o .eq. 1) then
-      call rdeofs_o2o
-    else
-      ros%neof_o2o = 0
-    endif
-    ros%neof_nut = ros%neof_n3n + ros%neof_o2o
-  else
-    ros%neof_nut = 0
-  endif
-  ros%neof = ros%neof_chl + ros%neof_nut
+
+  ros%neof = ros%neof_multi + ros%neof_chl + ros%neof_nut
   
   ALLOCATE ( grd%ro(    grd%im, grd%jm, ros%neof))   ; grd%ro    = 0.0
   ALLOCATE ( grd%ro_ad( grd%im, grd%jm, ros%neof))   ; grd%ro_ad = 0.0
@@ -425,6 +491,11 @@ subroutine def_cov
   if(MyId .eq. 0) then
        write(*,*) 'rcfl allocation :', grd%jmax, grd%imax, nthreads
        write(*,*) 'Total number of eofs: ', ros%neof
+       write(*,*) ' - multi number of eofs: ', ros%neof_multi
+       write(*,*) ' - chl number of eofs: ', ros%neof_chl
+       write(*,*) ' - nut number of eofs: ', ros%neof_nut
+       write(*,*) ' - n3n number of eofs: ', ros%neof_n3n
+       write(*,*) ' - o2o number of eofs: ', ros%neof_o2o
   endif
   ALLOCATE ( a_rcx(localCol,grd%imax,nthreads)) ; a_rcx = huge(a_rcx(1,1,1))
   ALLOCATE ( b_rcx(localCol,grd%imax,nthreads)) ; b_rcx = huge(b_rcx(1,1,1))
@@ -447,15 +518,30 @@ subroutine def_cov
   
   ! read ratios for biological repartition
   ! of the chlorophyll
-  if(drv%chl_assim.eq.1) then
-    call readChlStat
-  endif
+  if(drv%multiv .eq. 0) then
+   if(drv%chl_assim.eq.1) then
+      call readChlStat
+      if ((drv%nut .eq. 0) .and. (NNutVar .gt. 0)) then
+         call readNutStat
+         if (drv%chl_upnut.eq.1) then
+         call readNutCov
+         call readChlNutCov
+         endif
+      endif
+   endif
 
-  if(drv%nut.eq.1) then
-    call readNutStat
-    if(bio%N3n.eq.1 .AND. bio%updateN1p.eq.1) then
-      call readNutCov
-    endif
-  endif
+   if(drv%nut.eq.1) then
+      call readNutStat
+      if(bio%N3n.eq.1 .AND. bio%updateN1p.eq.1) then
+         call readNutCov
+      endif
+   endif
+
+  else if (drv%multiv.eq.1) then
+   call readChlStat
+   call readNutStat
+   if(bio%updateN1p.eq.1) &
+     call readNutCov
+  endif 
 
 end subroutine def_cov

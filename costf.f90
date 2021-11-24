@@ -55,22 +55,28 @@ subroutine costf
   call cnv_ctv
   
   ! --------
-  ! Control to physical space 
-  if(drv%chl_assim .eq. 1) then
+  ! Control to physical space
+  if (drv%multiv.eq.0) then
+    if(drv%chl_assim .eq. 1) then
+      call ver_hor_chl
+    endif
+    if(drv%nut .eq. 1) then
+      if(bio%N3n .eq. 1) then
+        call ver_hor_nut(grd%n3n, grd%n3n_ad, 'N')
+      endif
+      if(bio%O2o .eq. 1) then
+        call ver_hor_nut(grd%o2o, grd%o2o_ad, 'O')
+      endif
+    endif
+  
+  else if(drv%multiv .eq. 1) then
     call ver_hor_chl
-  endif
-  if(drv%nut .eq. 1) then
-    if(bio%N3n .eq. 1) then
-      call ver_hor_nut(grd%n3n, grd%n3n_ad, 'N')
-    endif
-    if(bio%O2o .eq. 1) then
-      call ver_hor_nut(grd%o2o, grd%o2o_ad, 'O')
-    endif
+    call ver_hor_nut(grd%n3n, grd%n3n_ad, 'N')
   endif
   
   ! ---
   ! Apply biological repartition of the chlorophyll
-  if(drv%chl_assim .eq. 1) &
+  if((drv%chl_assim .eq. 1) .or. (drv%multiv .eq. 1)) &
     call bio_mod
   
   ! --------
@@ -109,23 +115,29 @@ subroutine costf
   
   ! ---
   ! Apply biological repartition of the chlorophyll
-  if(drv%chl_assim .eq. 1) &
+  if((drv%chl_assim .eq. 1) .or. (drv%multiv .eq. 1)) &
     call bio_mod_ad
 
   ! --------
-  ! Control to physical space 
-  if(drv%chl_assim .eq. 1) then
+  ! Control to physical space
+  if (drv%multiv .eq. 0) then
+    if(drv%chl_assim .eq. 1) then
+      call ver_hor_chl_ad
+    endif
+    if(drv%nut .eq. 1) then
+      if(bio%N3n .eq. 1) then
+        call ver_hor_nut_ad(grd%n3n, grd%n3n_ad, 'N')
+      endif
+      if(bio%O2o .eq. 1) then
+        call ver_hor_nut_ad(grd%o2o, grd%o2o_ad, 'O')
+      endif
+    endif
+    
+  else if(drv%multiv .eq. 1) then
     call ver_hor_chl_ad
+    call ver_hor_nut_ad(grd%n3n, grd%n3n_ad, 'N')
+    call veof_multiv_ad
   endif
-  if(drv%nut .eq. 1) then
-    if(bio%N3n .eq. 1) then
-      call ver_hor_nut_ad(grd%n3n, grd%n3n_ad, 'N')
-    endif
-    if(bio%O2o .eq. 1) then
-      call ver_hor_nut_ad(grd%o2o, grd%o2o_ad, 'O')
-    endif
-  endif
-  
   !   write(*,*) 'COSTF sum(ro_ad) = ' , sum(grd%ro_ad)
   ! --------
   ! Convert the control vector 

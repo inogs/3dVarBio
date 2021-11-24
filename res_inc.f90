@@ -33,10 +33,26 @@ subroutine res_inc
  use drv_str
  use grd_str
  use obs_str
+ use bio_str
 
  implicit none
 
- grd%chl_ad(:,:,:) = 0.0 ! OMP
+ if (drv%multiv .eq. 0) then
+  if (drv%chl_assim .eq. 1) then
+    grd%chl_ad(:,:,:) = 0.0 ! OMP
+  end if
+  
+  if (drv%nut .eq. 1) then
+    if (bio%n3n .eq. 1) &
+      grd%n3n_ad(:,:,:) = 0.0
+    if (bio%o2o .eq. 1) &
+      grd%o2o_ad(:,:,:) = 0.0
+  endif
+
+ else if(drv%multiv .eq.1) then
+    grd%chl_ad(:,:,:) = 0.0 ! OMP
+    grd%n3n_ad(:,:,:) = 0.0
+ endif
  
  obs%gra(:) = obs%amo(:) / obs%err(:) ! OMP
 

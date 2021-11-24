@@ -42,8 +42,11 @@ MODULE eof_str
      INTEGER(i4)           ::  neof_nut     ! No. of EOFs for nutrients
      INTEGER(i4)           ::  neof_n3n     ! No. of EOFs for N3n
      INTEGER(i4)           ::  neof_o2o     ! No. of EOFs for O2o
+     INTEGER(i4)           ::  neof_multi   ! No. of EOFs for multivariate
      INTEGER(i4)           ::  nreg         ! No. of regions
      INTEGER(i4)           ::  kmt          ! No. of levels of EOFs
+     INTEGER(i4)           ::  kmchl  ! No. of levels of multi EOFs for chl
+     INTEGER(i4)           ::  kmnit  ! No. of levels of multi EOFs for nit
      REAL(r8),    POINTER  ::  evcr(:,:,:)  ! Eigenvectors on regions
      REAL(r8),    POINTER  ::  evar(:,:)    ! Eigenvalues on regions
      REAL(r8),    POINTER  ::  corr(:,:,:)  ! Corelations on regions
@@ -57,6 +60,8 @@ MODULE eof_str
      REAL(r8),    POINTER  ::  eva_n3n(:,:)     ! Eigenvalues
      REAL(r8),    POINTER  ::  evc_o2o(:,:,:)   ! Eigenvectors
      REAL(r8),    POINTER  ::  eva_o2o(:,:)     ! Eigenvalues
+     REAL(r8),    POINTER  ::  evc_multi(:,:,:)   ! Eigenvectors
+     REAL(r8),    POINTER  ::  eva_multi(:,:)     ! Eigenvalues
 #endif
      
      

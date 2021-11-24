@@ -41,6 +41,7 @@ subroutine get_obs_arg
   INTEGER(i4)   ::  k
   INTEGER(i4)   ::  i1, kk, i
   REAL(r8), ALLOCATABLE, DIMENSION(:) :: TmpFlc, TmpPar, TmpLon, TmpLat
+  ! REAL(r8), ALLOCATABLE, DIMENSION(:) :: TmpDpt, TmpTim, TmpRes, TmpErr, TmpStd, TmpIno 
   REAL(r8), ALLOCATABLE, DIMENSION(:) :: TmpDpt, TmpTim, TmpRes, TmpErr, TmpIno 
   INTEGER(i4)   :: GlobalArgNum, Counter, ierr
   character(len=1024) :: filename
@@ -69,6 +70,7 @@ subroutine get_obs_arg
   ALLOCATE( TmpLon(GlobalArgNum), TmpLat(GlobalArgNum))
   ALLOCATE( TmpDpt(GlobalArgNum), TmpTim(GlobalArgNum))
   ALLOCATE( TmpRes(GlobalArgNum), TmpErr(GlobalArgNum))
+!   ALLOCATE( TmpStd(GlobalArgNum), TmpIno(GlobalArgNum))
   ALLOCATE( TmpIno(GlobalArgNum))
 
   if(MyId .eq. 0) then
@@ -78,7 +80,9 @@ subroutine get_obs_arg
             TmpFlc(k), TmpPar(k), &
             TmpLon(k), TmpLat(k), &
             TmpDpt(k), TmpTim(k), &
-            TmpRes(k), TmpErr(k), TmpIno(k)
+            TmpRes(k), TmpErr(k), &
+            ! TmpStd(k), TmpIno(k)
+            TmpIno(k)
     end do
     close (511)
   endif
@@ -98,9 +102,9 @@ subroutine get_obs_arg
   do k=1,GlobalArgNum
     if( TmpLon(k) .ge. grd%lon(1,1) .and. TmpLon(k) .lt. grd%NextLongitude .and. &
         TmpLat(k) .ge. grd%lat(1,1) .and. TmpLat(k) .lt. grd%lat(grd%im,grd%jm) ) then
-        if((TmpPar(k).eq.0 .and. drv%chl_assim.eq.1) .or. &
-          (TmpPar(k).eq.1 .and. drv%nut.eq.1 .and. bio%n3n.eq.1) .or. &
-          (TmpPar(k).eq.2 .and. drv%nut.eq.1 .and. bio%o2o.eq.1)) then
+        if( (TmpPar(k).eq.0 .and. ((drv%chl_assim.eq.1).or.(drv%multiv.eq.1))) .or. &
+            (TmpPar(k).eq.1 .and. ((drv%nut.eq.1 .and.bio%n3n.eq.1).or.(drv%multiv.eq.1))) .or. &
+            (TmpPar(k).eq.2 .and. drv%nut.eq.1 .and. bio%o2o.eq.1) ) then
             Counter = Counter + 1
         endif
     endif
@@ -116,6 +120,7 @@ subroutine get_obs_arg
   ALLOCATE ( arg%inc(arg%no))
   ALLOCATE ( arg%err(arg%no))
   ALLOCATE ( arg%res(arg%no))
+!   ALLOCATE ( arg%std(arg%no))
   ALLOCATE ( arg%ib(arg%no), arg%jb(arg%no), arg%kb(arg%no))
   ALLOCATE ( arg%pb(arg%no), arg%qb(arg%no), arg%rb(arg%no))
   ALLOCATE ( arg%pq1(arg%no), arg%pq2(arg%no), arg%pq3(arg%no), arg%pq4(arg%no))
@@ -125,8 +130,8 @@ subroutine get_obs_arg
   do k=1,GlobalArgNum
     if( TmpLon(k) .ge. grd%lon(1,1) .and. TmpLon(k) .lt. grd%NextLongitude .and. &
         TmpLat(k) .ge. grd%lat(1,1) .and. TmpLat(k) .lt. grd%lat(grd%im,grd%jm) ) then
-        if((TmpPar(k).eq.0 .and. drv%chl_assim.eq.1) .or. &
-          (TmpPar(k).eq.1 .and. drv%nut.eq.1 .and. bio%n3n.eq.1) .or. &
+        if((TmpPar(k).eq.0 .and. (drv%chl_assim.eq.1 .or. drv%multiv.eq.1)) .or. &
+          (TmpPar(k).eq.1 .and. ((drv%nut.eq.1 .and. bio%n3n.eq.1).or.(drv%multiv.eq.1))) .or. &
           (TmpPar(k).eq.2 .and. drv%nut.eq.1 .and. bio%o2o.eq.1)) then
             Counter = Counter + 1
             arg%flc(Counter) = TmpFlc(k)
@@ -136,6 +141,7 @@ subroutine get_obs_arg
             arg%dpt(Counter) = TmpDpt(k)
             arg%res(Counter) = TmpRes(k)
             arg%err(Counter) = TmpErr(k)
+            ! arg%std(Counter) = TmpStd(k)
             arg%ino(Counter) = TmpIno(k)
         endif
     endif
@@ -194,6 +200,7 @@ subroutine get_obs_arg
   DEALLOCATE( TmpLon, TmpLat)
   DEALLOCATE( TmpDpt, TmpTim)
   DEALLOCATE( TmpRes, TmpErr)
+!   DEALLOCATE( TMPStd, TmpIno)  
   DEALLOCATE( TmpIno)  
   
 end subroutine get_obs_arg
@@ -212,12 +219,13 @@ subroutine int_par_arg
   use set_knd
   use drv_str
   use grd_str
+  use eof_str
   use obs_str
   use mpi_str
 
   implicit none
   
-  INTEGER(i4)   ::  i, j, k, ierr
+  INTEGER(i4)   ::  i, j, k, ierr, kind, kk
   INTEGER(i4)   ::  i1, j1, k1, idep
   REAL(r8)      ::  p1, q1, r1
   REAL(r8)      ::  msk4, div_x, div_y
@@ -280,7 +288,8 @@ subroutine int_par_arg
      ! ---
      ! Horizontal interpolation parameters for each masked grid
      do k = 1,arg%no
-        if(arg%flc(k) .eq. 1) then
+        if(arg%flg(k) .eq. 1) then
+        ! if(arg%flg(k) .eq. 1) then ! to verify that it works also in this case
            
            i1=arg%ib(k)
            p1=arg%pb(k)
@@ -355,6 +364,25 @@ subroutine int_par_arg
         endif
      enddo
      
+
+     ! Exclude observations below ros%kmchl in multivariate observations
+     if(drv%multiv.eq.1) then
+     do k=1,arg%no
+        if((arg%flc(k).eq.1).and.(arg%par(k).eq.0)) then
+          kind = grd%km-1
+          do kk = 1,grd%km-1
+            if( arg%dpt(k).ge.grd%dep(kk) .and. arg%dpt(k).lt.grd%dep(kk+1) ) then
+              kind = kk
+            else if ( arg%dpt(k).ge.0 .and. arg%dpt(k).lt.grd%dep(1)) then
+              kind = 1
+            endif
+          enddo
+          if(kind.gt.ros%kmchl) then
+            arg%flc(k)=0
+          end if
+        endif
+      enddo
+      endif
      
      ! ---
      ! Count good observations

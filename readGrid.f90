@@ -3,6 +3,7 @@ subroutine readGrid
   use set_knd
   use drv_str
   use grd_str
+  use eof_str
   use filenames
   use mpi_str
   use pnetcdf
@@ -12,7 +13,7 @@ subroutine readGrid
 
   implicit none
 
-  integer(i8) :: ierr, ncid
+  integer(i8) :: ierr, ncid, my_km
   integer(i8) :: jpreci, jprecj
   integer(i8) :: VarId
   real(r4), ALLOCATABLE          :: x3(:,:,:), x2(:,:), x1(:)
@@ -101,6 +102,20 @@ subroutine readGrid
   ALLOCATE(SendTop(grd%jm), RecBottom(grd%jm))
   ALLOCATE(SendBottom(grd%jm), RecTop(grd%jm))
 
+  ALLOCATE(SendTop_2d(   grd%jm,grd%km), SendBottom_2d (grd%jm,grd%km))
+  ALLOCATE(RecBottom_2d( grd%jm,grd%km), RecTop_2d(     grd%jm,grd%km))
+  if(drv%multiv.eq.0) then 
+    ALLOCATE(ChlExtended_3d (grd%im+1, grd%jm, grd%km))
+  else if(drv%multiv.eq.1) then 
+    ALLOCATE(ChlExtended_3d (grd%im+1, grd%jm, ros%kmchl))
+  end if
+  ALLOCATE(N3nExtended_3d (grd%im+1, grd%jm, grd%km))
+  ALLOCATE(O2oExtended_3d (grd%im+1, grd%jm, grd%km))
+
+
+
+
+
   ALLOCATE ( grd%reg(grd%im,grd%jm))        ; grd%reg = huge(grd%reg(1,1))
   ALLOCATE ( grd%msk(grd%im,grd%jm,grd%km)) ; grd%msk = huge(grd%msk(1,1,1))
   ALLOCATE ( grd%dep(grd%km))        ; grd%dep = huge(grd%dep(1))
@@ -120,23 +135,33 @@ subroutine readGrid
   ALLOCATE ( grd%inx(GlobalRow,localCol,grd%km))   ; grd%inx  = huge(grd%inx(1,1,1))
   ALLOCATE ( grd%jnx(localRow,GlobalCol,grd%km))   ; grd%jnx  = huge(grd%jnx(1,1,1))
 
-  if(drv%chl_assim .eq. 1) then
-    ALLOCATE ( grd%chl(grd%im,grd%jm,grd%km) )    ; grd%chl    = huge(grd%chl(1,1,1))
-    ALLOCATE ( grd%chl_ad(grd%im,grd%jm,grd%km) ) ; grd%chl_ad = huge(grd%chl_ad(1,1,1))
-  endif
-  if(drv%nut .eq. 1) then
-    if(bio%N3n .eq. 1) then
-      ALLOCATE ( grd%n3n(grd%im,grd%jm,grd%km) )    ; grd%n3n    = huge(grd%n3n(1,1,1))
-      ALLOCATE ( grd%n3n_ad(grd%im,grd%jm,grd%km) ) ; grd%n3n_ad = huge(grd%n3n_ad(1,1,1))
+  if(drv%multiv .eq. 0) then
+    if(drv%chl_assim .eq. 1) then
+      ALLOCATE ( grd%chl(grd%im,grd%jm,grd%km) )    ; grd%chl    = huge(grd%chl(1,1,1))
+      ALLOCATE ( grd%chl_ad(grd%im,grd%jm,grd%km) ) ; grd%chl_ad = huge(grd%chl_ad(1,1,1))
+      ALLOCATE ( bio%phy(grd%im,grd%jm,grd%km,bio%nphy,bio%ncmp) ) ; bio%phy = huge(bio%phy(1,1,1,1,1))
+      ALLOCATE ( bio%phy_ad(grd%im,grd%jm,grd%km,bio%nphy,bio%ncmp) ) ; bio%phy_ad = huge(bio%phy_ad(1,1,1,1,1))
     endif
-    if(bio%O2o .eq. 1) then
-      ALLOCATE ( grd%o2o(grd%im,grd%jm,grd%km) )    ; grd%o2o    = huge(grd%o2o(1,1,1))
-      ALLOCATE ( grd%o2o_ad(grd%im,grd%jm,grd%km) ) ; grd%o2o_ad = huge(grd%o2o_ad(1,1,1))
+    if(drv%nut .eq. 1) then
+      if(bio%N3n .eq. 1) then
+        ALLOCATE ( grd%n3n(grd%im,grd%jm,grd%km) )    ; grd%n3n    = huge(grd%n3n(1,1,1))
+        ALLOCATE ( grd%n3n_ad(grd%im,grd%jm,grd%km) ) ; grd%n3n_ad = huge(grd%n3n_ad(1,1,1))
+      endif
+      if(bio%O2o .eq. 1) then
+        ALLOCATE ( grd%o2o(grd%im,grd%jm,grd%km) )    ; grd%o2o    = huge(grd%o2o(1,1,1))
+        ALLOCATE ( grd%o2o_ad(grd%im,grd%jm,grd%km) ) ; grd%o2o_ad = huge(grd%o2o_ad(1,1,1))
+      endif
     endif
+
+  else if(drv%multiv .eq. 1) then
+    ALLOCATE ( grd%chl(grd%im,grd%jm,ros%kmchl) )    ; grd%chl    = huge(grd%chl(1,1,1))
+    ALLOCATE ( grd%chl_ad(grd%im,grd%jm,ros%kmchl) ) ; grd%chl_ad = huge(grd%chl_ad(1,1,1))
+    ALLOCATE ( grd%n3n(grd%im,grd%jm,ros%kmnit) )    ; grd%n3n    = huge(grd%n3n(1,1,1))
+    ALLOCATE ( grd%n3n_ad(grd%im,grd%jm,ros%kmnit) ) ; grd%n3n_ad = huge(grd%n3n_ad(1,1,1))
+    ALLOCATE ( bio%phy(grd%im,grd%jm,ros%kmchl,bio%nphy,bio%ncmp) ) ; bio%phy = huge(bio%phy(1,1,1,1,1))
+    ALLOCATE ( bio%phy_ad(grd%im,grd%jm,ros%kmchl,bio%nphy,bio%ncmp) ) ; bio%phy_ad = huge(bio%phy_ad(1,1,1,1,1))
   endif
 
-  ALLOCATE ( bio%phy(grd%im,grd%jm,grd%km,bio%nphy,bio%ncmp) ) ; bio%phy = huge(bio%phy(1,1,1,1,1))
-  ALLOCATE ( bio%phy_ad(grd%im,grd%jm,grd%km,bio%nphy,bio%ncmp) ) ; bio%phy_ad = huge(bio%phy_ad(1,1,1,1,1))
   
   ALLOCATE ( x3(grd%im,grd%jm,grd%km)) ;  x3 = huge(x3(1,1,1))
   ALLOCATE ( x2(grd%im,grd%jm))        ;  x2 = huge(x2(1,1))
@@ -208,7 +233,6 @@ subroutine readGrid
   ! *****************************************************************************************
   ! *****************************************************************************************
 
-  call CreateMpiWindows
 
 end subroutine readGrid
 
@@ -217,13 +241,14 @@ subroutine DomainDecomposition
   use drv_str
   use mpi_str
   use grd_str
+  use eof_str
 
   implicit none
 
   integer, allocatable :: ilcit(:,:), ilcjt(:,:), BalancedSlice(:,:)
   integer(i8) :: ji, jj, TmpInt, ierr ! jpi, jpj, nn, i
   integer(i8) :: GlobalRestCol, GlobalRestRow
-  integer(i8) :: i, j, k, kk
+  integer(i8) :: i, j, k, kk, my_km
   integer(i8) :: NCoastX, NCoastY, TmpCoast
   integer(i8) :: NRows, NCols
   integer(i8) :: SliceRestRow, SliceRestCol
@@ -312,9 +337,15 @@ subroutine DomainDecomposition
 
   SendDisplX3D(1) = 0
   RecDisplX3D(1)  = 0
+  SendDisplX3D_chl(1) = 0
+  RecDisplX3D_chl(1)  = 0
 
   SendDisplX2D(1) = 0
   RecDisplX2D(1)  = 0
+
+  my_km = grd%km
+  if(drv%multiv.eq.1) &
+    my_km = ros%kmchl
 
   do i=1,NumProcI
     if(i-1 .lt. SliceRestCol) then
@@ -332,12 +363,18 @@ subroutine DomainDecomposition
     SendCountX3D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im * grd%km
     RecCountX3D(i)  = localCol * grd%km * (GlobalRow / NumProcI + OffsetCol)
 
+    SendCountX3D_chl(i) = (grd%jm / NumProcI + OffsetRow) * grd%im * my_km
+    RecCountX3D_chl(i)  = localCol * my_km * (GlobalRow / NumProcI + OffsetCol)
+
     SendCountX2D(i) = (grd%jm / NumProcI + OffsetRow) * grd%im
     RecCountX2D(i)  = localCol * (GlobalRow / NumProcI + OffsetCol)
 
     if(i .lt. NumProcI) then
         SendDisplX3D(i+1) = SendDisplX3D(i) + SendCountX3D(i)
         RecDisplX3D(i+1)  = RecDisplX3D(i) + RecCountX3D(i)
+
+        SendDisplX3D_chl(i+1) = SendDisplX3D_chl(i) + SendCountX3D_chl(i)
+        RecDisplX3D_chl(i+1)  = RecDisplX3D_chl(i) + RecCountX3D_chl(i)
 
         SendDisplX2D(i+1) = SendDisplX2D(i) + SendCountX2D(i)
         RecDisplX2D(i+1)  = RecDisplX2D(i) + RecCountX2D(i)
@@ -441,37 +478,4 @@ subroutine handle_err(err_msg, errcode)
 end subroutine handle_err
 
 
-subroutine CreateMpiWindows
 
-  use grd_str
-  use mpi_str
-  use drv_str
-  use bio_str
-  
-  implicit none
-  ! include "mpif.h"
-  
-  integer :: ierr
-  integer(kind=MPI_ADDRESS_KIND) :: nbytes, lenreal, dummy
-
-  ! lenreal = 8
-  call MPI_Type_get_extent(MPI_REAL8, dummy, lenreal, ierr)
-  nbytes = grd%im*grd%jm*grd%km*lenreal
-
-  if(drv%chl_assim .eq. 1) then
-    call MPI_Win_create(grd%chl, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinChl, ierr)
-    call MPI_Win_create(grd%chl_ad, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinChlAd, ierr)
-  endif
-  if(drv%nut .eq. 1) then
-    if(bio%N3n .eq. 1) then
-      call MPI_Win_create(grd%n3n, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinN3n, ierr)
-      call MPI_Win_create(grd%n3n_ad, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinN3nAd, ierr)
-    endif
-    if(bio%O2o .eq. 1) then
-      call MPI_Win_create(grd%o2o, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinO2o, ierr)
-      call MPI_Win_create(grd%o2o_ad, nbytes, lenreal, MPI_INFO_NULL, Var3DCommunicator, MpiWinO2oAd, ierr)
-    endif
-  endif
-  
-
-end subroutine CreateMpiWindows

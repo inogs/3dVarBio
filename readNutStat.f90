@@ -42,7 +42,7 @@ subroutine readNutStat
   INTEGER(i4)        :: ncid, VarId, ierr, iVar
   INTEGER(i4)        :: i,j,k,l
    
-  CHARACTER(LEN=51)  :: RstFileName
+  CHARACTER(LEN=47)  :: RstFileName
   CHARACTER(LEN=3)   :: MyVarName
   REAL(4), ALLOCATABLE :: x3(:,:,:)
 
@@ -62,7 +62,7 @@ subroutine readNutStat
     endif
 
     MyVarName = DA_VarList(iVar)
-    RstFileName = 'DA__FREQ_1/RST.'//ShortDate//'.'//MyVarName//'.nc'
+    RstFileName = 'DA__FREQ_1/RSTbefore.'//ShortDate//'.'//MyVarName//'.nc'
 
     if(drv%Verbose .eq. 1) then
       if(MyId .eq. 0) &
@@ -90,8 +90,8 @@ subroutine readNutStat
             if(grd%msk(i,j,k) .eq. 1) then
               write(*,*) "Warning!! Bad mask point in bio structure!"
               write(*,*) "i=",i," j=",j," k=",k
-              write(*,*) "grd%msk(i,j,k)=",grd%msk
-              write(*,*) "bio%InitialChl(i,j,k)=",bio%InitialChl(i,j,k)
+              write(*,*) "grd%msk(i,j,k)=",grd%msk(i,j,k)
+              write(*,*) "bio%InitialNut(i,j,k)=",bio%InitialNut(i,j,k,l)
               write(*,*) "Aborting.."
               call MPI_Abort(Var3DCommunicator, -1, ierr)
             endif

@@ -37,6 +37,8 @@ subroutine get_obs
   
   arg%no = 0
   sat%no = 0
+  arg%nc = 0
+  sat%nc = 0
 
   
   ! ----

@@ -1,6 +1,11 @@
 subroutine tao_minimizer
 
+#include "petscversion.h"
+#if PETSC_VERSION_GE(3,8,0)
+#include "petsc/finclude/petscvec.h"
+#else
 #include "petsc/finclude/petscvecdef.h"
+#endif
 
   use drv_str
   use ctl_str
@@ -14,7 +19,7 @@ subroutine tao_minimizer
   PetscErrorCode     ::   ierr
   Tao                ::   tao
   Vec                ::   MyState    ! array that stores the (temporary) state
-  PetscInt           ::   n, M, GlobalStart, MyEnd, iter
+  PetscInt           ::   n, M, GlobalStart, MyEnd, iter!, maxfeval
   PetscReal          ::   fval, gnorm, cnorm, xdiff
   PetscScalar        ::   MyTolerance
   TaoConvergedReason ::   reason
@@ -89,7 +94,12 @@ subroutine tao_minimizer
   ! Set initial solution array, MyBounds and MyFuncAndGradient routines
   call TaoSetInitialVector(tao, MyState, ierr)
   CHKERRQ(ierr)
+#include <petscversion.h>
+#if PETSC_VERSION_GE(3,8,0)
+  call TaoSetObjectiveAndGradientRoutine(tao, MyFuncAndGradient, PETSC_NULL_VEC, ierr)
+#else
   call TaoSetObjectiveAndGradientRoutine(tao, MyFuncAndGradient, PETSC_NULL_OBJECT, ierr)
+#endif
   CHKERRQ(ierr)
 
   ! Calling costf in order to compute
@@ -108,12 +118,19 @@ subroutine tao_minimizer
 
   if(MyId .eq. 0) then
      print*, "Setting MyTolerance", MyTolerance
+     print*, "------- MaxGrad", MaxGrad
      print*, ""
      write(drv%dia,*) "Setting MyTolerance", MyTolerance
+     write(drv%dia,*) "------- MaxGrad", MaxGrad
   endif
 
   ! setting tolerances
   call TaoSetTolerances(tao, MyTolerance, 1.d-4, ctl%pgper, ierr)
+  CHKERRQ(ierr)
+
+  ! setting max number of fucntion evaluation
+  !maxfeval = 300
+  call TaoSetMaximumFunctionEvaluations(tao, 100, ierr)
   CHKERRQ(ierr)
 
   ! calling the solver to minimize the problem
@@ -131,13 +148,33 @@ subroutine tao_minimizer
 
   call TaoGetSolutionStatus(tao, iter, fval, gnorm, cnorm, xdiff, reason, ierr)
   if(reason .lt. 0) then
-    if(MyId .eq. 0) then
-      print*, "TAO failed to find a solution"
-      print*, "Aborting.."
-    endif
-    call MPI_Barrier(Var3DCommunicator, ierr)
-    call MPI_Abort(Var3DCommunicator, -1, ierr)
-  endif
+
+    if( ((reason.eq.-6) .or. (reason.eq.-5)) .and. (drv%MyCounter .gt. 12) ) then
+      if(MyId .eq. 0) then
+        print*, "TAO failed to find a solution"
+        print*, "fval..", fval
+        print*, "gnorm.", gnorm
+        print*, "reason", reason
+        print*, "iter", iter
+        print*, " MyCount", drv%MyCounter
+        print*, "BUT assigning a solution "
+      endif
+
+    else
+      if(MyId .eq. 0) then
+        print*, "TAO failed to find a solution"
+        print*, "fval..", fval
+        print*, "gnorm.", gnorm
+        print*, "reason", reason
+        print*, "iter", iter
+        print*, " MyCount", drv%MyCounter
+        print*, "Aborting.."
+      endif
+      call MPI_Barrier(Var3DCommunicator, ierr)
+      call MPI_Abort(Var3DCommunicator, -1, ierr)
+    endif ! reason -6 or -5
+
+  endif !reason.lt.0
 
   ! Get the solution and copy into ctl%x_c array
   call TaoGetSolutionVector(tao, MyState, ierr)
@@ -183,7 +220,12 @@ end subroutine tao_minimizer
 
 subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
 
+#include <petscversion.h>
+#if PETSC_VERSION_GE(3,8,0)
+#include "petsc/finclude/petscvec.h"
+#else
 #include "petsc/finclude/petscvecdef.h"
+#endif
 
   use set_knd
   use drv_str

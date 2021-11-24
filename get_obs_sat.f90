@@ -2,16 +2,17 @@ subroutine get_obs_sat
   
   !---------------------------------------------------------------------------
   !                                                                          !
-  !    Copyright 2006 Srdjan Dobricic, CMCC, Bologna                         !
+  !    Copyright 2018 Anna Teruzzi, OGS, Trieste                         !
   !                                                                          !
-  !    This file is part of OceanVar.                                          !
+  !    This file is part of 3DVarBio.
+  !    3DVarBio is based on OceanVar (Dobricic, 2006)                                          !
   !                                                                          !
-  !    OceanVar is free software: you can redistribute it and/or modify.     !
+  !    3DVarBio is  free software: you can redistribute it and/or modify.     !
   !    it under the terms of the GNU General Public License as published by  !
   !    the Free Software Foundation, either version 3 of the License, or     !
   !    (at your option) any later version.                                   !
   !                                                                          !
-  !    OceanVar is distributed in the hope that it will be useful,           !
+  !    3DVarBio is  distributed in the hope that it will be useful,           !
   !    but WITHOUT ANY WARRANTY; without even the implied warranty of        !
   !    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         !
   !    GNU General Public License for more details.                          !
@@ -22,8 +23,9 @@ subroutine get_obs_sat
   !---------------------------------------------------------------------------
   
   !-----------------------------------------------------------------------
-  !                                                                      !
-  ! Load Chlorophyll observations                                                !
+  ! Version 1: A. Teruzzi 2018                                           !
+  ! 
+  ! Load Chlorophyll observations                                        !
   !                                                                      !
   !-----------------------------------------------------------------------
   
@@ -33,6 +35,7 @@ subroutine get_obs_sat
   use obs_str
   use mpi_str
   use pnetcdf
+  use da_params
   use filenames
   
   implicit none
@@ -41,13 +44,29 @@ subroutine get_obs_sat
   INTEGER(i4)   ::  i
   REAL(r8)      ::  zbo, zbn
   REAL(r4), ALLOCATABLE      ::  chl_mis(:,:),chl_err(:,:)
-  INTEGER(i4)   ::  stat, ncid, idvar, VarId
+  REAL(i4), ALLOCATABLE      ::  flagblk(:,:)
+  INTEGER(i4)   ::  stat, ncid, idvar, VarId, ierr
+  INTEGER(i4)   ::  xid, yid, idF, ii
+  INTEGER(KIND=MPI_OFFSET_KIND)   :: global_im, global_jm
+  INTEGER(KIND=MPI_OFFSET_KIND)   ::  MyCountTwod(2), MyStartTwod(2)
+  CHARACTER(LEN=45)   :: flagFile
+  CHARACTER(LEN=15)   :: FlagVarName
   
+
+  global_im = GlobalRow
+  global_jm = GlobalCol
+  do ii=1,2
+    MyCountTwod(ii) = MyCount(ii)
+    MyStartTwod(ii) = MyStart(ii)
+  enddo
+
+
+
   sat%no = 0
   sat%nc = 0
 
   stat = nf90mpi_open(Var3DCommunicator, trim(MISFIT_FILE), NF90_NOWRITE, MPI_INFO_NULL, ncid)
-  if (stat .ne. NF90_NOERR ) call handle_err('nf90mpi_open', stat)
+  if (stat .ne. NF90_NOERR ) call handle_err('nf90mpi_open '//trim(MISFIT_FILE), stat)
   
   if(stat.ne.0)then
      sat%no = 0
@@ -76,6 +95,7 @@ subroutine get_obs_sat
   
   ALLOCATE ( chl_mis(grd%im,grd%jm) ) ; chl_mis = huge(chl_mis(1,1))
   ALLOCATE ( chl_err(grd%im,grd%jm) ) ; chl_err = huge(chl_err(1,1))
+  ALLOCATE ( flagblk(grd%im,grd%jm) )
   ALLOCATE ( sat%flg(sat%no)) ; sat%flg = huge(sat%flg(1))
   ALLOCATE ( sat%flc(sat%no)) ; sat%flc = huge(sat%flc(1))
   ALLOCATE ( sat%inc(sat%no)) ; sat%inc = huge(sat%inc(1))
@@ -108,6 +128,7 @@ subroutine get_obs_sat
      sat%res(k) = chl_mis(i,j)
      sat%err(k) = chl_err(i,j)
   enddo
+
   
   ! DECOMMENT FOLLOWING TWO LINES TO MAKE FILTER TEST
   ! sat%res(:) = 0.
@@ -123,6 +144,7 @@ subroutine get_obs_sat
   
   ! ---
   ! Initialise quality flag, do residual check, compute vertical integration parameters and count good observations
+  flagblk(:,:) = 0 !blacklisting flag 
   sat%nc = 0
   do k=1,sat%no
      j = (k-1)/grd%im + 1
@@ -132,6 +154,9 @@ subroutine get_obs_sat
         if(abs(sat%res(k)).gt.sat%max_val) then
            ! residual check
            sat%flg(k) = 0
+           if(abs(sat%res(k)).lt.100) then
+             flagblk(i,j) = 1
+           endif
         else
            ! compute vertical integration parameters
            zbn = grd%dep(1)*2.0
@@ -151,7 +176,40 @@ subroutine get_obs_sat
 
   if(MyId .eq. 0) then
      print*,'Good chl observations: ',sat%nc_global
+     print*,'Saving flag misfit'
   endif
+
+  ! Saving flag misfit sat
+  flagFile = 'DA__FREQ_1/flagsat.'//ShortDate//'.nc'
+  ierr = nf90mpi_create(Var3DCommunicator, trim(flagFile), NF90_CLOBBER, MPI_INFO_NULL,ncid)
+  if (ierr .ne. NF90_NOERR ) call handle_err('flagFile ', ierr)
+
+  ierr = nf90mpi_def_dim(ncid,'x',global_im ,xid)
+  if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_def_dim longitude ', ierr)
+  ierr = nf90mpi_def_dim(ncid,'y' ,global_jm ,yid)
+  if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_def_dim latitude ', ierr)
+
+  FlagVarName='flag_lim_misf'
+
+  ierr = nf90mpi_def_var(ncid, FlagVarName, nf90_int, (/xid,yid/), idF )
+  if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_def_var', ierr)
+
+  ierr = nf90mpi_enddef(ncid)
+  if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_enddef', ierr)
+
+
+  ierr = nf90mpi_put_var_all(ncid,idF,flagblk,MyStartTwod,MyCountTwod)
+  if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_put_var_all ', ierr)
+
+  ierr = nf90mpi_close(ncid)
+  if (ierr .ne. NF90_NOERR ) call handle_err('LimCorrfile ', ierr)
+
+
+
+  DEALLOCATE ( flagblk )
+
+
+
   sat%flc(:) = sat%flg(:)
 
 end subroutine get_obs_sat
@@ -162,7 +220,7 @@ subroutine int_par_chl
   !                                                                      !
   ! Get interpolation parameters for a grid                              !
   !                                                                      !
-  ! Version 1: S.Dobricic 2006                                           !
+  ! Version 1: A. Teruzzi 2018                                           !
   !-----------------------------------------------------------------------
   
   use set_knd

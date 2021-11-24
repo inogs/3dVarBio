@@ -36,19 +36,51 @@ subroutine veof_nut_ad(NutArrayAd, Var)
 
  implicit none
 
- INTEGER(i4)             :: i, j, k, l, n, k1, offset
+ INTEGER(i4)             :: i, j, k, l, n, offset, my_km
  REAL(r8), DIMENSION ( grd%im, grd%jm)  :: egm
  REAL(r8) :: NutArrayAd(grd%im,grd%jm,grd%km)
+ REAL(r8), ALLOCATABLE, DIMENSION(:,:) :: eva
+ REAL(r8), ALLOCATABLE, DIMENSION(:,:,:) :: evc
  CHARACTER :: Var
  INTEGER   :: MyNEofs
 
+  my_km = 0
+  ! Altrove usato grd%km come limite per assimilazione nit qui ro%kmnit
+  ! Da correggere o fare un check
   offset = 0
-  if(Var .eq. 'N') then
-      MyNEofs = ros%neof_n3n
-      offset = ros%neof_chl
-  else
-      MyNEofs = ros%neof_o2o
-      offset = ros%neof_chl + ros%neof_n3n
+  if((drv%nut .eq.1) .and. (drv%multiv .eq. 0)) then
+     my_km = grd%km
+     if(Var .eq. 'N') then
+       MyNEofs = ros%neof_n3n
+       offset = ros%neof_chl
+     else
+       MyNEofs = ros%neof_o2o
+       offset = ros%neof_chl + ros%neof_n3n
+     endif
+  else if((drv%nut .eq.0) .and. (drv%multiv .eq. 1)) then
+    if(Var .eq. 'N') then
+      my_km = ros%kmnit
+      MyNEofs = ros%neof_multi
+    endif
+  endif
+
+
+  ALLOCATE (eva(ros%nreg,MyNEofs)); eva = huge(eva(1,1))
+  ALLOCATE (evc(ros%nreg,my_km,MyNEofs)); evc = huge(evc(1,1,1))
+
+  if((drv%nut .eq.1) .and. (drv%multiv .eq. 0)) then
+    if(Var .eq. 'N') then
+      eva = ros%eva_n3n
+      evc = ros%evc_n3n
+    else
+      eva = ros%eva_o2o
+      evc = ros%evc_o2o
+    endif
+  else if((drv%nut .eq.0) .and. (drv%multiv .eq. 1)) then
+    if(Var .eq. 'N') then
+      eva = ros%eva_multi
+      evc(:,1:my_km,:) = ros%evc_multi(:,ros%kmchl+1:ros%kmchl+ros%kmnit,:)
+    endif
   endif
 
   do n=1,MyNEofs
@@ -64,17 +96,11 @@ subroutine veof_nut_ad(NutArrayAd, Var)
    egm(:,:) = 0.0
 
    ! 3D variables
-   k1 = 0
    
-   do k=1,grd%km ! OMP
-      k1 = k1 + 1
+   do k=1,my_km ! OMP
       do j=1,grd%jm
          do i=1,grd%im
-            if(Var .eq. 'N') then
-                  egm(i,j) = egm(i,j) + ros%evc_n3n(grd%reg(i,j), k,n) * NutArrayAd(i,j,k)
-            else
-                  egm(i,j) = egm(i,j) + ros%evc_o2o(grd%reg(i,j), k,n) * NutArrayAd(i,j,k)
-            endif
+            egm(i,j) = egm(i,j) + evc(grd%reg(i,j), k,n) * NutArrayAd(i,j,k)
          enddo
       enddo
    enddo
@@ -82,14 +108,10 @@ subroutine veof_nut_ad(NutArrayAd, Var)
    
    do j=1,grd%jm
       do i=1,grd%im
-         if(Var .eq. 'N') then
-            egm(i,j) = ros%eva_n3n(grd%reg(i,j),n) * egm(i,j) 
-         else
-            egm(i,j) = ros%eva_o2o(grd%reg(i,j),n) * egm(i,j) 
-         endif         
+        egm(i,j) = eva(grd%reg(i,j),n) * egm(i,j) 
       enddo
    enddo
-   
+
    do j=1,grd%jm
       do i=1,grd%im
          grd%ro_ad(i,j,n+offset) = grd%ro_ad(i,j,n+offset) + egm(i,j) 
@@ -100,5 +122,6 @@ enddo
 !$OMP END DO
 !$OMP END PARALLEL 
 
+DEALLOCATE(eva,evc)
 
 end subroutine veof_nut_ad

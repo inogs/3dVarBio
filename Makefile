@@ -49,7 +49,7 @@ KNDSTR  =  \
 	set_knd.o
 OBJSTR  =  \
     filename_mod.o\
-		da_params.o\
+	da_params.o\
 	drv_str.o\
 	cns_str.o\
 	obs_str.o\
@@ -100,11 +100,13 @@ PHYSOBS  =  \
 
 OBJS    =  \
 	def_nml.o\
+	def_nml_multi.o\
 	def_grd.o\
 	sav_itr.o\
 	rdeofs_chl.o\
 	rdeofs_n3n.o\
 	rdeofs_o2o.o\
+	rdeofs_multi.o\
   rdrcorr.o\
   mean_rdr.o\
 	netcdf_err.o\
@@ -129,6 +131,7 @@ OBJS    =  \
 	obs_arg_ad.o\
 	veof_chl_ad.o\
 	veof_nut_ad.o\
+	veof_multiv_ad.o\
 	ver_hor_chl_ad.o\
 	ver_hor_nut_ad.o\
 	rcfl_x_ad.o\
@@ -146,8 +149,11 @@ OBJS    =  \
 	readChlStat.o\
 	readNutStat.o\
 	readNutCov.o\
+	readChlNutCov.o\
 	wrt_chl_stat.o\
+        wrt_upd_nut.o\
 	wrt_nut_stat.o\
+	cp_nut_stat.o\
 	costf.o\
 	obs_sat.o\
 	bio_conv.o\

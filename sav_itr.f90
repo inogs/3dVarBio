@@ -40,11 +40,10 @@ subroutine sav_itr
   use rcfl
   use mpi_str
   use bio_str
+  use da_params
 
   implicit none
   
-  ! free MPI RMA Windows
-  call FreeWindows
 
   ! ---
   ! Grid structure
@@ -67,6 +66,8 @@ subroutine sav_itr
   DEALLOCATE( grd%bey)
  
   ! Chlorophyll vectors
+  if(drv%multiv.eq.0) then
+
   if(drv%chl_assim .eq. 1) then
     DEALLOCATE( grd%chl)
     DEALLOCATE( grd%chl_ad)
@@ -80,6 +81,15 @@ subroutine sav_itr
       DEALLOCATE( grd%o2o)
       DEALLOCATE( grd%o2o_ad)
     endif    
+  endif
+  
+  endif
+  
+  if(drv%multiv.eq.1) then
+    DEALLOCATE( grd%chl)
+    DEALLOCATE( grd%chl_ad)
+    DEALLOCATE( grd%n3n)
+    DEALLOCATE( grd%n3n_ad)
   endif
   
   ! Observational vector
@@ -105,14 +115,32 @@ subroutine sav_itr
   DEALLOCATE( ctl%x_c, ctl%g_c)
 
   ! Bio structure
-  if(drv%chl_assim .eq. 1) then
+  if(drv%multiv.eq.0) then
+    if(drv%chl_assim .eq. 1) then
+      DEALLOCATE( bio%phy, bio%phy_ad)
+      DEALLOCATE( bio%cquot, bio%pquot)
+      DEALLOCATE( bio%InitialChl)
+      if ((drv%nut .eq. 0) .and. (NNutVar .gt. 0)) then
+        DEALLOCATE( bio%InitialNut)
+        if (drv%chl_upnut.eq.1) then
+          ! DEALLOCATE( bio%covn3n_n1p)
+          DEALLOCATE( bio%covn1p_chl)
+          DEALLOCATE( bio%covn3n_chl)
+        endif  
+      endif
+    endif
+    if(drv%nut .eq. 1) then
+      DEALLOCATE( bio%InitialNut)
+      if(bio%N3n.eq.1 .AND. bio%updateN1p.eq.1)  DEALLOCATE( bio%covn3n_n1p)
+    endif
+  endif
+
+  if(drv%multiv.eq.1) then
     DEALLOCATE( bio%phy, bio%phy_ad)
     DEALLOCATE( bio%cquot, bio%pquot)
     DEALLOCATE( bio%InitialChl)
-  endif
-  if(drv%nut .eq. 1) then
     DEALLOCATE( bio%InitialNut)
-    DEALLOCATE( bio%covn3n_n1p)
+    if(bio%updateN1p.eq.1)  DEALLOCATE( bio%covn3n_n1p)
   endif
 
   DEALLOCATE(SurfaceWaterPoints)  
@@ -127,35 +155,10 @@ subroutine sav_itr
   DEALLOCATE( bta_rcx)
   DEALLOCATE( alp_rcy)
   DEALLOCATE( bta_rcy)
+  DEALLOCATE( grd%global_msk)
   
   if(MyId .eq. 0) write(*,*) ' DEALLOCATION DONE'
   
 end subroutine sav_itr
 
-subroutine FreeWindows
 
-  use grd_str
-  use mpi_str
-  use drv_str
-  use bio_str
-
-  implicit none
-
-  integer ierr
-
-  if(drv%chl_assim .eq. 1) then
-    call MPI_Win_free(MpiWinChl, ierr)
-    call MPI_Win_free(MpiWinChlAd, ierr)
-  endif
-  if(drv%nut .eq. 1) then
-    if(bio%n3n .eq. 1) then
-      call MPI_Win_free(MpiWinN3n, ierr)
-      call MPI_Win_free(MpiWinN3nAd, ierr)
-    endif
-    if(bio%o2o .eq. 1) then
-      call MPI_Win_free(MpiWinO2o, ierr)
-      call MPI_Win_free(MpiWinO2oAd, ierr)
-    endif
-  endif
-
-end subroutine FreeWindows

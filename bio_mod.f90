@@ -31,16 +31,21 @@ subroutine bio_mod
   use grd_str
   use bio_str
   use eof_str
+  use drv_str
 
   IMPLICIT NONE
 
-  INTEGER(i4)     :: m, l, k,j ,i
+  INTEGER(i4)     :: m, l, k,j ,i, my_km
 
   bio%phy(:,:,:,:,:) = 0.0
 
+  my_km = grd%km
+  if(drv%multiv .eq. 1) &
+    my_km = ros%kmchl
+
   do m=1,bio%ncmp
     do l=1,bio%nphy
-      do k=1,grd%km
+      do k=1,my_km
         do j=1,grd%jm
           do i=1,grd%im
             bio%phy(i,j,k,l,m)=bio%cquot(i,j,k,l,m)*bio%pquot(i,j,k,l)*grd%chl(i,j,k)

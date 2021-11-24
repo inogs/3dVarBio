@@ -47,7 +47,7 @@ subroutine wrt_dia
   integer status
   integer            :: ncid,xid,yid,depid,idchl,idn3n,idn1p,ido2o
   integer            :: idvip,idmsk,eofid
-  integer(kind=MPI_OFFSET_KIND) :: global_im, global_jm, global_km
+  integer(kind=MPI_OFFSET_KIND) :: global_im, global_jm, global_km, my_km
 
   real(r4), allocatable, dimension(:,:,:) :: DumpMatrix
 
@@ -66,6 +66,10 @@ subroutine wrt_dia
   global_im = GlobalRow
   global_jm = GlobalCol
   global_km = grd%km
+
+  my_km = grd%km
+  if(drv%multiv.eq.1) &
+    my_km = ros%kmchl
   
   status = nf90mpi_def_dim(ncid,'depth'    ,global_km, depid)
   if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_def_dim depth ', status)
@@ -74,23 +78,25 @@ subroutine wrt_dia
   status = nf90mpi_def_dim(ncid,'longitude',global_im ,xid)
   if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_def_dim longitude ', status)
   
-  if(drv%chl_assim .eq. 1) then
+  if((drv%chl_assim .eq. 1) .or. (drv%multiv .eq. 1)) then
     status = nf90mpi_def_var(ncid,'chl', nf90_float, (/xid,yid,depid/), idchl )
     if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_def_var chl', status)
     status = nf90mpi_put_att(ncid,idchl   , 'missing_value',1.e+20)
     if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_put_att', status)
   endif
-  if(drv%nut .eq. 1 .and. bio%n3n .eq. 1) then
+  if((drv%nut .eq. 1 .and. bio%n3n .eq. 1) .or. (drv%multiv .eq. 1)) then
     status = nf90mpi_def_var(ncid,'n3n', nf90_float, (/xid,yid,depid/), idn3n )
     if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_def_var n3n', status)
     status = nf90mpi_put_att(ncid,idn3n   , 'missing_value',1.e+20)
     if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_put_att', status)
   endif
-  if(drv%nut .eq. 1 .and. bio%n3n .eq. 1 .and. bio%updateN1p .eq. 1) then
+  if(bio%updateN1p .eq. 1) then
+  if((drv%nut .eq. 1 .and. bio%n3n .eq. 1) .or. (drv%multiv .eq. 1)) then
     status = nf90mpi_def_var(ncid,'n1p', nf90_float, (/xid,yid,depid/), idn1p )
     if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_def_var n1p', status)
     status = nf90mpi_put_att(ncid,idn1p   , 'missing_value',1.e+20)
     if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_put_att', status)
+  endif
   endif
   if(drv%nut .eq. 1 .and. bio%o2o .eq. 1) then
     status = nf90mpi_def_var(ncid,'o2o', nf90_float, (/xid,yid,depid/), ido2o )
@@ -102,12 +108,23 @@ subroutine wrt_dia
   status = nf90mpi_enddef(ncid)
   if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_def_var', status)
 
-  if(drv%chl_assim .eq. 1) then
-    do k=1,grd%km
+  if((drv%chl_assim .eq. 1) .or. (drv%multiv .eq. 1)) then
+    do k=1,my_km
       do j=1,grd%jm
           do i=1,grd%im
             if(grd%msk(i,j,k) .eq. 1) then
               DumpMatrix(i,j,k) = REAL(grd%chl(i,j,k), 4 )
+            else
+              DumpMatrix(i,j,k) = 1.e20
+            endif            
+          enddo
+      enddo
+    enddo
+    do k=my_km+1,grd%km
+      do j=1,grd%jm
+          do i=1,grd%im
+            if(grd%msk(i,j,k) .eq. 1) then
+              DumpMatrix(i,j,k) = 0
             else
               DumpMatrix(i,j,k) = 1.e20
             endif            
@@ -119,7 +136,7 @@ subroutine wrt_dia
   endif
 
 
-  if(drv%nut .eq. 1 .and. bio%n3n .eq. 1) then
+  if((drv%nut .eq. 1 .and. bio%n3n .eq. 1) .or. (drv%multiv .eq. 1)) then
     do k=1,grd%km
       do j=1,grd%jm
           do i=1,grd%im
@@ -135,7 +152,8 @@ subroutine wrt_dia
     if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_put_var_all n3n', status)
   endif
 
-  if(drv%nut .eq. 1 .and. bio%n3n .eq. 1 .and. bio%updateN1p .eq. 1) then
+  if  (bio%updateN1p .eq. 1) then
+  if((drv%nut .eq. 1 .and. bio%n3n .eq. 1).or.(drv%multiv.eq.1)) then
     do k=1,grd%km
       do j=1,grd%jm
           do i=1,grd%im
@@ -149,6 +167,7 @@ subroutine wrt_dia
     enddo
     status = nf90mpi_put_var_all(ncid,idn1p,DumpMatrix,MyStart,MyCount)
     if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_put_var_all n1p', status)
+  endif
   endif
 
   if(drv%nut .eq. 1 .and. bio%o2o .eq. 1) then

@@ -73,11 +73,16 @@ subroutine clean_mem
   DEALLOCATE ( rcf%sc)
 
   DEALLOCATE(SendCountX3D, SendDisplX3D)
+  DEALLOCATE(SendCountX3D_chl, SendDisplX3D_chl)
   DEALLOCATE(RecCountX3D, RecDisplX3D)
+  DEALLOCATE(RecCountX3D_chl, RecDisplX3D_chl)
 
   DEALLOCATE(ChlExtended)
+  DEALLOCATE(ChlExtended_3d,N3nExtended_3d,O2oExtended_3d)
   DEALLOCATE(SendBottom, RecTop)
   DEALLOCATE(SendTop, RecBottom)
+  DEALLOCATE(SendTop_2d, RecBottom_2d)
+  DEALLOCATE(SendBottom_2d, RecTop_2d)
 
   if(MyId .eq. 0) then
     write(*,*) ' ALL MEMORY CLEAN'

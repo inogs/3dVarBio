@@ -46,7 +46,7 @@ subroutine rdeofs_o2o
   real(4), allocatable           :: x3(:,:,:), x2(:,:)
   
   stat = nf90mpi_open(Var3DCommunicator, trim(EOF_FILE_O2O), NF90_NOWRITE, MPI_INFO_NULL, ncid)
-  if (stat /= nf90_noerr) call handle_err("nf90mpi_open", stat)
+  if (stat /= nf90_noerr) call handle_err("nf90mpi_open "//trim(EOF_FILE_O2O), stat)
   
   ! Get dimensions 
   stat = nf90mpi_inq_dimid (ncid, 'nreg', idvar)

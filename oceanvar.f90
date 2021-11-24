@@ -38,6 +38,7 @@ subroutine oceanvar
   use set_knd
   use drv_str
   use mpi_str
+  use da_params
   
   implicit none
   
@@ -47,7 +48,8 @@ subroutine oceanvar
   
   ! ---
   ! Initialize diagnostics and read namelists
-  call def_nml
+  call def_nml       ! General DA parameters
+  call def_nml_multi ! DA parameters for multivariate and multiplatform
 
   ! ---
   ! Define grid parameters
@@ -102,10 +104,20 @@ subroutine oceanvar
   call wrt_dia
 
   ! Write restarts for chl and related variables
-  if(drv%chl_assim .eq. 1) &
+  if((drv%chl_assim .eq. 1) .or. (drv%multiv .eq. 1)) then
     call wrt_chl_stat
   
-  if (drv%nut .eq. 1) &
+  ! To write a copy of RSTbefore in RST_after 
+  ! In case of assimiation of chl only at some dates
+    if ((drv%nut.eq.0) .and. (NNutVar.gt.0) .and. (drv%multiv.eq.0)) then
+      if (drv%chl_upnut .eq. 0) &
+        call cp_nut_stat
+      if (drv%chl_upnut .eq. 1) &
+        call wrt_upd_nut
+    endif
+  endif
+
+  if ((drv%nut .eq. 1) .or. (drv%multiv.eq.1)) &
     call wrt_nut_stat
 
   call sav_itr

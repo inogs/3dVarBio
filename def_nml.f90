@@ -40,17 +40,14 @@ subroutine def_nml
 
   implicit none
 
-  LOGICAL       :: read_eof, ApplyConditions
+  LOGICAL       :: read_eof
   INTEGER(i4)   :: neof_chl, neof_n3n, neof_o2o, nreg, rcf_ntr
-  INTEGER(i4)   :: ctl_m, chl_assim, nut, N3n, O2o, updateN1p
-  INTEGER(i4)   :: biol, bphy, nphyto, uniformL, anisL, verbose
-  REAL(r8)      :: rcf_L, ctl_tol, ctl_per, rcf_efc, chl_dep
-  INTEGER(i4)   :: argo, sat_obs, ncmp
+  INTEGER(i4)   :: neof_multi, kmchl, kmnit
+  INTEGER(i4)   :: verbose
+  REAL(r8)      :: rcf_L, ctl_tol, ctl_per, rcf_efc
   
-  NAMELIST /ctllst/ ctl_tol, ctl_per
-  NAMELIST /covlst/ neof_chl, neof_n3n, neof_o2o, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
-  NAMELIST /biolst/ chl_assim, nut, nphyto, chl_dep, ncmp, ApplyConditions, N3n, updateN1p, O2o
-  NAMELIST /params/ sat_obs, argo, uniformL, anisL, verbose
+  NAMELIST /ctllst/ ctl_tol, ctl_per, verbose
+  NAMELIST /covlst/ neof_chl, neof_n3n, neof_o2o, neof_multi, kmchl, kmnit, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
 
 
 ! -------------------------------------------------------------------
@@ -60,7 +57,7 @@ subroutine def_nml
   drv%dia = 12
 
   if(MyId .eq. 0) then
-    open ( drv%dia, file='OceanVar.diagnostics', form='formatted' )
+    open ( drv%dia, file='BioVar.diagnostics', form='formatted' )
   endif
 
 !---------------------------------------------------------------------
@@ -83,11 +80,13 @@ subroutine def_nml
     write(drv%dia,*) ' MINIMIZER NAMELIST INPUT: '
     write(drv%dia,*) ' Minimum gradient of J:           ctl_tol  = ', ctl_tol
     write(drv%dia,*) ' Percentage of initial gradient:  ctl_per  = ', ctl_per
+    write(drv%dia,*) ' Add verbose on standard output   verbose  = ', verbose
 
   endif
 
   ctl%pgtol = ctl_tol
   ctl%pgper = ctl_per
+  drv%Verbose = verbose
 
 ! ---
   read(11,covlst)
@@ -100,6 +99,9 @@ subroutine def_nml
     write(drv%dia,*) ' Number of EOFs for chl:          neof_chl = ', neof_chl
     write(drv%dia,*) ' Number of EOFs for N3n:          neof_n3n = ', neof_n3n
     write(drv%dia,*) ' Number of EOFs for O2o:          neof_o2o = ', neof_o2o
+    write(drv%dia,*) ' Number of multivariate EOFs:   neof_multi = ', neof_multi
+    write(drv%dia,*) ' Chl Nlevels in multi EOFs:          kmchl = ', kmchl
+    write(drv%dia,*) ' Nit Nlevels in multi EOFs:          kmnit = ', kmnit
     write(drv%dia,*) ' Number of regions:               nreg     = ', nreg
     write(drv%dia,*) ' Read EOFs from a file:           read_eof = ', read_eof
     write(drv%dia,*) ' Half number of iterations:       rcf_ntr  = ', rcf_ntr
@@ -108,70 +110,19 @@ subroutine def_nml
 
   endif
 
+  close(11)
+
   ros%neof_chl = neof_chl
   ros%neof_n3n = neof_n3n
   ros%neof_o2o = neof_o2o
+  ros%neof_multi = neof_multi
+  ros%kmchl    = kmchl
+  ros%kmnit    = kmnit
   ros%nreg     = nreg
   ros%read_eof = read_eof
   rcf%ntr      = rcf_ntr
   rcf%L        = rcf_L
   rcf%efc      = rcf_efc
 
-! ---
-  read(11,biolst)
-
-  if(MyId .eq. 0) then
-
-    write(drv%dia,*) '------------------------------------------------------------'
-    write(drv%dia,*) '------------------------------------------------------------'
-    write(drv%dia,*) ' BIOLOGY NAMELIST INPUT: '
-    write(drv%dia,*) ' Chlorophyll assimilation             chl_assim = ', chl_assim
-    write(drv%dia,*) ' Nutrient assimilation                      nut = ', nut
-    write(drv%dia,*) ' Number of phytoplankton species          nphyt = ', nphyto
-    write(drv%dia,*) ' Minimum depth for chlorophyll          chl_dep = ', chl_dep
-    write(drv%dia,*) ' Number of phytoplankton components        ncmp = ', ncmp
-    write(drv%dia,*) ' Apply conditions flag          ApplyConditions = ', ApplyConditions
-    write(drv%dia,*) ' N3n assimilation                           N3n = ', N3n
-    write(drv%dia,*) ' N1p update based on N3n assimilation updateN1p = ', updateN1p
-    write(drv%dia,*) ' O2o assimilation                           O2o = ', O2o
-
-  endif
-
-  drv%chl_assim  = chl_assim
-  drv%nut  = nut
-  bio%nphy = nphyto
-  sat%dep  = chl_dep
-  bio%ncmp = ncmp
-  bio%ApplyConditions = ApplyConditions
-  bio%N3n = N3n
-  bio%updateN1p = updateN1p
-  bio%O2o = O2o
-
-  read(11,params)
-
-  if(MyId .eq. 0) then
-
-    write(drv%dia,*) '------------------------------------------------------------'
-    write(drv%dia,*) '------------------------------------------------------------'
-    write(drv%dia,*) ' PARAMETERS NAMELIST INPUT: '
-    write(drv%dia,*) ' Read Satellite observations      sat_obs  = ', sat_obs
-    write(drv%dia,*) ' Read ARGO float observations     argo     = ', argo
-    write(drv%dia,*) ' Set uniform correlation radius   uniformL = ', uniformL
-    write(drv%dia,*) ' Set anisotropy on corr radius    anisL    = ', anisL
-    write(drv%dia,*) ' Add verbose on standard output   verbose  = ', verbose
-    write(drv%dia,*) '------------------------------------------------------------'
-    write(drv%dia,*) '------------------------------------------------------------'
-    write(drv%dia,*) ''
-
-
-  endif
-
-  close(11)
-
-  drv%sat_obs  = sat_obs
-  drv%argo_obs = argo
-  drv%uniformL = uniformL
-  drv%anisL = anisL
-  drv%Verbose = verbose
 
 end subroutine def_nml

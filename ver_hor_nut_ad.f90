@@ -223,6 +223,7 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
   ! 103 continue
   ! ---
   ! Vertical EOFs
-  call veof_nut_ad(NutArrayAd, Var)
+  if(drv%multiv.eq.0) &
+    call veof_nut_ad(NutArrayAd, Var)
   
 end subroutine ver_hor_nut_ad

@@ -50,9 +50,10 @@ subroutine resid
         endif
      enddo
   endif
+
   
   ! ---
-  ! Observations of chlorophyll
+  ! Observations of satellite chlorophyll
   if(drv%sat_obs .eq. 1) then
     do i=1,sat%no
      if(sat%flc(i).eq.1)then
