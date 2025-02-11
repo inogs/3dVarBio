@@ -39,6 +39,7 @@ subroutine oceanvar
   use drv_str
   use mpi_str
   use da_params
+  use bio_str
   
   implicit none
   
@@ -110,15 +111,31 @@ subroutine oceanvar
   ! To write a copy of RSTbefore in RST_after 
   ! In case of assimiation of chl only at some dates
     if ((drv%nut.eq.0) .and. (NNutVar.gt.0) .and. (drv%multiv.eq.0)) then
-      if (drv%chl_upnut .eq. 0) &
-        call cp_nut_stat
-      if (drv%chl_upnut .eq. 1) &
+      call cp_o2o_stat
+      if (drv%chl_upnut .eq. 1) then
         call wrt_upd_nut
+      else
+        call cp_nut_stat
+      endif
     endif
   endif
 
-  if ((drv%nut .eq. 1) .or. (drv%multiv.eq.1)) &
-    call wrt_nut_stat
+  if(drv%chl_assim .eq. 0) then
+    call cp_chl_stat
+  endif
+  
+  if ((drv%nut .eq. 1) .or. (drv%multiv.eq.1)) then
+    if((bio%O2o .eq. 1) .and. (bio%N3n .eq. 1)) then
+      call wrt_o2o_stat
+      call wrt_nut_stat
+    else if((bio%O2o .eq. 1) .and. (bio%N3n .eq. 0)) then
+      call wrt_o2o_stat
+      call cp_nut_stat
+    else if((bio%O2o .eq. 0) .and. (bio%N3n .eq. 1)) then
+      call cp_o2o_stat
+      call wrt_nut_stat
+    endif
+  endif
 
   call sav_itr
   if(MyId .eq. 0) write(drv%dia,*) 'out of sav_itr '

@@ -132,6 +132,10 @@ subroutine sav_itr
     if(drv%nut .eq. 1) then
       DEALLOCATE( bio%InitialNut)
       if(bio%N3n.eq.1 .AND. bio%updateN1p.eq.1)  DEALLOCATE( bio%covn3n_n1p)
+      if(drv%chl_assim .eq. 0) then   
+        DEALLOCATE( bio%cquot, bio%pquot)
+        DEALLOCATE( bio%InitialChl) !used in cp_chl_stat
+      endif
     endif
   endif
 

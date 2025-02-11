@@ -1,4 +1,4 @@
-subroutine cp_nut_stat
+subroutine cp_chl_stat
 
   use set_knd
   use grd_str
@@ -10,7 +10,7 @@ subroutine cp_nut_stat
 
   implicit none
 
-  INTEGER(i4)        :: ncid, ierr, i, j, k, l
+  INTEGER(i4)        :: ncid, ierr, i, j, k, l, m, doVariable
   INTEGER(i4)        :: idP, iVar
   INTEGER(I4)        :: xid,yid,depid,timeId, idTim
   INTEGER            :: system, SysErr
@@ -39,8 +39,8 @@ subroutine cp_nut_stat
   ! ALLOCATE(MyConditions(grd%im,grd%jm,grd%km,bio%nphy))
 
   if(MyId .eq. 0) then
-     write(drv%dia,*) 'writing nut structure (only copy from RSTbefore)'     
-     write(*,*) 'writing nut structure (only copy from RSTbefore)'          
+     write(drv%dia,*) 'writing chl structure (only copy from RSTbefore)'     
+     write(*,*) 'writing chl structure (only copy from RSTbefore)'          
   endif
 
   global_im = GlobalRow
@@ -52,20 +52,23 @@ subroutine cp_nut_stat
   MyStartSingle(1) = 1
   TimeArr(1) = DA_JulianDate
 
+  do m=1,bio%ncmp
+  do l=1,bio%nphy
+    iVar = l + bio%nphy*(m-1)
+    doVariable = 1
 
-  do l=1,NNVar
-    iVar = NPhytoVar + l
-
-    if(iVar .gt. NBioVar) then
+    if(iVar .gt. NPhytoVar) then
       if(MyId .eq. 0) &
-        write(*,*) "Warning: Reading a variable not in the DA_VarList!"
+        write(*,*) "Warning: Variable not in the Phyto list ", DA_VarList(iVar)
+      doVariable = 0
     endif
 
+    if(doVariable .eq. 1) then
     BioRestart = 'DA__FREQ_1/RST_after.'//ShortDate//'.'//DA_VarList(iVar)//'.nc'
     BioRestartLong = 'DA__FREQ_1/RST_after.'//DA_DATE//'.'//DA_VarList(iVar)//'.nc'
 
     if(drv%Verbose .eq. 1 .and. MyId .eq. 0) &
-      print*, "Writing Nut Restart ", BioRestart
+      print*, "Writing Chl Restart ", BioRestart
     
     ierr = nf90mpi_create(Var3DCommunicator, BioRestart, NF90_CLOBBER, MPI_INFO_NULL, ncid)
     if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_create '//BioRestart, ierr)
@@ -96,8 +99,8 @@ subroutine cp_nut_stat
       do j=1,grd%jm
         do i=1,grd%im
 
-          if(bio%InitialNut(i,j,k,1) .lt. 1.e20) then
-              DumpBio(i,j,k,1) = bio%InitialNut(i,j,k,l)
+          if(bio%InitialChl(i,j,k) .lt. 1.e20) then
+              DumpBio(i,j,k,1) = bio%pquot(i,j,k,l)*bio%cquot(i,j,k,l,m)*bio%InitialChl(i,j,k)
           endif
 
         enddo
@@ -119,9 +122,11 @@ subroutine cp_nut_stat
       SysErr = system("ln -sf $PWD/"//BioRestart//" "//BioRestartLong)
       if(SysErr /= 0) call MPI_Abort(MPI_COMM_WORLD, -1, SysErr)
     endif
+    endif ! on doVariable
   enddo ! l
+  enddo ! m
 
   DEALLOCATE(DumpBio)
   ! DEALLOCATE(DumpBio, ValuesToTest, MyConditions)
 
-end subroutine cp_nut_stat
+end subroutine cp_chl_stat

@@ -37,7 +37,7 @@ subroutine veof_chl
   
   implicit none
   
-  INTEGER(i4)     :: i, j, k, l,n, k1, my_km, MyNEofs, ierr
+  INTEGER(i4)     :: i, j, k, l,n, my_km, MyNEofs, ierr
   REAL(r8), DIMENSION ( grd%im, grd%jm)  :: egm
   REAL(r8), ALLOCATABLE, DIMENSION(:,:)  :: eva
   REAL(r8), ALLOCATABLE, DIMENSION(:,:,:)  :: evc
@@ -90,7 +90,6 @@ subroutine veof_chl
           
      ! 3D variables
      do k=1,my_km ! OMP
-      k1 = k1 + 1
         do j=1,grd%jm
           do i=1,grd%im
             grd%chl(i,j,k) = grd%chl(i,j,k) + evc(grd%reg(i,j),k,n) * egm(i,j)

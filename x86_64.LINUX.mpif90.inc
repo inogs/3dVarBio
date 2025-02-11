@@ -9,22 +9,22 @@ MPCC    = mpicc
 MPLD    = $(MPFC)
 
 FORTRAN_UNDERSCORE = _
-OPT_FLTCONSISTENCY =
 
 LIBFEXIT  = ./libfexit/
 LIBNCMEDLEV =./libnc-medlevel
 
-PREPROC = -D_USE_MPI
-CPP += $(PREPROC)
 
 # NETCDF_INC = $(NETCDFF_INC)
 # NETCDF_LIB = $(NETCDFF_LIB)
 
-FFLAGS  = -ffree-line-length-none -O2 -I$(NETCDF_INC) $(OPT_FLTCONSISTENCY) -c
-# FFLAGS  = -O2 -I$(NETCDF_INC) $(OPT_FLTCONSISTENCY) -c
+PNETCDF_INC=/m100_scratch/userexternal/gbolzon0/pnetcdf/include/
+PNETCDF_LIB=/m100_scratch/userexternal/gbolzon0/pnetcdf/lib
+
+# FFLAGS  = -ffree-line-length-none -O2 -I$(NETCDF_INC) $(OPT_FLTCONSISTENCY) -c
+FFLAGS  = -ffree-line-length-none -O2 -I$(NETCDF_INC) -I$(NETCDFF_INC) -I$(PNETCDF_INC) -c
 CFLAGS  = -O2 -I$(NETCDF_INC)
 
-LDFLAGS += -L$(NETCDF_LIB) -lnetcdff
+LDFLAGS += -L$(NETCDF_LIB) -L$(NETCDFF_LIB) -L$(PETSC_LIB) -L$(PNETCDF_LIB) -lnetcdff -lnetcdf -lpetsc -lpnetcdf
 AR      = ar
 
 # Debug options##########

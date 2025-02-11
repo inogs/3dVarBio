@@ -20,7 +20,7 @@ subroutine readGrid
 
   integer(8) :: GlobalStart(3), GlobalCount(3)
   integer(KIND=MPI_OFFSET_KIND) MyOffset
-  integer    :: MyStatus(MPI_STATUS_SIZE)
+  integer    :: MyStatus(MPI_STATUS_SIZE), tmp
 
   !
   ! open grid1.nc in read-only mode
@@ -200,11 +200,19 @@ subroutine readGrid
      grd%NextLongitude=grd%lon(1,1)
      ! Send to ProcTop with Tag = MyId and receiving from 
      ! ProcBottom with Tag = ProcBottom :)
+     if(ProcBottom .eq. MPI_PROC_NULL) then
+             tmp = 100 
+     else 
+             tmp=ProcBottom
+     end if
+     !write(*,*) MyId, 'before MPI_Sendrecv_replace', ProcTop, ProcBottom
      call MPI_Sendrecv_replace(grd%NextLongitude,1,MPI_REAL8,ProcTop,MyId,&
-      ProcBottom,ProcBottom, Var3DCommunicator, MyStatus, ierr)
+      ProcBottom,tmp, Var3DCommunicator, MyStatus, ierr)
+     !write(*,*) MyId, 'after MPI_Sendrecv_replace', ProcBottom, ProcTop
      if(ProcBottom .eq. MPI_PROC_NULL) grd%NextLongitude = grd%lon(grd%im,grd%jm)
   endif
 
+  write(*,*) MyId, 'step 1'
 
   ierr = nf90mpi_inq_varid (ncid, 'dep', VarId)
   if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_inq_varid', ierr)

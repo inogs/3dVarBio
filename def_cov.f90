@@ -535,6 +535,9 @@ subroutine def_cov
       if(bio%N3n.eq.1 .AND. bio%updateN1p.eq.1) then
          call readNutCov
       endif
+      if(drv%chl_assim.eq.0) then
+         call readChlStat
+      endif
    endif
 
   else if (drv%multiv.eq.1) then

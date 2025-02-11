@@ -27,7 +27,7 @@ subroutine netcdf_err(errcode)
 
   implicit none
 
-  INTEGER(i4), intent(in) :: errcode
+  INTEGER(i4) :: errcode
 
   if(errcode /= nf90_noerr) then
      print*,'Netcdf Error: ', trim(nf90_strerror(errcode))

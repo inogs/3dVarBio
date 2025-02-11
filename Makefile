@@ -107,8 +107,8 @@ OBJS    =  \
 	rdeofs_n3n.o\
 	rdeofs_o2o.o\
 	rdeofs_multi.o\
-  rdrcorr.o\
-  mean_rdr.o\
+	rdrcorr.o\
+	mean_rdr.o\
 	netcdf_err.o\
 	get_obs.o\
 	get_obs_arg.o\
@@ -151,9 +151,12 @@ OBJS    =  \
 	readNutCov.o\
 	readChlNutCov.o\
 	wrt_chl_stat.o\
-        wrt_upd_nut.o\
+	wrt_upd_nut.o\
 	wrt_nut_stat.o\
+	wrt_o2o_stat.o\
+	cp_chl_stat.o\
 	cp_nut_stat.o\
+	cp_o2o_stat.o\
 	costf.o\
 	obs_sat.o\
 	bio_conv.o\

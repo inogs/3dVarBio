@@ -90,7 +90,7 @@ subroutine wrt_upd_nut
   !   enddo
   ! enddo
 
-  do l=1,NNutVar
+  do l=1,2
     iVar = NPhytoVar + l
 
     if(iVar .gt. NBioVar) then
