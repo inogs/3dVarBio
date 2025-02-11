@@ -11,13 +11,16 @@ subroutine tao_minimizer
   use ctl_str
   use mpi_str
   use petscvec
+#if PETSC_VERSION_GE(3,17,0)
+  use petsctao
+#endif
 
   implicit none
 
 #include "petsc/finclude/petsctao.h"
 
   PetscErrorCode     ::   ierr
-  Tao                ::   tao
+  Tao         ::   tao
   Vec                ::   MyState    ! array that stores the (temporary) state
   PetscInt           ::   n, M, GlobalStart, MyEnd, iter!, maxfeval
   PetscReal          ::   fval, gnorm, cnorm, xdiff
@@ -92,13 +95,15 @@ subroutine tao_minimizer
   CHKERRQ(ierr)
 
   ! Set initial solution array, MyBounds and MyFuncAndGradient routines
+
+#if PETSC_VERSION_GE(3,17,0)
+  call TaoSetSolution(tao, MyState, ierr)
+  CHKERRQ(ierr)
+  call TaoSetObjectiveAndGradient(tao,PETSC_NULL_VEC, MyFuncAndGradient, PETSC_NULL_VEC, ierr)
+#else
   call TaoSetInitialVector(tao, MyState, ierr)
   CHKERRQ(ierr)
-#include <petscversion.h>
-#if PETSC_VERSION_GE(3,8,0)
   call TaoSetObjectiveAndGradientRoutine(tao, MyFuncAndGradient, PETSC_NULL_VEC, ierr)
-#else
-  call TaoSetObjectiveAndGradientRoutine(tao, MyFuncAndGradient, PETSC_NULL_OBJECT, ierr)
 #endif
   CHKERRQ(ierr)
 
@@ -177,7 +182,12 @@ subroutine tao_minimizer
   endif !reason.lt.0
 
   ! Get the solution and copy into ctl%x_c array
+#if PETSC_VERSION_GE(3,17,0)
+  call TaoGetSolution(tao, MyState, ierr)
+#else
   call TaoGetSolutionVector(tao, MyState, ierr)
+#endif
+
   CHKERRQ(ierr)
   call VecGetArrayReadF90(MyState, xtmp, ierr)
   CHKERRQ(ierr)
@@ -226,18 +236,22 @@ subroutine MyFuncAndGradient(tao, MyState, CostFunc, Grad, dummy, ierr)
 #else
 #include "petsc/finclude/petscvecdef.h"
 #endif
+#include "petsc/finclude/petsctao.h"
 
   use set_knd
   use drv_str
   use ctl_str
   use petscvec
+#if PETSC_VERSION_GE(3,17,0)
+  use petsctao
+#endif
   use mpi_str
 
   implicit none
 
-#include "petsc/finclude/petsctao.h"
 
-  Tao             ::   tao
+
+  Tao      ::   tao
   Vec             ::   MyState, Grad
   PetscScalar     ::   CostFunc
   PetscErrorCode  ::   ierr
