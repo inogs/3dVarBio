@@ -17,6 +17,8 @@ LIBNCMEDLEV =./libnc-medlevel
 PREPROC = -D_USE_MPI
 CPP += $(PREPROC)
 
+PETSC_LD_FLAGS := $(if $(PETSC_LIB), -L$(PETSC_LIB),)
+
 # NETCDF_INC = $(NETCDFF_INC)
 # NETCDF_LIB = $(NETCDFF_LIB)
 
@@ -24,7 +26,7 @@ FFLAGS  = -ffree-line-length-none -O2 -I$(NETCDF_INC) -I$(NETCDFF_INC) $(OPT_FLT
 # FFLAGS  = -O2 -I$(NETCDF_INC) -I$(NETCDFF_INC) $(OPT_FLTCONSISTENCY) -c
 CFLAGS  = -O2 -I$(NETCDF_INC)
 
-LDFLAGS += -L$(NETCDF_LIB) -L$(NETCDFF_LIB) -L$(PETSC_LIB) -lnetcdff -lnetcdf -lpetsc
+LDFLAGS += -L$(NETCDF_LIB) -L$(NETCDFF_LIB) $(PETSC_LD_FLAGS) -lnetcdff -lnetcdf -lpetsc
 AR      = ar
 
 # Debug options##########
