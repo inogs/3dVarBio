@@ -37,6 +37,8 @@ $(info $$NETCDF_INC  = ${NETCDF_INC})
 $(info $$NETCDF_LIB  = ${NETCDF_LIB})
 $(info $$LIBNCMEDLEV = ${LIBNCMEDLEV})
 
+PETSC_INCLUDE_FLAGS := $(if $(PETSC_INC), -I$(PETSC_INC),)
+
 EXEC = var_3d
 LIB  = libvar_3d.a
 
@@ -184,10 +186,10 @@ $(LIB)  :       $(KNDSTR) $(OBJSTR) $(OBJS)
 	ar -r $(LIB) $(KNDSTR) $(OBJSTR) $(OBJS)
 
 tao_minimizer.o: tao_minimizer.f90
-	$(CPP) -I$(PETSC_INC) $*.f90 > cpp.$*.f90 ; $(F90) -I$(PETSC_INC) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
+	$(CPP) $(PETSC_INCLUDE_FLAGS) $*.f90 > cpp.$*.f90 ; $(F90) $(PETSC_INCLUDE_FLAGS) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
 
 mpi_utils.o: mpi_utils.f90
-	$(CPP) -I$(PETSC_INC) $*.f90 > cpp.$*.f90 ; $(F90) -I$(PETSC_INC) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
+	$(CPP) $(PETSC_INCLUDE_FLAGS) $*.f90 > cpp.$*.f90 ; $(F90) $(PETSC_INCLUDE_FLAGS) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
 
 .DEFAULTS:
 .f90.o :

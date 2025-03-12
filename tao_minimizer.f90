@@ -24,7 +24,7 @@ subroutine tao_minimizer
   Vec                ::   MyState    ! array that stores the (temporary) state
   PetscInt           ::   n, M, GlobalStart, MyEnd, iter!, maxfeval
   PetscReal          ::   fval, gnorm, cnorm, xdiff
-  PetscScalar        ::   MyTolerance
+  PetscReal          ::   MyTolerance
   TaoConvergedReason ::   reason
   integer(i4)        ::   j
   real(8)            ::   MaxGrad

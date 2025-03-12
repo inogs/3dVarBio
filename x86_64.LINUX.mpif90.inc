@@ -13,6 +13,7 @@ FORTRAN_UNDERSCORE = _
 LIBFEXIT  = ./libfexit/
 LIBNCMEDLEV =./libnc-medlevel
 
+PETSC_LD_FLAGS := $(if $(PETSC_LIB), -L$(PETSC_LIB),)
 
 # NETCDF_INC = $(NETCDFF_INC)
 # NETCDF_LIB = $(NETCDFF_LIB)
@@ -24,7 +25,7 @@ PNETCDF_LIB=/m100_scratch/userexternal/gbolzon0/pnetcdf/lib
 FFLAGS  = -ffree-line-length-none -O2 -I$(NETCDF_INC) -I$(NETCDFF_INC) -I$(PNETCDF_INC) -c
 CFLAGS  = -O2 -I$(NETCDF_INC)
 
-LDFLAGS += -L$(NETCDF_LIB) -L$(NETCDFF_LIB) -L$(PETSC_LIB) -L$(PNETCDF_LIB) -lnetcdff -lnetcdf -lpetsc -lpnetcdf
+LDFLAGS += -L$(NETCDF_LIB) -L$(NETCDFF_LIB) $(PETSC_LD_FLAGS) -L$(PNETCDF_LIB) -lnetcdff -lnetcdf -lpetsc -lpnetcdf
 AR      = ar
 
 # Debug options##########
