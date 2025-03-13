@@ -198,20 +198,11 @@ $(EXEC) : $(LIBDEP)	$(KNDSTR) $(OBJSTR) $(OBJS) $(MAINEXE)
 $(LIB)  :       $(KNDSTR) $(OBJSTR) $(OBJS)
 	ar -r $(LIB) $(KNDSTR) $(OBJSTR) $(OBJS)
 
-tao_minimizer.o: tao_minimizer.f90
-	$(FC) -cpp $(INCLUDE_FLAGS) $(FFLAGS) -o $@ $<
-
-mpi_utils.o: mpi_utils.f90
-	$(FC) -cpp $(INCLUDE_FLAGS) $(FFLAGS) -o $@ $<
-
 .DEFAULTS:
 .f90.o :
-	$(FC) -cpp $(FFLAGS) -o $@ $*.f90
+	$(FC) -cpp $(INCLUDE_FLAGS) $(FFLAGS) -o $@ $*.f90
 
-.f.o :
-	$(FC) -cpp $(FFLAGS) -o $@ $*.f
-
-nc-med-level-lib.o : libnc-medlevel/nc-med-level-lib.f90
+nc-med-level-lib.o : nc-med-level-lib.f90
 	$(FC) $(FFLAGS) $<
 
 libnc-medlevel.a : nc-med-level-lib.o
