@@ -157,13 +157,6 @@ OBJS    =  \
 
 MAINEXE = main.o
 
-$(info $$INCLUDE_FLAGS  = ${INCLUDE_FLAGS})
-$(info $$FFLAGS  = ${FFLAGS})
-$(info $$LDFLAGS  = ${LDFLAGS})
-$(info $$FC = ${FC})
-$(info $$LD = ${LD})
-
-
 # NOTE: It may happen that pkg-config returns a spurious `-I`. We pass the
 #       string through sed to sanitise.
 INCLUDE_FLAGS ?= \
@@ -201,9 +194,6 @@ $(LIB)  :       $(KNDSTR) $(OBJSTR) $(OBJS)
 .DEFAULTS:
 .f90.o :
 	$(FC) -cpp $(INCLUDE_FLAGS) $(FFLAGS) -o $@ $*.f90
-
-nc-med-level-lib.o : nc-med-level-lib.f90
-	$(FC) $(FFLAGS) $<
 
 libnc-medlevel.a : nc-med-level-lib.o
 	$(AR) cr $@ $<
