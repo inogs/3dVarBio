@@ -198,9 +198,11 @@ $(LIB)  :       $(KNDSTR) $(OBJSTR) $(OBJS)
 libnc-medlevel.a : nc-med-level-lib.o
 	$(AR) cr $@ $<
 
+.PHONY:clean
 clean:
 	$(RM) *.o *.mod cpp.* *.L *.a
 	$(RM) libnc-medlevel/*.a libnc-medlevel/*.o
 
+.PHONY:erease
 erase:
 	$(RM) *.o *.mod cpp.* *.L $(EXEC)
