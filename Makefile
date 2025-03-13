@@ -157,24 +157,30 @@ OBJS    =  \
 
 MAINEXE = main.o
 
+$(info $$INCLUDE_FLAGS  = ${INCLUDE_FLAGS})
+$(info $$FFLAGS  = ${FFLAGS})
+$(info $$LDFLAGS  = ${LDFLAGS})
+$(info $$FC = ${FC})
+$(info $$LD = ${LD})
 
-# PETSC_INCLUDE_FLAGS=-I/opt/petsc/linux-c-opt/include
 
 # NOTE: It may happen that pkg-config returns a spurious `-I`. We pass the
 #       string through sed to sanitise.
-INCLUDE_FLAGS:=\
+INCLUDE_FLAGS ?= \
 	$(shell pkg-config --cflags petsc netcdf netcdf-fortran pnetcdf | sed 's/ -I[[:space:]]*/ /g')
 
-LDFLAGS:=\
+LDFLAGS ?= \
 	$(shell pkg-config --libs petsc netcdf netcdf-fortran pnetcdf)
 
+FFLAGS ?= -O2 -ffree-line-length-none -c
+FC ?= mpif90
+LD ?= mpif90
+
 $(info $$INCLUDE_FLAGS  = ${INCLUDE_FLAGS})
+$(info $$FFLAGS  = ${FFLAGS})
 $(info $$LDFLAGS  = ${LDFLAGS})
-
-
-FFLAGS=-O2 -ffree-line-length-none -c
-FC=mpif90
-LD=mpif90
+$(info $$FC = ${FC})
+$(info $$LD = ${LD})
 
 .SUFFIXES: .f90
 
@@ -209,7 +215,7 @@ nc-med-level-lib.o : libnc-medlevel/nc-med-level-lib.f90
 	$(FC) $(FFLAGS) $<
 
 libnc-medlevel.a : nc-med-level-lib.o
-	$(AR) cru $@ $<
+	$(AR) cr $@ $<
 
 clean:
 	$(RM) *.o *.mod cpp.* *.L *.a
