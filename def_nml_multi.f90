@@ -64,14 +64,14 @@ subroutine def_nml_multi
   drv%dia = 12
 
   if(MyId .eq. 0) then
-    open ( drv%dia, file='DA__FREQ_1/OceanVar.dia_multinml.'//DA_DATE, form='formatted' )
+    open ( drv%dia, file='OceanVar.dia_multinml.'//DA_DATE, form='formatted' )
   endif
 
 !---------------------------------------------------------------------
 ! Open the namelist
 ! ---
 
-  open(11,file='DA__FREQ_1/satfloat.'//DA_DATE//'.nml',form='formatted')
+  open(11,file='satfloat.'//DA_DATE//'.nml',form='formatted')
 
   ! ---
 

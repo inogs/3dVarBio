@@ -60,8 +60,8 @@ subroutine cp_o2o_stat
       write(*,*) "Warning: Reading a variable not in the DA_VarList!"
   endif
 
-  BioRestart = 'DA__FREQ_1/RST_after.'//ShortDate//'.'//DA_VarList(iVar)//'.nc'
-  BioRestartLong = 'DA__FREQ_1/RST_after.'//DA_DATE//'.'//DA_VarList(iVar)//'.nc'
+  BioRestart = 'RST_after.'//ShortDate//'.'//DA_VarList(iVar)//'.nc'
+  BioRestartLong = 'RST_after.'//DA_DATE//'.'//DA_VarList(iVar)//'.nc'
 
   if(drv%Verbose .eq. 1 .and. MyId .eq. 0) &
     print*, "Writing O2o Restart ", BioRestart

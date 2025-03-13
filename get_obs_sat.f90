@@ -180,7 +180,7 @@ subroutine get_obs_sat
   endif
 
   ! Saving flag misfit sat
-  flagFile = 'DA__FREQ_1/flagsat.'//ShortDate//'.nc'
+  flagFile = 'flagsat.'//ShortDate//'.nc'
   ierr = nf90mpi_create(Var3DCommunicator, trim(flagFile), NF90_CLOBBER, MPI_INFO_NULL,ncid)
   if (ierr .ne. NF90_NOERR ) call handle_err('flagFile ', ierr)
 

@@ -64,8 +64,8 @@ subroutine cp_chl_stat
     endif
 
     if(doVariable .eq. 1) then
-    BioRestart = 'DA__FREQ_1/RST_after.'//ShortDate//'.'//DA_VarList(iVar)//'.nc'
-    BioRestartLong = 'DA__FREQ_1/RST_after.'//DA_DATE//'.'//DA_VarList(iVar)//'.nc'
+    BioRestart = 'RST_after.'//ShortDate//'.'//DA_VarList(iVar)//'.nc'
+    BioRestartLong = 'RST_after.'//DA_DATE//'.'//DA_VarList(iVar)//'.nc'
 
     if(drv%Verbose .eq. 1 .and. MyId .eq. 0) &
       print*, "Writing Chl Restart ", BioRestart

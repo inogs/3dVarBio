@@ -123,8 +123,8 @@ subroutine wrt_chl_stat
 
       if(iVar .gt. NPhytoVar) CYCLE
 
-      BioRestart = 'DA__FREQ_1/RST_after.'//ShortDate//'.'//DA_VarList(iVar)//'.nc'
-      BioRestartLong = 'DA__FREQ_1/RST_after.'//DA_DATE//'.'//DA_VarList(iVar)//'.nc'
+      BioRestart = 'RST_after.'//ShortDate//'.'//DA_VarList(iVar)//'.nc'
+      BioRestartLong = 'RST_after.'//DA_DATE//'.'//DA_VarList(iVar)//'.nc'
 
       if(drv%Verbose .eq. 1 .and. MyId .eq. 0) &
         print*, "Writing Phyto Restart ", BioRestart
@@ -284,7 +284,7 @@ subroutine wrt_chl_stat
 
 ! File for post check DA
 ! plus check variables
-  LimCorrfile = 'DA__FREQ_1/limcorr.'//ShortDate//'.nc'
+  LimCorrfile = 'limcorr.'//ShortDate//'.nc'
   ierr = nf90mpi_create(Var3DCommunicator, LimCorrfile, NF90_CLOBBER, MPI_INFO_NULL, ncid)
   if (ierr .ne. NF90_NOERR ) call handle_err('LimCorrfile ', ierr)
 

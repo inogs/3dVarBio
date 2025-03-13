@@ -62,7 +62,7 @@ subroutine readNutStat
     endif
 
     MyVarName = DA_VarList(iVar)
-    RstFileName = 'DA__FREQ_1/RSTbefore.'//ShortDate//'.'//MyVarName//'.nc'
+    RstFileName = 'RSTbefore.'//ShortDate//'.'//MyVarName//'.nc'
 
     if(drv%Verbose .eq. 1) then
       if(MyId .eq. 0) &
