@@ -6,6 +6,7 @@ SHELL = /bin/sh
 ############################################################################
 #
 #    Copyright 2006 Srdjan Dobricic, CMCC, Bologna
+#    Copyright 2025 Jacopo Nespolo, Matteo Poggi, eXact lab S.r.l, Trieste
 #
 #    This file is part of OceanVar.
 #
@@ -23,21 +24,6 @@ SHELL = /bin/sh
 #    along with OceanVar.  If not, see <http://www.gnu.org/licenses/>.
 #
 ############################################################################
-
-include compiler.inc
-
-ifndef NETCDF_INC
-        export NETCDF_INC=/usr/include
-endif
-
-ifndef NETCDF_LIB
-        export NETCDF_LIB=/usr/lib
-endif
-$(info $$NETCDF_INC  = ${NETCDF_INC})
-$(info $$NETCDF_LIB  = ${NETCDF_LIB})
-$(info $$LIBNCMEDLEV = ${LIBNCMEDLEV})
-
-PETSC_INCLUDE_FLAGS := $(if $(PETSC_INC), -I$(PETSC_INC),)
 
 EXEC = var_3d
 LIB  = libvar_3d.a
@@ -171,11 +157,37 @@ OBJS    =  \
 
 MAINEXE = main.o
 
+
+# PETSC_INCLUDE_FLAGS=-I/opt/petsc/linux-c-opt/include
+
+INCLUDE_FLAGS:=\
+	$(shell pkg-config --keep-system-cflags --cflags petsc) \
+	$(shell pkg-config --keep-system-cflags --cflags netcdf) \
+	$(shell pkg-config --keep-system-cflags --cflags pnetcdf) \
+	$(shell pkg-config --keep-system-cflags --cflags netcdf-fortran | python -c 'import argv; print(" ".join(a for a in argv if a!='-I'))')
+
+LDFLAGS:=\
+	$(shell pkg-config --keep-system-libs --libs petsc) \
+	$(shell pkg-config --keep-system-libs --libs netcdf) \
+	$(shell pkg-config --keep-system-libs --libs pnetcdf) \
+	$(shell pkg-config --keep-system-libs --libs netcdf-fortran)
+
+$(info $$INCLUDE_FLAGS  = ${INCLUDE_FLAGS})
+$(info $$LDFLAGS  = ${LDFLAGS})
+
+
+FFLAGS=-O2 -ffree-line-length-none -c
+F90=mpif90
+F77=mpif90
+LD=mpif90
+
 .SUFFIXES: .f90
 
+.PHONY:all
 all:  $(EXEC) $(LIB)
 	@echo $(EXEC) is compiled
 
+.PHONY:install
 install:	$(EXEC)
 		cp -p $(EXEC) $(INSTDIR)
 
@@ -186,30 +198,27 @@ $(LIB)  :       $(KNDSTR) $(OBJSTR) $(OBJS)
 	ar -r $(LIB) $(KNDSTR) $(OBJSTR) $(OBJS)
 
 tao_minimizer.o: tao_minimizer.f90
-	$(CPP) $(PETSC_INCLUDE_FLAGS) $*.f90 > cpp.$*.f90 ; $(F90) $(PETSC_INCLUDE_FLAGS) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
+	$(F90) -cpp $(INCLUDE_FLAGS) $(FFLAGS) -o $@ $<
 
 mpi_utils.o: mpi_utils.f90
-	$(CPP) $(PETSC_INCLUDE_FLAGS) $*.f90 > cpp.$*.f90 ; $(F90) $(PETSC_INCLUDE_FLAGS) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
+	$(F90) -cpp $(INCLUDE_FLAGS) $(FFLAGS) -o $@ $<
 
 .DEFAULTS:
 .f90.o :
-	$(CPP) $*.f90 > cpp.$*.f90 ; $(F90) $(FFLAGS) cpp.$*.f90  ; $(MV) cpp.$*.o $*.o
+	$(F90) -cpp $(FFLAGS) -o $@ $*.f90
 
 .f.o :
-	$(CPP) $*.f > cpp.$*.f ; $(F77) $(FFLAGS) cpp.$*.f  ; $(MV) cpp.$*.o $*.o
+	$(F77) -cpp $(FFLAGS) -o $@ $*.f
 
-libf_exit.a :
-	cd $(LIBFEXIT) && $(MAKE)
+nc-med-level-lib.o : libnc-medlevel/nc-med-level-lib.f90
+	$(FC) $(FFLAGS) $<
 
-libnc-medlevel.a :
-		cd $(LIBNCMEDLEV) && $(MAKE)
+libnc-medlevel.a : nc-med-level-lib.o
+	$(AR) cru $@ $<
 
 clean:
-	$(RM) *.o *.mod cpp.* *.L
-	cd $(LIBNCMEDLEV) && $(MAKE) erase
-	cd ..
+	$(RM) *.o *.mod cpp.* *.L *.a
+	$(RM) libnc-medlevel/*.a libnc-medlevel/*.o
 
 erase:
 	$(RM) *.o *.mod cpp.* *.L $(EXEC)
-	cd $(LIBNCMEDLEV) && $(MAKE) erase
-	cd ..
