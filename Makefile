@@ -160,25 +160,20 @@ MAINEXE = main.o
 
 # PETSC_INCLUDE_FLAGS=-I/opt/petsc/linux-c-opt/include
 
+# NOTE: It may happen that pkg-config returns a spurious `-I`. We pass the
+#       string through sed to sanitise.
 INCLUDE_FLAGS:=\
-	$(shell pkg-config --keep-system-cflags --cflags petsc) \
-	$(shell pkg-config --keep-system-cflags --cflags netcdf) \
-	$(shell pkg-config --keep-system-cflags --cflags pnetcdf) \
-	$(shell pkg-config --keep-system-cflags --cflags netcdf-fortran | python -c 'import argv; print(" ".join(a for a in argv if a!='-I'))')
+	$(shell pkg-config --cflags petsc netcdf netcdf-fortran pnetcdf | sed 's/ -I[[:space:]]*/ /g')
 
 LDFLAGS:=\
-	$(shell pkg-config --keep-system-libs --libs petsc) \
-	$(shell pkg-config --keep-system-libs --libs netcdf) \
-	$(shell pkg-config --keep-system-libs --libs pnetcdf) \
-	$(shell pkg-config --keep-system-libs --libs netcdf-fortran)
+	$(shell pkg-config --libs petsc netcdf netcdf-fortran pnetcdf)
 
 $(info $$INCLUDE_FLAGS  = ${INCLUDE_FLAGS})
 $(info $$LDFLAGS  = ${LDFLAGS})
 
 
 FFLAGS=-O2 -ffree-line-length-none -c
-F90=mpif90
-F77=mpif90
+FC=mpif90
 LD=mpif90
 
 .SUFFIXES: .f90
@@ -198,17 +193,17 @@ $(LIB)  :       $(KNDSTR) $(OBJSTR) $(OBJS)
 	ar -r $(LIB) $(KNDSTR) $(OBJSTR) $(OBJS)
 
 tao_minimizer.o: tao_minimizer.f90
-	$(F90) -cpp $(INCLUDE_FLAGS) $(FFLAGS) -o $@ $<
+	$(FC) -cpp $(INCLUDE_FLAGS) $(FFLAGS) -o $@ $<
 
 mpi_utils.o: mpi_utils.f90
-	$(F90) -cpp $(INCLUDE_FLAGS) $(FFLAGS) -o $@ $<
+	$(FC) -cpp $(INCLUDE_FLAGS) $(FFLAGS) -o $@ $<
 
 .DEFAULTS:
 .f90.o :
-	$(F90) -cpp $(FFLAGS) -o $@ $*.f90
+	$(FC) -cpp $(FFLAGS) -o $@ $*.f90
 
 .f.o :
-	$(F77) -cpp $(FFLAGS) -o $@ $*.f
+	$(FC) -cpp $(FFLAGS) -o $@ $*.f
 
 nc-med-level-lib.o : libnc-medlevel/nc-med-level-lib.f90
 	$(FC) $(FFLAGS) $<
