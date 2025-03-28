@@ -160,7 +160,7 @@ MAINEXE = main.o
 # NOTE: It may happen that pkg-config returns a spurious `-I`. We pass the
 #       string through sed to sanitise.
 INCLUDE_FLAGS ?= \
-	$(shell pkg-config --cflags petsc netcdf netcdf-fortran pnetcdf | sed 's/-I[[:space:]]+//g' | sed 's/-I$//g')
+	$(shell pkg-config --cflags petsc netcdf netcdf-fortran pnetcdf | sed 's/-I[[:space:]]+//g')
 
 LDFLAGS ?= \
 	$(shell pkg-config --libs petsc netcdf netcdf-fortran pnetcdf)
