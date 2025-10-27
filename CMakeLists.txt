@@ -26,7 +26,7 @@ set(OBJS routines.f def_nml.f90 def_grd.f90 sav_itr.f90 ini_itr.f90 ini_bmd.f90 
          ini_nrm.f90 min_cfn.f90 costf.f90 cnv_ctv.f90 ver_hor.f90 rcfl_x.f90 rcfl_y.f90 veof.f90 
          obsop.f90 obs_sat.f90 resid.f90 res_inc.f90 rdrcorr.f90 mean_rdr.f90     
          obs_trd_ad.f90 obs_sat_ad.f90 veof_ad.f90 ver_hor_ad.f90 rcfl_x_ad.f90 rcfl_y_ad.f90 
-         cnv_ctv_ad.f90 cnv_inn.f90 wrt_dia.f90 filename_mod.f90 oceanvar.f90 main.f90)
+         cnv_ctv_ad.f90 cnv_inn.f90 wrt_dia.f90 filename_mod.f90 biovar.f90 main.f90)
 # SOURCES --END--
 
 add_executable(var_3d ${KNDSTR} ${OBJSTR} ${OBJS})

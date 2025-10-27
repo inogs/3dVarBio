@@ -12,7 +12,7 @@ call SET_DA_PARAMS
 ! in case of standalone usage
 call var3d_mpi_init
 
-call oceanvar
+call biovar
 
 ! finalizing the MPI environment
 call clean_da_params

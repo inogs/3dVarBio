@@ -86,6 +86,7 @@ subroutine def_nml_multi
     write(drv%dia,*) ' N3n update based on chl assimilation chl_upnut = ', chl_upnut
     write(drv%dia,*) ' Nutrient assimilation                      nut = ', nut
     write(drv%dia,*) ' Multivariate assimilation               multiv = ', multiv
+    write(drv%dia,*) ' Copuled density/nutrient ass           densnut = ', densnut
     write(drv%dia,*) ' Number of phytoplankton species          nphyt = ', nphyto
     write(drv%dia,*) ' Minimum depth for chlorophyll          chl_dep = ', chl_dep
     write(drv%dia,*) ' Number of phytoplankton components        ncmp = ', ncmp
@@ -100,6 +101,7 @@ subroutine def_nml_multi
   drv%chl_upnut = chl_upnut
   drv%nut  = nut
   drv%multiv = multiv
+  drv%densnut  = densnut
   bio%nphy = nphyto
   sat%dep  = chl_dep
   bio%ncmp = ncmp
