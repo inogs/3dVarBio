@@ -62,43 +62,6 @@ OBJSTR  =  \
 	bio_str.o\
 	mpi_str.o
 
-PHYSOBS  =  \
-	get_obs_sla.o\
-	get_obs_arg.o\
-	get_obs_xbt.o\
-	get_obs_gld.o\
-	get_obs_vdr.o\
-	get_obs_gvl.o\
-	get_obs_tra.o\
-	get_obs_trd.o\
-	obs_sla.o\
-	obs_arg.o\
-	obs_xbt.o\
-	obs_gld.o\
-	obs_vdr.o\
-	obs_gvl.o\
-	obs_tra.o\
-	obs_trd.o\
-	obs_sla_ad.o\
-	obs_arg_ad.o\
-	obs_xbt_ad.o\
-	obs_gld_ad.o\
-	obs_vdr_ad.o\
-	obs_gvl_ad.o\
-	obs_tra_ad.o\
-	obs_trd_ad.o\
-	bar_mod.o\
-	get_vel.o\
-	div_dmp.o\
-	get_byg.o\
-	bar_mod_ad.o\
-	get_vel_ad.o\
-	div_dmp_ad.o\
-	get_byg_ad.o\
-	mod_trj_ad.o\
-	mod_trj_tl.o\
-	invrt.o\
-	invrt_ad.o
 
 OBJS    =  \
 	def_nml.o\

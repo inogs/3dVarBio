@@ -92,7 +92,7 @@ MODULE obs_str
   TYPE (arg_t)                 :: arg
 
   ! ---
-  ! Observational vector for Chlorophyll
+  ! Observational vector for SAT chl
   TYPE chl_t
      
      INTEGER(i8)              ::  no         ! Number of all observations

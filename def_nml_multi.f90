@@ -47,14 +47,14 @@ subroutine def_nml_multi
 
   LOGICAL       :: ApplyConditions
   INTEGER(i4)   :: chl_assim, chl_upnut, nut, multiv, N3n, O2o, updateN1p
-  INTEGER(i4)   :: nphyto, uniformL, anisL
+  INTEGER(i4)   :: nphyto, uniformL, anisL, densnut
   REAL(r8)      :: chl_dep
   INTEGER(i4)   :: argo, sat_obs, ncmp
   
   !NAMELIST /ctllst/ ctl_tol, ctl_per
   !NAMELIST /covlst/ neof_chl, neof_n3n, neof_o2o, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
   NAMELIST /biolst/ chl_assim, chl_upnut, nut, multiv, nphyto, chl_dep, ncmp, ApplyConditions, N3n, updateN1p, O2o
-  NAMELIST /params/ sat_obs, argo, uniformL, anisL
+  NAMELIST /params/ sat_obs, argo, densnut, uniformL, anisL
 
 
 ! -------------------------------------------------------------------
@@ -86,7 +86,6 @@ subroutine def_nml_multi
     write(drv%dia,*) ' N3n update based on chl assimilation chl_upnut = ', chl_upnut
     write(drv%dia,*) ' Nutrient assimilation                      nut = ', nut
     write(drv%dia,*) ' Multivariate assimilation               multiv = ', multiv
-    write(drv%dia,*) ' Copuled density/nutrient ass           densnut = ', densnut
     write(drv%dia,*) ' Number of phytoplankton species          nphyt = ', nphyto
     write(drv%dia,*) ' Minimum depth for chlorophyll          chl_dep = ', chl_dep
     write(drv%dia,*) ' Number of phytoplankton components        ncmp = ', ncmp
@@ -101,7 +100,6 @@ subroutine def_nml_multi
   drv%chl_upnut = chl_upnut
   drv%nut  = nut
   drv%multiv = multiv
-  drv%densnut  = densnut
   bio%nphy = nphyto
   sat%dep  = chl_dep
   bio%ncmp = ncmp
@@ -121,6 +119,7 @@ subroutine def_nml_multi
     write(drv%dia,*) ' PARAMETERS NAMELIST INPUT: '
     write(drv%dia,*) ' Read Satellite observations      sat_obs  = ', sat_obs
     write(drv%dia,*) ' Read ARGO float observations     argo     = ', argo
+    write(drv%dia,*) ' Copuled density/nutrient ass      densnut = ', densnut
     write(drv%dia,*) ' Set uniform correlation radius   uniformL = ', uniformL
     write(drv%dia,*) ' Set anisotropy on corr radius    anisL    = ', anisL
     write(drv%dia,*) '------------------------------------------------------------'
@@ -134,6 +133,7 @@ subroutine def_nml_multi
 
   drv%sat_obs  = sat_obs
   drv%argo_obs = argo
+  drv%densnut  = densnut
   drv%uniformL = uniformL
   drv%anisL = anisL
 
