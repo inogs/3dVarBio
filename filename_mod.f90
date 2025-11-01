@@ -14,10 +14,10 @@ character (LEN=1024) :: CORR_FILE    != 'corr.nc'
 character (LEN=1024) :: EIV_FILE     != 'eiv.nc'
 character (LEN=1024) :: OBS_FILE     != 'obs_1.dat'
 character (LEN=1024) :: GRID_FILE    != 'grid1.nc'
-!laura
 character (LEN=1024) :: RCORR_FILE  != 'chl_rad_corr.nc'
 character (LEN=1024) :: ARGO_FILE   != 'argo_mis.dat'
 character (LEN=1024) :: ANIS_FILE   != 'gradsal.nc'
+character (LEN=1024) :: INCR_FILE   != 'density_increments.nc'
 
 
 CONTAINS
@@ -38,10 +38,10 @@ NUTCHLCOV_FILE  = 'crosscorrs.nc'
    EIV_FILE  = 'eiv.nc'
    OBS_FILE  = 'obs_1.dat' ! 'obs_'//fgrd//'.dat'
   GRID_FILE  = 'grid1.nc'! 'grid'//cgrd//'.nc'
-!laura
  RCORR_FILE  = 'chl_rad_corr.nc'
   ARGO_FILE  = 'arg_mis.dat'
   ANIS_FILE  = 'gradsal.nc'
+  INCR_FILE  = 'density_increments.dat'
 
 END SUBROUTINE SETFILENAMES
 
