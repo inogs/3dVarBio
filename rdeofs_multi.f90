@@ -205,7 +205,7 @@ subroutine rdeofs_multi
   stat = nf90mpi_close(ncid)
   if (stat /= nf90_noerr) call handle_err("nf90mpi_close", stat)
 
-  DEALLOCATE(x3, x2, std_chl, std_n3n)
+  DEALLOCATE(x3, x2, x1, std_chl, std_n3n)
   
 end subroutine rdeofs_multi
 

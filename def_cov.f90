@@ -545,6 +545,10 @@ subroutine def_cov
    call readNutStat
    if(bio%updateN1p.eq.1) &
      call readNutCov
-  endif 
+  endif
 
+  if(drv%dnc .eq. 1) then
+   call readNutStat
+   call readNutCov
+  endif
 end subroutine def_cov

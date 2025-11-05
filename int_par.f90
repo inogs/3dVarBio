@@ -44,5 +44,9 @@ subroutine int_par
   ! Load observations of chlorophyll
   if(drv%sat_obs .eq. 1) &
     call int_par_chl
-  
-end subroutine int_par
+
+  ! Load density increments for Physical DA
+  if(drv%densnut .eq. 1) &
+    call int_par_dnc
+
+  end subroutine int_par

@@ -60,7 +60,8 @@ OBJSTR  =  \
 	ctl_str.o\
 	rcfl_mod.o\
 	bio_str.o\
-	mpi_str.o
+	mpi_str.o\
+	dnc_str.o\
 
 
 OBJS    =  \
@@ -78,16 +79,19 @@ OBJS    =  \
 	get_obs.o\
 	get_obs_arg.o\
 	get_obs_sat.o\
+	get_densincr_arg.o\
 	int_par.o\
 	obs_vec.o\
 	ini_cfn.o\
 	cnv_ctv.o\
 	ver_hor_chl.o\
 	ver_hor_nut.o\
+	ver_hor_densnut.o\
 	rcfl_x.o\
 	rcfl_y.o\
 	veof_chl.o\
 	veof_nut.o\
+	v_densnut.o\
 	obsop.o\
 	obs_arg.o\
 	resid.o\

@@ -137,6 +137,10 @@ subroutine biovar
     endif
   endif
 
+  if (drv%dnc .eq. 1) then
+    call wrt_nut_stat
+  endif
+
   call sav_itr
   if(MyId .eq. 0) write(drv%dia,*) 'out of sav_itr '
   

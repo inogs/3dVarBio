@@ -49,6 +49,7 @@ MODULE drv_str
      INTEGER(i4)           ::  Verbose      ! Flag for printing verbose output
      INTEGER(i4)           ::  nut          ! Flag for nutrient assimilation
      INTEGER(i4)           ::  multiv       ! Flag for multivariate assimilation
+     INTEGER(i4)           ::  dnc          ! Flag for update of nitrate based on density increments
 
   END TYPE drv_t
   

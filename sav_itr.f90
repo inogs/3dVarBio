@@ -41,6 +41,7 @@ subroutine sav_itr
   use mpi_str
   use bio_str
   use da_params
+  use dnc_str
 
   implicit none
   
@@ -91,6 +92,10 @@ subroutine sav_itr
     DEALLOCATE( grd%n3n)
     DEALLOCATE( grd%n3n_ad)
   endif
+
+  if(drv%dnc .eq. 1) then
+    DEALLOCATE( grd%n3n)
+  endif
   
   ! Observational vector
   DEALLOCATE( obs%inc, obs%amo, obs%res)
@@ -111,6 +116,10 @@ subroutine sav_itr
     endif
   endif
 
+  if(drv%multiv.eq.1) then
+    DEALLOCATE( ros%evc_multi, ros%eva_multi)
+  endif
+  
   ! Control structure
   DEALLOCATE( ctl%x_c, ctl%g_c)
 
@@ -145,6 +154,11 @@ subroutine sav_itr
     DEALLOCATE( bio%InitialChl)
     DEALLOCATE( bio%InitialNut)
     if(bio%updateN1p.eq.1)  DEALLOCATE( bio%covn3n_n1p)
+  endif
+
+  if(drv%dnc .eq. 1) then
+    DEALLOCATE( bio%InitialNut)
+    DEALLOCATE( bio%covn3n_n1p)
   endif
 
   DEALLOCATE(SurfaceWaterPoints)  

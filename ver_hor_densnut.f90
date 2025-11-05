@@ -1,4 +1,4 @@
-subroutine ver_hor_nut(NutArray, NutArrayAd, Var)
+subroutine ver_hor_densnut(NutArray)
 
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -36,10 +36,11 @@ subroutine ver_hor_nut(NutArray, NutArrayAd, Var)
 
   use set_knd
   use grd_str
-  use eof_str
+!   use eof_str
   use cns_str
   use drv_str
-  use obs_str
+  use dnc_str
+!   use obs_str
   use mpi_str
 
   implicit none
@@ -51,13 +52,13 @@ subroutine ver_hor_nut(NutArray, NutArrayAd, Var)
   type(DoubleGrid), allocatable, dimension(:)       :: RecBuf1D(:)
   REAL(r8), allocatable, dimension(:,:,:) :: DefBufChl, DefBufChlAd
   REAL(r8) :: NutArray(grd%im,grd%jm,grd%km), NutArrayAd(grd%im,grd%jm,grd%km)
-  CHARACTER :: Var
+!   CHARACTER :: Var
   
   ione = 1
 
   ! ---
-  ! Vertical EOFs
-  call veof_nut(NutArray, Var)
+  ! Apply density-nutrient increments and interp on vertical grid
+  call v_densnut(NutArray)
   !return
   ! goto 103 !No Vh
   
@@ -248,4 +249,4 @@ subroutine ver_hor_nut(NutArray, NutArrayAd, Var)
   
   ! 103 continue
   
-end subroutine ver_hor_nut
+end subroutine ver_hor_densnut
