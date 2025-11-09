@@ -52,7 +52,7 @@ subroutine get_obs
     call get_obs_sat
   
   ! Load density increments for Physical DA
-  if(drv%densnut .eq. 1) &
+  if(drv%dnc .eq. 1) &
     call get_densincr_arg
 
 end subroutine get_obs

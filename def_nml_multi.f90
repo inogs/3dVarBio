@@ -47,14 +47,14 @@ subroutine def_nml_multi
 
   LOGICAL       :: ApplyConditions
   INTEGER(i4)   :: chl_assim, chl_upnut, nut, multiv, N3n, O2o, updateN1p
-  INTEGER(i4)   :: nphyto, uniformL, anisL, densnut
+  INTEGER(i4)   :: nphyto, uniformL, anisL, dnc
   REAL(r8)      :: chl_dep
   INTEGER(i4)   :: argo, sat_obs, ncmp
   
   !NAMELIST /ctllst/ ctl_tol, ctl_per
   !NAMELIST /covlst/ neof_chl, neof_n3n, neof_o2o, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
   NAMELIST /biolst/ chl_assim, chl_upnut, nut, multiv, nphyto, chl_dep, ncmp, ApplyConditions, N3n, updateN1p, O2o
-  NAMELIST /params/ sat_obs, argo, densnut, uniformL, anisL
+  NAMELIST /params/ sat_obs, argo, dnc, uniformL, anisL
 
 
 ! -------------------------------------------------------------------
@@ -119,7 +119,7 @@ subroutine def_nml_multi
     write(drv%dia,*) ' PARAMETERS NAMELIST INPUT: '
     write(drv%dia,*) ' Read Satellite observations      sat_obs  = ', sat_obs
     write(drv%dia,*) ' Read ARGO float observations     argo     = ', argo
-    write(drv%dia,*) ' Copuled density/nutrient ass      densnut = ', densnut
+    write(drv%dia,*) ' Coupled density/nutrient ass      dnc     = ', dnc
     write(drv%dia,*) ' Set uniform correlation radius   uniformL = ', uniformL
     write(drv%dia,*) ' Set anisotropy on corr radius    anisL    = ', anisL
     write(drv%dia,*) '------------------------------------------------------------'
@@ -133,7 +133,7 @@ subroutine def_nml_multi
 
   drv%sat_obs  = sat_obs
   drv%argo_obs = argo
-  drv%densnut  = densnut
+  drv%dnc      = dnc
   drv%uniformL = uniformL
   drv%anisL = anisL
 

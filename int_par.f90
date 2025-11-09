@@ -46,7 +46,7 @@ subroutine int_par
     call int_par_chl
 
   ! Load density increments for Physical DA
-  if(drv%densnut .eq. 1) &
+  if(drv%dnc .eq. 1) &
     call int_par_dnc
 
   end subroutine int_par

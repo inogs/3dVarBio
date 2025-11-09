@@ -37,6 +37,7 @@ subroutine def_nml
   use ctl_str
   use mpi_str
   use bio_str
+  use dnc_str
 
   implicit none
 

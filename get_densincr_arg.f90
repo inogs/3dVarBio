@@ -86,27 +86,29 @@ subroutine get_densincr_arg
     close (511)
   endif
 
+  
   call MPI_Bcast(TmpFlc, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
 !   call MPI_Bcast(TmpPar, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
   call MPI_Bcast(TmpLon, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
   call MPI_Bcast(TmpLat, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
   call MPI_Bcast(TmpDpt, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
-!   call MPI_Bcast(TmpTim, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
+  !   call MPI_Bcast(TmpTim, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
   call MPI_Bcast(TmpInc, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
   call MPI_Bcast(TmpCorr, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
   call MPI_Bcast(TmpErr, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
   call MPI_Bcast(TmpStd, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
-
+  
   ! Counting the number of observations that falls in the domain
   Counter = 0
   do k=1,GlobalDncNum
-    if( TmpLon(k) .ge. grd%lon(1,1) .and. TmpLon(k) .lt. grd%NextLongitude .and. &
-        TmpLat(k) .ge. grd%lat(1,1) .and. TmpLat(k) .lt. grd%lat(grd%im,grd%jm) ) then
-        if(drv%dnc.eq.1) then
-            Counter = Counter + 1
-        endif
-    endif
-  enddo
+   if( TmpLon(k) .ge. grd%lon(1,1) .and. TmpLon(k) .lt. grd%NextLongitude .and. &
+   TmpLat(k) .ge. grd%lat(1,1) .and. TmpLat(k) .lt. grd%lat(grd%im,grd%jm) ) then
+      if(drv%dnc.eq.1) then
+         Counter = Counter + 1
+      endif
+   endif
+enddo
+
 
   if(drv%Verbose .eq. 1) &
        print*, "MyId", MyId, "has",Counter,"Density increments"
@@ -374,10 +376,10 @@ subroutine int_par_dnc
   
   dnc%nc_global = 0
   call MPI_Allreduce(dnc%nc, dnc%nc_global, 1, MPI_INT, MPI_SUM, Var3DCommunicator, ierr)
-
+  
   if(MyId .eq. 0) then
-     write(drv%dia,*)'Real number of denisty increments: ',dnc%nc_global
-     print*,'Good denisty increments: ',dnc%nc_global
+     write(drv%dia,*)'Real number of density increments: ',dnc%nc_global
+     print*,'Good density increments: ',dnc%nc_global
   end if
 
   DEALLOCATE ( dnc%flg)  

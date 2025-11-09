@@ -62,7 +62,7 @@ subroutine cnv_inn
     call ver_hor_nut(grd%n3n, grd%n3n_ad,'N')
   endif
   
-  if (drv%densnut .eq. 1) then
+  if (drv%dnc .eq. 1) then
     grd%n3n(:,:,:) = 0.0
     call ver_hor_densnut(grd%n3n)
   endif

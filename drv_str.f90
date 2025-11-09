@@ -41,7 +41,7 @@ MODULE drv_str
      INTEGER(i4)           ::  MyCounter    ! Number of iteration done by Tao solver
      INTEGER(i4)           ::  sat_obs      ! Flag for the assimilation of the satellite observations
      INTEGER(i4)           ::  argo_obs     ! Flag for the assimilation of the argo float observations
-     INTEGER(i4)           ::  densnut      ! Flag for the update of nutrients based on density increments
+     INTEGER(i4)           ::  dnc          ! Flag for the update of nutrients based on density increments
      INTEGER(i4)           ::  chl_assim    ! Flag for the chlorophyll assimilation
      INTEGER(i4)           ::  chl_upnut    ! Flag for the update of nut based on chlorophyll assimilation
      INTEGER(i4)           ::  uniformL     ! Flag for setting uniform correlation radius (1 = non uniform)
@@ -49,7 +49,6 @@ MODULE drv_str
      INTEGER(i4)           ::  Verbose      ! Flag for printing verbose output
      INTEGER(i4)           ::  nut          ! Flag for nutrient assimilation
      INTEGER(i4)           ::  multiv       ! Flag for multivariate assimilation
-     INTEGER(i4)           ::  dnc          ! Flag for update of nitrate based on density increments
 
   END TYPE drv_t
   
