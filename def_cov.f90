@@ -531,8 +531,10 @@ subroutine def_cov
    endif
 
    if(drv%nut.eq.1) then
+      if(MyId .eq. 0) write(drv%dia,*) 'read o2o and nut'
       call readNutStat
-      if(bio%N3n.eq.1 .AND. bio%updateN1p.eq.1) then
+      if((bio%N3n.eq.1 .AND. bio%updateN1p.eq.1) .or. (drv%dnc .eq. 1)) then
+         if(MyId .eq. 0) write(drv%dia,*) 'read nutcov'
          call readNutCov
       endif
       if(drv%chl_assim.eq.0) then
@@ -547,8 +549,4 @@ subroutine def_cov
      call readNutCov
   endif
 
-  if(drv%dnc .eq. 1) then
-   call readNutStat
-   call readNutCov
-  endif
 end subroutine def_cov

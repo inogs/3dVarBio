@@ -115,7 +115,8 @@ subroutine biovar
       if (drv%chl_upnut .eq. 1) then
         call wrt_upd_nut
       else
-        call cp_nut_stat
+        if (drv%dnc .eq. 0) &
+          call cp_nut_stat
       endif
     endif
   endif
@@ -130,7 +131,10 @@ subroutine biovar
       call wrt_nut_stat
     else if((bio%O2o .eq. 1) .and. (bio%N3n .eq. 0)) then
       call wrt_o2o_stat
-      call cp_nut_stat
+      if (drv%dnc .eq. 0) then
+        if(MyId .eq. 0) write(drv%dia,*) 'cp nut'
+        call cp_nut_stat
+      endif
     else if((bio%O2o .eq. 0) .and. (bio%N3n .eq. 1)) then
       call cp_o2o_stat
       call wrt_nut_stat

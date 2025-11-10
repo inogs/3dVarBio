@@ -59,7 +59,7 @@ subroutine wrt_nut_stat
   TimeArr(1) = DA_JulianDate
   
   
-  if(bio%n3n .eq. 0) then
+  if((bio%n3n .eq. 0) .and. (drv%dnc .eq. 0)) then
     write(*,*) "ERROR: Nitrate to be assimilated NOT set in namelist"
     write(drv%dia,*) "ERROR: Nitrate to be assimilated NOT set in namelist"
     call MPI_Barrier(Var3DCommunicator, ierr)
