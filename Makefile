@@ -158,18 +158,18 @@ OBJS    =  \
 MAINEXE = main.o
 
 # needed libraries
-depends = petsc netcdf netcdf-fortran pnetcdf 
+depends = petsc netcdf netcdf-fortran pnetcdf
 
 # NOTE: It may happen that pkg-config returns a spurious `-I`. We pass the
 #       string through sed to sanitise.
 INCLUDE_FLAGS ?= \
-	$(shell pkg-config --cflags $(depends) | sed -E 's/-I(\s+|$$)//g')
+	$(shell pkg-config --cflags --keep-system-cflags $(depends) | sed -E 's/-I(\s+|$$)//g')
 
 # set rpath in the binary, required in order to find the correct libs at runtime.
 # Env modules nowadays do not pollute the env with LD_LIBRARY_PATH, for good reason.
 LDFLAGS ?= \
 	$(shell pkg-config --libs $(depends)) \
-	-Wl,-rpath -Wl,$(shell pkg-config --libs-only-L $(depends) |sed 's/-L//' |sed 's/-L/:/g' |sed 's/ //g') 
+	-Wl,-rpath -Wl,$(shell pkg-config --libs-only-L $(depends) |sed 's/-L//' |sed 's/-L/:/g' |sed 's/ //g')
 
 FFLAGS ?= -O2 -ffree-line-length-none -c
 FC ?= mpif90
