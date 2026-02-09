@@ -52,10 +52,10 @@ MODULE dnc_str
      REAL(r8),    POINTER     ::  dpt(:)     ! Depth
     !  REAL(r8),    POINTER     ::  tim(:)     ! Time
      REAL(r8),    POINTER     ::  inc(:)     ! Increments
-     REAL(r8),    POINTER     ::  corr(:)    ! Correlations
+    ! REAL(r8),    POINTER     ::  corr(:)    ! Correlations
      REAL(r8),    POINTER     ::  err(:)     ! Nitrate std (error)
-     REAL(r8),    POINTER     ::  std(:)     ! Density std
-    !  REAL(r8),    POINTER     ::  res(:)     ! residual
+    ! REAL(r8),    POINTER     ::  std(:)     ! Density std
+     REAL(r8),    POINTER     ::  res(:)     ! residual
      INTEGER(i8), POINTER     ::  ib(:)      ! i index of the nearest west point
      REAL(r8)   , POINTER     ::  pb(:)      ! distance from the nearest west point
      INTEGER(i8), POINTER     ::  jb(:)      ! j index of the nearest south point

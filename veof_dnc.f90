@@ -1,5 +1,5 @@
-subroutine res_inc
-
+subroutine veof_dnc
+!anna
 !---------------------------------------------------------------------------
 !                                                                          !
 !    Copyright 2006 Srdjan Dobricic, CMCC, Bologna                         !
@@ -19,43 +19,63 @@ subroutine res_inc
 !    You should have received a copy of the GNU General Public License     !
 !    along with OceanVar.  If not, see <http://www.gnu.org/licenses/>.       !
 !                                                                          !
-!--------------------------------------------------------------------------- 
+!---------------------------------------------------------------------------
 
 !-----------------------------------------------------------------------
 !                                                                      !
-! Initialise for adjoint calculations                                  !
+! Vertical transformation                           
 !                                                                      !
 ! Version 1: S.Dobricic 2006                                           !
 !-----------------------------------------------------------------------
 
 
- use set_knd
- use drv_str
- use grd_str
- use obs_str
- use bio_str
-
- implicit none
-
- if (drv%multiv .eq. 0) then
-  if (drv%chl_assim .eq. 1) then
-    grd%chl_ad(:,:,:) = 0.0 ! OMP
-  end if
+  use set_knd
+  use drv_str
+  use grd_str
+  use eof_str
+  use mpi_str
   
-  if (drv%nut .eq. 1) then
-    if ((bio%n3n .eq. 1) .or. (drv%dnc .eq. 1)) &
-      grd%n3n_ad(:,:,:) = 0.0
-      if (drv%dnc .eq. 1) &
-        grd%dnc(:,:,:) = 0.0
-    if (bio%o2o .eq. 1) &
-      grd%o2o_ad(:,:,:) = 0.0
-  endif
+  implicit none
+  
+  INTEGER(i4)     :: i, j, k, l,n, my_km, MyNEofs, ierr
+  REAL(r8), DIMENSION ( grd%im, grd%jm)  :: egm
+  REAL(r8), ALLOCATABLE, DIMENSION(:,:)  :: eva
+  REAL(r8), ALLOCATABLE, DIMENSION(:,:,:)  :: evc
+  
+  my_km = grd%km
+  MyNEofs = ros%neof_dnc
+  offset = ros%neof_chl + ros%neof_n3n
 
- else if(drv%multiv .eq.1) then
-    grd%chl_ad(:,:,:) = 0.0 ! OMP
-    grd%n3n_ad(:,:,:) = 0.0
- endif
- 
- obs%gra(:) = obs%amo(:) / obs%err(:) ! OMP
 
-end subroutine res_inc
+  ALLOCATE (eva(ros%nreg,MyNEofs)); eva = huge(eva(1,1))
+  ALLOCATE (evc(ros%nreg,my_km,MyNEofs)); evc = huge(evc(1,1,1))
+  
+  eva(:,:) = ros%eva_dnc(:,:)
+  evc(:,1:my_km,:) = ros%evc_dnc(:,my_km+1:my_km*2,:)
+  
+  grd%dnc(:,:,:) = 0.0
+  
+  !cdir noconcur
+  do n=1,MyNEofs
+     
+     egm(:,:) = 0.0
+     
+     do j=1,grd%jm
+        do i=1,grd%im
+           egm(i,j) = eva(grd%reg(i,j),n) * grd%ro( i, j, n+offset)
+        enddo
+     enddo
+          
+     ! 3D variables
+     do k=1,my_km ! OMP
+        do j=1,grd%jm
+          do i=1,grd%im
+            grd%dnc(i,j,k) = grd%dnc(i,j,k) + evc(grd%reg(i,j),k,n) * egm(i,j)
+          enddo
+        enddo
+     enddo
+  enddo
+
+  DEALLOCATE(eva,evc)
+  
+end subroutine veof_dnc

@@ -28,7 +28,7 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
   INTEGER(i4)    :: iProc, ierr
   type(DoubleGrid), allocatable, dimension(:,:,:) :: SendBuf3D
   type(DoubleGrid), allocatable, dimension(:)       :: RecBuf1D
-  REAL(r8), allocatable, dimension(:,:,:) :: DefBufChl, DefBufChlAd  
+  REAL(r8), allocatable, dimension(:,:,:) :: DefBufNut, DefBufNutAd  
   REAL(r8) :: NutArray(grd%im,grd%jm,grd%km), NutArrayAd(grd%im,grd%jm,grd%km)
   CHARACTER :: Var
 
@@ -65,20 +65,20 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
   if(NumProcI .gt. 1) then
      ALLOCATE(SendBuf3D(grd%km, grd%im, grd%jm))
      ALLOCATE( RecBuf1D(grd%km*localCol*GlobalRow))
-     ALLOCATE(DefBufChl(GlobalRow, localCol, grd%km))
-     ALLOCATE(DefBufChlAd(GlobalRow, localCol, grd%km))
+     ALLOCATE(DefBufNut(GlobalRow, localCol, grd%km))
+     ALLOCATE(DefBufNutAd(GlobalRow, localCol, grd%km))
      
      do k=1,grd%km
         do j=1,grd%jm
            do i=1,grd%im
-              SendBuf3D(k,i,j)%chl = NutArray(i,j,k)
+              SendBuf3D(k,i,j)%nut = NutArray(i,j,k)
            end do
         end do
      end do
      do k=1,grd%km
         do j=1,grd%jm
            do i=1,grd%im
-              SendBuf3D(k,i,j)%chl_ad = NutArrayAd(i,j,k)
+              SendBuf3D(k,i,j)%nut_ad = NutArrayAd(i,j,k)
            end do
         end do
      end do
@@ -93,7 +93,7 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
            do i=1,RecCountX3D(iProc+1)/SurfaceIndex
               LinearIndex = (i-1)*grd%km + (j-1)*RecCountX3D(iProc+1)/localCol + RecDisplX3D(iProc+1)
               do k=1,grd%km
-                 DefBufChl(i + TmpOffset,j,k) = RecBuf1D(k + LinearIndex)%chl
+                 DefBufNut(i + TmpOffset,j,k) = RecBuf1D(k + LinearIndex)%nut
               end do
            end do
         end do
@@ -104,7 +104,7 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
            do i=1,RecCountX3D(iProc+1)/SurfaceIndex
               LinearIndex = (i-1)*grd%km + (j-1)*RecCountX3D(iProc+1)/localCol + RecDisplX3D(iProc+1)
               do k=1,grd%km
-                 DefBufChlAd(i + TmpOffset,j,k) = RecBuf1D(k + LinearIndex)%chl_ad
+                 DefBufNutAd(i + TmpOffset,j,k) = RecBuf1D(k + LinearIndex)%nut_ad
               end do
            end do
         end do
@@ -113,10 +113,10 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
      ! ---
      ! Scale by the scaling factor
      do k=1,grd%km
-        DefBufChlAd(:,:,k) = DefBufChlAd(:,:,k) * grd%scx(:,:,k)
+        DefBufNutAd(:,:,k) = DefBufNutAd(:,:,k) * grd%scx(:,:,k)
      enddo
      
-     call rcfl_x_ad( GlobalRow, localCol, grd%km, grd%imax, grd%aex, grd%bex, DefBufChlAd, grd%inx, grd%imx)
+     call rcfl_x_ad( GlobalRow, localCol, grd%km, grd%imax, grd%aex, grd%bex, DefBufNutAd, grd%inx, grd%imx)
      
   else ! NumProcI .eq. 1
      ! ---
@@ -133,12 +133,12 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
   ! x direction
   if(NumProcI .gt. 1) then
      
-     call rcfl_x( GlobalRow, localCol, grd%km, grd%imax, grd%aex, grd%bex, DefBufChl, grd%inx, grd%imx)
+     call rcfl_x( GlobalRow, localCol, grd%km, grd%imax, grd%aex, grd%bex, DefBufNut, grd%inx, grd%imx)
      
      ! ---
      ! Scale by the scaling factor
      do k=1,grd%km
-        DefBufChl(:,:,k) = DefBufChl(:,:,k) * grd%scx(:,:,k)
+        DefBufNut(:,:,k) = DefBufNut(:,:,k) * grd%scx(:,:,k)
      enddo
      
      ! Reordering data to send back
@@ -149,14 +149,14 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
      do k=1,grd%km
         do j=1,localCol
            do i=1,GlobalRow
-              SendBuf3D(k,j,i)%chl = DefBufChl(i,j,k)
+              SendBuf3D(k,j,i)%nut = DefBufNut(i,j,k)
            end do
         end do
      end do
      do k=1,grd%km
         do j=1,localCol
            do i=1,GlobalRow
-              SendBuf3D(k,j,i)%chl_ad = DefBufChlAd(i,j,k)
+              SendBuf3D(k,j,i)%nut_ad = DefBufNutAd(i,j,k)
            end do
         end do
      end do
@@ -171,7 +171,7 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
            do j=1,SendCountX3D(iProc+1)/SurfaceIndex
               LinearIndex = (j-1)*grd%km +(i-1)*SendCountX3D(iProc+1)/grd%im + SendDisplX3D(iProc+1)
               do k=1,grd%km
-                 NutArray(i, j + TmpOffset,k) = RecBuf1D(k + LinearIndex)%chl
+                 NutArray(i, j + TmpOffset,k) = RecBuf1D(k + LinearIndex)%nut
               end do
            end do
         end do
@@ -182,13 +182,13 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
            do j=1,SendCountX3D(iProc+1)/SurfaceIndex
               LinearIndex = (j-1)*grd%km +(i-1)*SendCountX3D(iProc+1)/grd%im + SendDisplX3D(iProc+1)
               do k=1,grd%km
-                 NutArrayAd(i, j + TmpOffset,k) = RecBuf1D(k + LinearIndex)%chl_ad
+                 NutArrayAd(i, j + TmpOffset,k) = RecBuf1D(k + LinearIndex)%nut_ad
               end do
            end do
         end do
      end do
 
-     DEALLOCATE(SendBuf3D, RecBuf1D, DefBufChl, DefBufChlAd)
+     DEALLOCATE(SendBuf3D, RecBuf1D, DefBufNut, DefBufNutAd)
      
   else ! NumProcI .eq. 1
      call rcfl_x( GlobalRow, localCol, grd%km, grd%imax, grd%aex, grd%bex, NutArray, grd%inx, grd%imx)
@@ -223,7 +223,12 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
   ! 103 continue
   ! ---
   ! Vertical EOFs
-  if(drv%multiv.eq.0) &
-    call veof_nut_ad(NutArrayAd, Var)
+  if(drv%multiv.eq.0) then
+   if(Var .eq. 'D') then
+      call veof_dnc_ad(NutArray, Var)
+   else
+      call veof_nut_ad(NutArrayAd, Var)
+   endif
+  endif
   
 end subroutine ver_hor_nut_ad

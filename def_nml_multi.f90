@@ -84,7 +84,7 @@ subroutine def_nml_multi
     write(drv%dia,*) ' BIOLOGY NAMELIST INPUT: '
     write(drv%dia,*) ' Chlorophyll assimilation             chl_assim = ', chl_assim
     write(drv%dia,*) ' N3n update based on chl assimilation chl_upnut = ', chl_upnut
-    write(drv%dia,*) ' Nutrient assimilation                      nut = ', nut
+    write(drv%dia,*) ' Nutrient assimilation ALSO for dnc         nut = ', nut
     write(drv%dia,*) ' Multivariate assimilation               multiv = ', multiv
     write(drv%dia,*) ' Number of phytoplankton species          nphyt = ', nphyto
     write(drv%dia,*) ' Minimum depth for chlorophyll          chl_dep = ', chl_dep
@@ -119,7 +119,7 @@ subroutine def_nml_multi
     write(drv%dia,*) ' PARAMETERS NAMELIST INPUT: '
     write(drv%dia,*) ' Read Satellite observations      sat_obs  = ', sat_obs
     write(drv%dia,*) ' Read ARGO float observations     argo     = ', argo
-    write(drv%dia,*) ' Coupled density/nutrient ass      dnc     = ', dnc
+    write(drv%dia,*) ' Coupled density/nutrient DA      dnc      = ', dnc
     write(drv%dia,*) ' Set uniform correlation radius   uniformL = ', uniformL
     write(drv%dia,*) ' Set anisotropy on corr radius    anisL    = ', anisL
     write(drv%dia,*) '------------------------------------------------------------'

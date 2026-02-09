@@ -1,10 +1,11 @@
-subroutine obsop
+subroutine obs_dnc
+  
   
   !---------------------------------------------------------------------------
   !                                                                          !
   !    Copyright 2006 Srdjan Dobricic, CMCC, Bologna                         !
   !                                                                          !
-  !    This file is part of OceanVar.                                          !
+  !    This file is part of OceanVar.                                        !
   !                                                                          !
   !    OceanVar is free software: you can redistribute it and/or modify.     !
   !    it under the terms of the GNU General Public License as published by  !
@@ -17,48 +18,64 @@ subroutine obsop
   !    GNU General Public License for more details.                          !
   !                                                                          !
   !    You should have received a copy of the GNU General Public License     !
-  !    along with OceanVar.  If not, see <http://www.gnu.org/licenses/>.       !
+  !    along with OceanVar.  If not, see <http://www.gnu.org/licenses/>.     !
   !                                                                          !
   !---------------------------------------------------------------------------
-
+  
   !-----------------------------------------------------------------------
   !                                                                      !
-  ! Apply observational operators   
+  ! Apply observational operator for ARGO floats                         !
   !                                                                      !
   ! Version 1: S.Dobricic 2006                                           !
   !-----------------------------------------------------------------------
-
+  
   
   use set_knd
-  use obs_str
-  use drv_str
+  use grd_str
+  use eof_str
+  use dnc_str
   use mpi_str
+  use drv_str
+  use bio_str
   
   implicit none
+
+  INTEGER(i4)   ::  i, j, k, kk, condc, condn, my_km
   
-  INTEGER(i4) :: ierr
+  my_km = grd%km
+  ! if(drv%multiv.eq.1) &
+  !   my_km = ros%kmchl
 
-  call MPI_Barrier(Var3DCommunicator, ierr)
+  ! condc = 0
+  ! condn = 0
+  ! if ((drv%chl_assim.eq.1 ) .or. (drv%multiv.eq.1)) then
+  !   condc = 1
+  !   call EXTEND_2D( grd%chl, my_km, ChlExtended_3d )
+  ! endif
+  ! if ((drv%nut.eq.1 .and. drv%dnc.eq.1 ) .or. (drv%multiv.eq.1)) then
+    ! condn = 1
+  call EXTEND_2D( grd%dnc, grd%km, DncExtended_3d )
+  ! endif
+  ! if (bio%O2o.eq.1 ) &
+  !   call EXTEND_2D( grd%O2o, grd%km, O2oExtended_3d )
 
-  ! ---
-  ! Apply biological repartition of the chlorophyll
-  if((drv%chl_assim .eq. 1) .or. (drv%multiv .eq. 1)) &
-    call bio_conv
 
-  ! ---
-  ! Observations by ARGO floats
-  if (drv%argo_obs .eq. 1) &
-    call obs_arg
-  
-  ! ---
-  ! Observations of chlorophyll
-  if(drv%sat_obs .eq. 1) &
-    call obs_sat
 
-  ! Density increments
-  if(drv%dnc .eq. 1) &
-    call obs_dnc
+  do kk = 1,dnc%no
+    if(dnc%flc(kk).eq.1) then
 
-  call MPI_Barrier(Var3DCommunicator, ierr)
-  
-end subroutine obsop
+
+        dnc%inc(kk) = &
+          dnc%pq1(kk) * DncExtended_3d(i  ,j  ,k) +       &
+          dnc%pq2(kk) * DncExtended_3d(i+1,j  ,k  ) +       &
+          dnc%pq3(kk) * DncExtended_3d(i  ,j+1,k  ) +       &
+          dnc%pq4(kk) * DncExtended_3d(i+1,j+1,k  ) +       &
+          dnc%pq5(kk) * DncExtended_3d(i  ,j  ,k+1) +       &
+          dnc%pq6(kk) * DncExtended_3d(i+1,j  ,k+1) +       &
+          dnc%pq7(kk) * DncExtended_3d(i  ,j+1,k+1) +       &
+          dnc%pq8(kk) * DncExtended_3d(i+1,j+1,k+1)
+    endif
+  enddo
+
+
+end subroutine obs_dnc

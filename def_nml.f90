@@ -100,6 +100,7 @@ subroutine def_nml
     write(drv%dia,*) ' Number of EOFs for chl:          neof_chl = ', neof_chl
     write(drv%dia,*) ' Number of EOFs for N3n:          neof_n3n = ', neof_n3n
     write(drv%dia,*) ' Number of EOFs for O2o:          neof_o2o = ', neof_o2o
+    write(drv%dia,*) ' Number of dens-nut EOFs:         neof_dnc = ', neof_dnc
     write(drv%dia,*) ' Number of multivariate EOFs:   neof_multi = ', neof_multi
     write(drv%dia,*) ' Chl Nlevels in multi EOFs:          kmchl = ', kmchl
     write(drv%dia,*) ' Nit Nlevels in multi EOFs:          kmnit = ', kmnit
@@ -116,6 +117,7 @@ subroutine def_nml
   ros%neof_chl = neof_chl
   ros%neof_n3n = neof_n3n
   ros%neof_o2o = neof_o2o
+  ros%neof_dnc = neof_dnc
   ros%neof_multi = neof_multi
   ros%kmchl    = kmchl
   ros%kmnit    = kmnit

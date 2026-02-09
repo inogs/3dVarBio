@@ -43,6 +43,7 @@ MODULE eof_str
      INTEGER(i4)           ::  neof_n3n     ! No. of EOFs for N3n
      INTEGER(i4)           ::  neof_o2o     ! No. of EOFs for O2o
      INTEGER(i4)           ::  neof_multi   ! No. of EOFs for multivariate
+     INTEGER(i4)           ::  neof_dnc     ! No. of EOFs for coupled dens-nit
      INTEGER(i4)           ::  nreg         ! No. of regions
      INTEGER(i4)           ::  kmt          ! No. of levels of EOFs
      INTEGER(i4)           ::  kmchl  ! No. of levels of multi EOFs for chl
@@ -62,6 +63,9 @@ MODULE eof_str
      REAL(r8),    POINTER  ::  eva_o2o(:,:)     ! Eigenvalues
      REAL(r8),    POINTER  ::  evc_multi(:,:,:)   ! Eigenvectors
      REAL(r8),    POINTER  ::  eva_multi(:,:)     ! Eigenvalues
+     ! Optional EOFs for density-nutrient covariance
+     REAL(r8),    POINTER  ::  evc_dnc(:,:,:)   ! Eigenvectors for density-nutrient covariance
+     REAL(r8),    POINTER  ::  eva_dnc(:,:)     ! Eigenvalues for density-nutrient covariance
 #endif
      
      

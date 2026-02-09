@@ -42,8 +42,8 @@ subroutine get_densincr_arg
   INTEGER(i4)   ::  k
   INTEGER(i4)   ::  i1, kk, i
   REAL(r8), ALLOCATABLE, DIMENSION(:) :: TmpFlc, TmpLon, TmpLat
-  REAL(r8), ALLOCATABLE, DIMENSION(:) :: TmpDpt, TmpErr, TmpStd
-  REAL(r8), ALLOCATABLE, DIMENSION(:) :: TmpInc, TmpCorr 
+  REAL(r8), ALLOCATABLE, DIMENSION(:) :: TmpDpt, TmpErr!, TmpStd
+  REAL(r8), ALLOCATABLE, DIMENSION(:) :: TmpInc!, TmpCorr 
   INTEGER(i4)   :: GlobalDncNum, Counter, ierr
   character(len=1024) :: filename
   
@@ -70,8 +70,8 @@ subroutine get_densincr_arg
   ALLOCATE( TmpFlc(GlobalDncNum)) !, TmpPar(GlobalDncNum))
   ALLOCATE( TmpLon(GlobalDncNum), TmpLat(GlobalDncNum))
   ALLOCATE( TmpDpt(GlobalDncNum))!, TmpTim(GlobalDncNum))
-  ALLOCATE( TmpInc(GlobalDncNum), TmpCorr(GlobalDncNum))
-  ALLOCATE( TmpErr(GlobalDncNum), TmpStd(GlobalDncNum))
+  ALLOCATE( TmpInc(GlobalDncNum))!, TmpCorr(GlobalDncNum))
+  ALLOCATE( TmpErr(GlobalDncNum))!, TmpStd(GlobalDncNum))
 
   if(MyId .eq. 0) then
     ! process 0 reads all the density increments
@@ -80,8 +80,8 @@ subroutine get_densincr_arg
             TmpFlc(k), & !TmpPar(k), &
             TmpLon(k), TmpLat(k), &
             TmpDpt(k), &!TmpTim(k), &
-            TmpInc(k), TmpCorr(k), &
-            TmpErr(k), TmpStd(k)
+            TmpInc(k), &!TmpCorr(k), &
+            TmpErr(k) !, TmpStd(k)
     end do
     close (511)
   endif
@@ -94,18 +94,18 @@ subroutine get_densincr_arg
   call MPI_Bcast(TmpDpt, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
   !   call MPI_Bcast(TmpTim, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
   call MPI_Bcast(TmpInc, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
-  call MPI_Bcast(TmpCorr, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
+!   call MPI_Bcast(TmpCorr, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
   call MPI_Bcast(TmpErr, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
-  call MPI_Bcast(TmpStd, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
+!   call MPI_Bcast(TmpStd, GlobalDncNum, MPI_REAL8, 0, Var3DCommunicator, ierr)
   
   ! Counting the number of observations that falls in the domain
   Counter = 0
   do k=1,GlobalDncNum
    if( TmpLon(k) .ge. grd%lon(1,1) .and. TmpLon(k) .lt. grd%NextLongitude .and. &
    TmpLat(k) .ge. grd%lat(1,1) .and. TmpLat(k) .lt. grd%lat(grd%im,grd%jm) ) then
-      if(drv%dnc.eq.1) then
+      ! if(drv%dnc.eq.1) then
          Counter = Counter + 1
-      endif
+      ! endif
    endif
 enddo
 
@@ -118,9 +118,10 @@ enddo
   ALLOCATE ( dnc%flg(dnc%no), dnc%flc(dnc%no)) !, dnc%par(dnc%no))
   ALLOCATE ( dnc%lon(dnc%no), dnc%lat(dnc%no), dnc%dpt(dnc%no)) !, dnc%tim(dnc%no))
   ALLOCATE ( dnc%inc(dnc%no))
-  ALLOCATE ( dnc%corr(dnc%no))
+!   ALLOCATE ( dnc%corr(dnc%no))
   ALLOCATE ( dnc%err(dnc%no))
-  ALLOCATE ( dnc%std(dnc%no))
+  ALLOCATE ( dnc%res(dnc%no))
+!   ALLOCATE ( dnc%std(dnc%no))
   ALLOCATE ( dnc%ib(dnc%no), dnc%jb(dnc%no), dnc%kb(dnc%no))
   ALLOCATE ( dnc%pb(dnc%no), dnc%qb(dnc%no), dnc%rb(dnc%no))
   ALLOCATE ( dnc%pq1(dnc%no), dnc%pq2(dnc%no), dnc%pq3(dnc%no), dnc%pq4(dnc%no))
@@ -130,19 +131,19 @@ enddo
   do k=1,GlobalDncNum
     if( TmpLon(k) .ge. grd%lon(1,1) .and. TmpLon(k) .lt. grd%NextLongitude .and. &
         TmpLat(k) .ge. grd%lat(1,1) .and. TmpLat(k) .lt. grd%lat(grd%im,grd%jm) ) then
-        if(drv%dnc.eq.1) then
+      !   if(drv%dnc.eq.1) then
             Counter = Counter + 1
             dnc%flc(Counter) = TmpFlc(k)
             ! dnc%par(Counter) = TmpPar(k)
             dnc%lon(Counter) = TmpLon(k)
             dnc%lat(Counter) = TmpLat(k)
             dnc%dpt(Counter) = TmpDpt(k)
-            dnc%inc(Counter) = TmpInc(k)
-            dnc%corr(Counter) = TmpCorr(k)
+            dnc%res(Counter) = TmpInc(k) !called res for analogy with get_obs_arg
+            ! dnc%corr(Counter) = TmpCorr(k)
             dnc%err(Counter) = TmpErr(k)
-            dnc%std(Counter) = TmpStd(k)
+            ! dnc%std(Counter) = TmpStd(k)
             ! dnc%ino(Counter) = TmpIno(k)
-        endif
+      !   endif
     endif
 
   enddo
@@ -177,6 +178,7 @@ enddo
      if(dnc%flg(k).eq.1)then
         dnc%nc = dnc%nc + 1
      else
+        dnc%res(k) = 0.
         dnc%inc(k) = 0.
         dnc%pq1(k) = 0.
         dnc%pq2(k) = 0.
@@ -194,9 +196,9 @@ enddo
   DEALLOCATE( TmpLon, TmpLat)
   DEALLOCATE( TmpDpt)!, TmpTim)
   DEALLOCATE( TmpInc)!, TmpTim)
-  DEALLOCATE( TmpCorr)!, TmpTim)
+!   DEALLOCATE( TmpCorr)!, TmpTim)
   DEALLOCATE( TmpErr)
-  DEALLOCATE( TMPStd)
+!   DEALLOCATE( TMPStd)
 !   DEALLOCATE( TmpIno)
   
 end subroutine get_densincr_arg

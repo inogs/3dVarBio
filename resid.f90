@@ -64,4 +64,17 @@ subroutine resid
     enddo
   endif
   
+
+  ! ---
+  ! Density increments
+  if(drv%dnc .eq. 1) then
+    do i=1,dnc%no
+     if(dnc%flc(i).eq.1)then
+        k = k + 1
+        obs%inc(k) = dnc%inc(i) 
+        obs%amo(k) = ( obs%inc(k) - obs%res(k) ) / obs%err(k)
+     endif
+    enddo
+  endif
+  
 end subroutine resid

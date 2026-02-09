@@ -465,12 +465,17 @@ subroutine def_cov
       else
          ros%neof_n3n = 0
       endif
+      if(drv%dnc .eq. 1) then
+         call rdeofs_dnc
+      else
+         ros%neof_dnc = 0
+      endif
       if(bio%o2o .eq. 1) then
         call rdeofs_o2o
       else
         ros%neof_o2o = 0
       endif
-      ros%neof_nut = ros%neof_n3n + ros%neof_o2o
+      ros%neof_nut = ros%neof_n3n + ros%neof_o2o + ros%neof_dnc
     else
       ros%neof_nut = 0
     endif
@@ -479,6 +484,7 @@ subroutine def_cov
     ros%neof_chl = 0
     ros%neof_n3n = 0
     ros%neof_o2o = 0
+    ros%neof_dnc = 0
     call rdeofs_multi
   endif
 
@@ -533,7 +539,7 @@ subroutine def_cov
    if(drv%nut.eq.1) then
       if(MyId .eq. 0) write(drv%dia,*) 'read o2o and nut'
       call readNutStat
-      if((bio%N3n.eq.1 .AND. bio%updateN1p.eq.1) .or. (drv%dnc .eq. 1)) then
+      if((bio%N3n.eq.1 .or. drv%dnc .eq. 1) .AND. bio%updateN1p.eq.1) then
          if(MyId .eq. 0) write(drv%dia,*) 'read nutcov'
          call readNutCov
       endif

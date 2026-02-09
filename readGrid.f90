@@ -111,6 +111,7 @@ subroutine readGrid
   end if
   ALLOCATE(N3nExtended_3d (grd%im+1, grd%jm, grd%km))
   ALLOCATE(O2oExtended_3d (grd%im+1, grd%jm, grd%km))
+  ALLOCATE(DncExtended_3d (grd%im+1, grd%jm, grd%km))
 
 
 
@@ -151,6 +152,12 @@ subroutine readGrid
         ALLOCATE ( grd%o2o(grd%im,grd%jm,grd%km) )    ; grd%o2o    = huge(grd%o2o(1,1,1))
         ALLOCATE ( grd%o2o_ad(grd%im,grd%jm,grd%km) ) ; grd%o2o_ad = huge(grd%o2o_ad(1,1,1))
       endif
+      if(drv%dnc .eq. 1) then
+        ALLOCATE ( grd%n3n(grd%im,grd%jm,grd%km) )    ; grd%n3n    = huge(grd%n3n(1,1,1))
+        ALLOCATE ( grd%n3n_ad(grd%im,grd%jm,grd%km) ) ; grd%n3n_ad = huge(grd%n3n_ad(1,1,1))
+        ALLOCATE ( grd%dnc(grd%im,grd%jm,grd%km) )    ; grd%dnc    = huge(grd%dnc(1,1,1))
+        ALLOCATE ( grd%dnc_ad(grd%im,grd%jm,grd%km) ) ; grd%dnc_ad = huge(grd%dnc_ad(1,1,1))
+      endif
     endif
 
   else if(drv%multiv .eq. 1) then
@@ -162,15 +169,12 @@ subroutine readGrid
     ALLOCATE ( bio%phy_ad(grd%im,grd%jm,ros%kmchl,bio%nphy,bio%ncmp) ) ; bio%phy_ad = huge(bio%phy_ad(1,1,1,1,1))
   endif
 
-  if (drv%dnc .eq. 1) then
-    ALLOCATE (grd%n3n(grd%im,grd%jm,grd%km) )    ; grd%n3n    = huge(grd%n3n(1,1,1))
-  endif
   
   ALLOCATE ( x3(grd%im,grd%jm,grd%km)) ;  x3 = huge(x3(1,1,1))
   ALLOCATE ( x2(grd%im,grd%jm))        ;  x2 = huge(x2(1,1))
   ALLOCATE ( x1(grd%km) )              ;  x1 = huge(x1(1))
 
-  if (drv%argo_obs .eq. 1) then
+  if ((drv%argo_obs .eq. 1) .or. (drv%dnc)) then
      ALLOCATE ( grd%lon(grd%im,grd%jm)) ; grd%lon = huge(grd%lon(1,1))
      ALLOCATE ( grd%lat(grd%im,grd%jm)) ; grd%lat = huge(grd%lat(1,1))
   endif
@@ -187,7 +191,7 @@ subroutine readGrid
   if (ierr .ne. NF90_NOERR ) call handle_err('nfmpi_get_vara_real_all dy', ierr)
   grd%dy(:,:) = x2(:,:)
 
-  if (drv%argo_obs .eq. 1) then
+  if ((drv%argo_obs .eq. 1) .or. (drv%dnc)) then
      ierr = nf90mpi_inq_varid (ncid, 'lon', VarId)
      if (ierr .ne. NF90_NOERR ) call handle_err('nf90mpi_inq_varid', ierr)
      ierr = nfmpi_get_vara_real_all (ncid, VarId, MyStart, MyCount, x2)

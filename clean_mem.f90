@@ -72,10 +72,10 @@ subroutine clean_mem
   ! density increments
   if(drv%dnc .eq. 1) then
     DEALLOCATE ( dnc%flc)
-    DEALLOCATE ( dnc%inc)
-    DEALLOCATE ( dnc%corr)
+    DEALLOCATE ( dnc%res)
+    ! DEALLOCATE ( dnc%corr)
     DEALLOCATE ( dnc%err)
-    DEALLOCATE ( dnc%std)
+    ! DEALLOCATE ( dnc%std)
     DEALLOCATE ( dnc%ib, dnc%jb, dnc%kb)
     DEALLOCATE ( dnc%pq1, dnc%pq2, dnc%pq3, dnc%pq4)
     DEALLOCATE ( dnc%pq5, dnc%pq6, dnc%pq7, dnc%pq8)
@@ -91,7 +91,7 @@ subroutine clean_mem
   DEALLOCATE(RecCountX3D_chl, RecDisplX3D_chl)
 
   DEALLOCATE(ChlExtended)
-  DEALLOCATE(ChlExtended_3d,N3nExtended_3d,O2oExtended_3d)
+  DEALLOCATE(ChlExtended_3d,N3nExtended_3d,O2oExtended_3d,DncExtended_3d)
   DEALLOCATE(SendBottom, RecTop)
   DEALLOCATE(SendTop, RecBottom)
   DEALLOCATE(SendTop_2d, RecBottom_2d)
