@@ -37,7 +37,8 @@ subroutine veof_dnc
   
   implicit none
   
-  INTEGER(i4)     :: i, j, k, l,n, my_km, MyNEofs, ierr
+  INTEGER(i4)     :: i, j, k, l,n, ierr
+  INTEGER(i4)     :: my_km, MyNEofs, offset
   REAL(r8), DIMENSION ( grd%im, grd%jm)  :: egm
   REAL(r8), ALLOCATABLE, DIMENSION(:,:)  :: eva
   REAL(r8), ALLOCATABLE, DIMENSION(:,:,:)  :: evc

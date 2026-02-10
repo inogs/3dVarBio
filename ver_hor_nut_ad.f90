@@ -71,14 +71,14 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
      do k=1,grd%km
         do j=1,grd%jm
            do i=1,grd%im
-              SendBuf3D(k,i,j)%nut = NutArray(i,j,k)
+              SendBuf3D(k,i,j)%chl = NutArray(i,j,k)
            end do
         end do
      end do
      do k=1,grd%km
         do j=1,grd%jm
            do i=1,grd%im
-              SendBuf3D(k,i,j)%nut_ad = NutArrayAd(i,j,k)
+              SendBuf3D(k,i,j)%chl_ad = NutArrayAd(i,j,k)
            end do
         end do
      end do
@@ -93,7 +93,7 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
            do i=1,RecCountX3D(iProc+1)/SurfaceIndex
               LinearIndex = (i-1)*grd%km + (j-1)*RecCountX3D(iProc+1)/localCol + RecDisplX3D(iProc+1)
               do k=1,grd%km
-                 DefBufNut(i + TmpOffset,j,k) = RecBuf1D(k + LinearIndex)%nut
+                 DefBufNut(i + TmpOffset,j,k) = RecBuf1D(k + LinearIndex)%chl
               end do
            end do
         end do
@@ -104,7 +104,7 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
            do i=1,RecCountX3D(iProc+1)/SurfaceIndex
               LinearIndex = (i-1)*grd%km + (j-1)*RecCountX3D(iProc+1)/localCol + RecDisplX3D(iProc+1)
               do k=1,grd%km
-                 DefBufNutAd(i + TmpOffset,j,k) = RecBuf1D(k + LinearIndex)%nut_ad
+                 DefBufNutAd(i + TmpOffset,j,k) = RecBuf1D(k + LinearIndex)%chl_ad
               end do
            end do
         end do
@@ -149,14 +149,14 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
      do k=1,grd%km
         do j=1,localCol
            do i=1,GlobalRow
-              SendBuf3D(k,j,i)%nut = DefBufNut(i,j,k)
+              SendBuf3D(k,j,i)%chl = DefBufNut(i,j,k)
            end do
         end do
      end do
      do k=1,grd%km
         do j=1,localCol
            do i=1,GlobalRow
-              SendBuf3D(k,j,i)%nut_ad = DefBufNutAd(i,j,k)
+              SendBuf3D(k,j,i)%chl_ad = DefBufNutAd(i,j,k)
            end do
         end do
      end do
@@ -171,7 +171,7 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
            do j=1,SendCountX3D(iProc+1)/SurfaceIndex
               LinearIndex = (j-1)*grd%km +(i-1)*SendCountX3D(iProc+1)/grd%im + SendDisplX3D(iProc+1)
               do k=1,grd%km
-                 NutArray(i, j + TmpOffset,k) = RecBuf1D(k + LinearIndex)%nut
+                 NutArray(i, j + TmpOffset,k) = RecBuf1D(k + LinearIndex)%chl
               end do
            end do
         end do
@@ -182,7 +182,7 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
            do j=1,SendCountX3D(iProc+1)/SurfaceIndex
               LinearIndex = (j-1)*grd%km +(i-1)*SendCountX3D(iProc+1)/grd%im + SendDisplX3D(iProc+1)
               do k=1,grd%km
-                 NutArrayAd(i, j + TmpOffset,k) = RecBuf1D(k + LinearIndex)%nut_ad
+                 NutArrayAd(i, j + TmpOffset,k) = RecBuf1D(k + LinearIndex)%chl_ad
               end do
            end do
         end do

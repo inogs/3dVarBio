@@ -97,8 +97,10 @@ subroutine veof_nut(NutArray, Var)
   ALLOCATE (evc(ros%nreg,my_km,MyNEofs)); evc = huge(evc(1,1,1))
   if((drv%nut .eq.1) .and. (drv%multiv .eq. 0)) then
     if(Var .eq. 'N') then
-      eva(:,1:MyNEofs_nit) = ros%eva_n3n
-      evc(:,1:my_km,MyNEofs_nit) = ros%evc_n3n
+      if(MyNEofs_nit .gt. 0) then
+        eva(:,1:MyNEofs_nit) = ros%eva_n3n
+        evc(:,1:my_km,1:MyNEofs_nit) = ros%evc_n3n
+      endif
       if (drv%dnc .eq. 1) then
         eva(:,MyNEofs_nit+1:MyNEofs) = ros%eva_dnc
         evc(:,1:my_km,MyNEofs_nit+1:MyNEofs) = ros%evc_dnc(:,1:my_km,1:ros%neof_dnc)

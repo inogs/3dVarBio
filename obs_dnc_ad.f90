@@ -38,6 +38,7 @@ subroutine obs_dnc_ad
   use filenames
   use drv_str
   use bio_str
+  use dnc_str
 
   implicit none
   

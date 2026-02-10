@@ -42,7 +42,7 @@ subroutine def_nml
   implicit none
 
   LOGICAL       :: read_eof
-  INTEGER(i4)   :: neof_chl, neof_n3n, neof_o2o, nreg, rcf_ntr
+  INTEGER(i4)   :: neof_chl, neof_n3n, neof_o2o, neof_dnc, nreg, rcf_ntr
   INTEGER(i4)   :: neof_multi, kmchl, kmnit
   INTEGER(i4)   :: verbose
   REAL(r8)      :: rcf_L, ctl_tol, ctl_per, rcf_efc

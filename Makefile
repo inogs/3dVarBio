@@ -72,6 +72,7 @@ OBJS    =  \
 	rdeofs_chl.o\
 	rdeofs_n3n.o\
 	rdeofs_o2o.o\
+	rdeofs_dnc.o\
 	rdeofs_multi.o\
 	rdrcorr.o\
 	mean_rdr.o\
@@ -86,20 +87,22 @@ OBJS    =  \
 	cnv_ctv.o\
 	ver_hor_chl.o\
 	ver_hor_nut.o\
-	ver_hor_densnut.o\
 	rcfl_x.o\
 	rcfl_y.o\
 	veof_chl.o\
 	veof_nut.o\
-	v_densnut.o\
+	veof_dnc.o\
 	obsop.o\
+	obs_dnc.o\
 	obs_arg.o\
+	obs_dnc_ad.o\
 	resid.o\
 	res_inc.o\
 	obsop_ad.o\
 	obs_arg_ad.o\
 	veof_chl_ad.o\
 	veof_nut_ad.o\
+	veof_dnc_ad.o\
 	veof_multiv_ad.o\
 	ver_hor_chl_ad.o\
 	ver_hor_nut_ad.o\
