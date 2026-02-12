@@ -74,9 +74,13 @@ subroutine sav_itr
     DEALLOCATE( grd%chl_ad)
   endif
   if(drv%nut .eq. 1) then
-    if(bio%n3n .eq. 1) then
+    if((bio%n3n .eq. 1) .or. (drv%dnc .eq. 1)) then
       DEALLOCATE( grd%n3n)
       DEALLOCATE( grd%n3n_ad)
+      if(drv%dnc .eq. 1) then
+        DEALLOCATE( grd%dnc)
+        DEALLOCATE( grd%dnc_ad)
+      endif
     endif
     if(bio%o2o .eq. 1) then
       DEALLOCATE( grd%o2o)
@@ -93,9 +97,6 @@ subroutine sav_itr
     DEALLOCATE( grd%n3n_ad)
   endif
 
-  if(drv%dnc .eq. 1) then
-    DEALLOCATE( grd%n3n)
-  endif
   
   ! Observational vector
   DEALLOCATE( obs%inc, obs%amo, obs%res)

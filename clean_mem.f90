@@ -73,6 +73,7 @@ subroutine clean_mem
   if(drv%dnc .eq. 1) then
     DEALLOCATE ( dnc%flc)
     DEALLOCATE ( dnc%res)
+    DEALLOCATE ( dnc%inc)
     ! DEALLOCATE ( dnc%corr)
     DEALLOCATE ( dnc%err)
     ! DEALLOCATE ( dnc%std)
