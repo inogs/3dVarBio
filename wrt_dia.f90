@@ -105,16 +105,18 @@ subroutine wrt_dia
     if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_put_att', status)
   endif
   
-   if(drv%dnc .eq. 1) then
+  if(drv%dnc .eq. 1) then
     status = nf90mpi_def_var(ncid,'n3n', nf90_float, (/xid,yid,depid/), idn3n )
     if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_def_var n3n', status)
     status = nf90mpi_put_att(ncid,idn3n   , 'missing_value',1.e+20)
     if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_put_att', status)
 
+  if(bio%updateN1p .eq. 1) then
     status = nf90mpi_def_var(ncid,'n1p', nf90_float, (/xid,yid,depid/), idn1p )
     if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_def_var n1p', status)
     status = nf90mpi_put_att(ncid,idn1p   , 'missing_value',1.e+20)
     if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_put_att', status)
+  endif
   endif
 
   status = nf90mpi_enddef(ncid)
@@ -148,7 +150,7 @@ subroutine wrt_dia
   endif
 
 
-  if((drv%nut .eq. 1 .and. bio%n3n .eq. 1) .or. (drv%multiv .eq. 1)) then
+  if(( drv%nut .eq. 1 .and. ((bio%n3n .eq. 1) .or. (drv%dnc .eq. 1)) ) .or. (drv%multiv .eq. 1)) then
     do k=1,grd%km
       do j=1,grd%jm
           do i=1,grd%im
@@ -165,7 +167,7 @@ subroutine wrt_dia
   endif
 
   if  (bio%updateN1p .eq. 1) then
-  if((drv%nut .eq. 1 .and. bio%n3n .eq. 1).or.(drv%multiv.eq.1)) then
+  if(( drv%nut .eq. 1 .and. ((bio%n3n .eq. 1) .or. (drv%dnc .eq. 1)) ) .or. (drv%multiv .eq. 1)) then
     do k=1,grd%km
       do j=1,grd%jm
           do i=1,grd%im
@@ -202,35 +204,6 @@ subroutine wrt_dia
     if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_put_var_all o2o', status)
   endif
   
-  if(drv%dnc .eq. 1) then
-    do k=1,grd%km
-      do j=1,grd%jm
-          do i=1,grd%im
-            if(grd%msk(i,j,k) .eq. 1) then
-              DumpMatrix(i,j,k) = REAL(grd%n3n(i,j,k), 4 )
-            else
-              DumpMatrix(i,j,k) = 1.e20
-            endif
-          enddo
-      enddo
-    enddo
-    status = nf90mpi_put_var_all(ncid,idn3n,DumpMatrix,MyStart,MyCount)
-    if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_put_var_all n3n', status)
-
-    do k=1,grd%km
-      do j=1,grd%jm
-          do i=1,grd%im
-            if(grd%msk(i,j,k) .eq. 1) then
-              DumpMatrix(i,j,k) = REAL(grd%n3n(i,j,k)*bio%covn3n_n1p(i,j,k), 4 )
-            else
-              DumpMatrix(i,j,k) = 1.e20
-            endif
-          enddo
-      enddo
-    enddo
-    status = nf90mpi_put_var_all(ncid,idn1p,DumpMatrix,MyStart,MyCount)
-    if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_put_var_all n1p', status)
-  endif
 
   status = nf90mpi_close(ncid)
   if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_close', status)

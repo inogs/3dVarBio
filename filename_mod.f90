@@ -43,7 +43,7 @@ NUTCHLCOV_FILE  = 'crosscorrs.nc'
  RCORR_FILE  = 'chl_rad_corr.nc'
   ARGO_FILE  = 'arg_mis.dat'
   ANIS_FILE  = 'gradsal.nc'
-  INCR_FILE  = 'density_increments.nc'
+  INCR_FILE  = 'density_increments.dat'
 
 END SUBROUTINE SETFILENAMES
 

@@ -66,7 +66,7 @@ subroutine wrt_nut_stat
     call MPI_Abort(Var3DCommunicator,-1,ierr)
   endif
   
-  if((bio%updateN1p .eq. 1) .and. (NNVar.lt.2) .and. (drv%dnc .eq. 0)) then
+  if((bio%updateN1p .eq. 1) .and. (NNVar.lt.2) ) then
     write(*,*) "ERROR: Required phosphate update but NOT set in DA_params.f90"
     write(drv%dia,*) "ERROR: Required phosphate update but NOT set in DA_params.f90"
     call MPI_Barrier(Var3DCommunicator, ierr)
