@@ -48,7 +48,7 @@ subroutine def_nml
   REAL(r8)      :: rcf_L, ctl_tol, ctl_per, rcf_efc
   
   NAMELIST /ctllst/ ctl_tol, ctl_per, verbose
-  NAMELIST /covlst/ neof_chl, neof_n3n, neof_o2o, neof_multi, kmchl, kmnit, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
+  NAMELIST /covlst/ neof_chl, neof_n3n, neof_o2o, neof_dnc, neof_multi, kmchl, kmnit, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
 
 
 ! -------------------------------------------------------------------

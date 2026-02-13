@@ -72,10 +72,8 @@ subroutine clean_mem
   ! density increments
   if(drv%dnc .eq. 1) then
     DEALLOCATE ( dnc%flc)
-    DEALLOCATE ( dnc%res)
     DEALLOCATE ( dnc%inc)
     ! DEALLOCATE ( dnc%corr)
-    DEALLOCATE ( dnc%err)
     ! DEALLOCATE ( dnc%std)
     DEALLOCATE ( dnc%ib, dnc%jb, dnc%kb)
     DEALLOCATE ( dnc%pq1, dnc%pq2, dnc%pq3, dnc%pq4)

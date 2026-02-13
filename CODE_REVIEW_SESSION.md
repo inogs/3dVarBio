@@ -361,3 +361,11 @@ All other allocations have corresponding deallocations:
 - Allocation/deallocation is consistent and properly dimensioned
 - Only one missing deallocation (`dnc%inc`) needs to be added to complete the implementation
 
+
+# Check by anna running the code
+
+**Date**: February 13, 2026
+
+The code crashed because 2 variables were deallocated twice:
+dnc%res and dnc%err both in [obs_vec.f90] and in [clean_mem.f90]
+(the correct one is in [obs_vec.f90])

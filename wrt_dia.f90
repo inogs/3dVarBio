@@ -84,14 +84,14 @@ subroutine wrt_dia
     status = nf90mpi_put_att(ncid,idchl   , 'missing_value',1.e+20)
     if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_put_att', status)
   endif
-  if((drv%nut .eq. 1 .and. ((bio%n3n .eq. 1) .or (drv%dnc .eq. 1))) .or. (drv%multiv .eq. 1)) then
+  if((drv%nut .eq. 1 .and. ((bio%n3n .eq. 1) .or. (drv%dnc .eq. 1))) .or. (drv%multiv .eq. 1)) then
     status = nf90mpi_def_var(ncid,'n3n', nf90_float, (/xid,yid,depid/), idn3n )
     if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_def_var n3n', status)
     status = nf90mpi_put_att(ncid,idn3n   , 'missing_value',1.e+20)
     if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_put_att', status)
   endif
   if(bio%updateN1p .eq. 1) then
-  if((drv%nut .eq. 1 .and. ((bio%n3n .eq. 1) .or (drv%dnc .eq. 1))) .or. (drv%multiv .eq. 1)) then
+  if((drv%nut .eq. 1 .and. ((bio%n3n .eq. 1) .or. (drv%dnc .eq. 1))) .or. (drv%multiv .eq. 1)) then
     status = nf90mpi_def_var(ncid,'n1p', nf90_float, (/xid,yid,depid/), idn1p )
     if (status .ne. NF90_NOERR ) call handle_err('nf90mpi_def_var n1p', status)
     status = nf90mpi_put_att(ncid,idn1p   , 'missing_value',1.e+20)

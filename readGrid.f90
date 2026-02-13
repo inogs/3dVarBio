@@ -144,7 +144,7 @@ subroutine readGrid
       ALLOCATE ( bio%phy_ad(grd%im,grd%jm,grd%km,bio%nphy,bio%ncmp) ) ; bio%phy_ad = huge(bio%phy_ad(1,1,1,1,1))
     endif
     if(drv%nut .eq. 1) then
-      if((bio%N3n .eq. 1) .or (drv%dnc .eq. 1)) then
+      if((bio%N3n .eq. 1) .or. (drv%dnc .eq. 1)) then
         ALLOCATE ( grd%n3n(grd%im,grd%jm,grd%km) )    ; grd%n3n    = huge(grd%n3n(1,1,1))
         ALLOCATE ( grd%n3n_ad(grd%im,grd%jm,grd%km) ) ; grd%n3n_ad = huge(grd%n3n_ad(1,1,1))
         if(drv%dnc .eq. 1) then
