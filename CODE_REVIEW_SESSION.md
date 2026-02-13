@@ -367,5 +367,6 @@ All other allocations have corresponding deallocations:
 **Date**: February 13, 2026
 
 The code crashed because 2 variables were deallocated twice:
-dnc%res and dnc%err both in [obs_vec.f90] and in [clean_mem.f90]
-(the correct one is in [obs_vec.f90])
+dnc%res and dnc%err both in [obs_vec.f90](obs_vec.f90) and in [clean_mem.f90](clean_mem.f90)
+(the correct one is in [obs_vec.f90](obs_vec.f90))
+
