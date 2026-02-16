@@ -58,13 +58,26 @@ subroutine ver_hor_nut(NutArray, NutArrayAd, Var)
   ! ---
   ! Vertical EOFs
   if(Var .eq. 'D') then
+   if(MyId .eq. 0) then
+    write(drv%dia,*) 'calling veof_dnc in ver_hor_nut', Var
+    write(*,*) 'calling veof_dnc in ver_hor_nut', Var
+   endif
    call veof_dnc(NutArray, Var)
   else
+   if(MyId .eq. 0) then
+    write(drv%dia,*) 'calling veof_nut in ver_hor_nut', Var
+    write(*,*) 'calling veof_nut in ver_hor_nut', Var
+   endif
    call veof_nut(NutArray, Var)
   endif
   !return
   ! goto 103 !No Vh
   
+
+  if(MyId .eq. 0) then
+    write(drv%dia,*) 'In ver_hor_nut beginning NutArray', Var, maxval(NutArray), sum(NutArray)
+    write(*,*) 'In ver_hor_nut beginning NutArray', Var, maxval(NutArray), sum(NutArray)
+   endif
   ! ---
   ! Load temporary arrays
   do k=1,grd%km
@@ -251,5 +264,9 @@ subroutine ver_hor_nut(NutArray, NutArrayAd, Var)
   enddo
   
   ! 103 continue
-  
+
+  if(MyId .eq. 0) then
+    write(drv%dia,*) 'In ver_hor_nut end NutArray', Var, maxval(NutArray), sum(NutArray)
+    write(*,*) 'In ver_hor_nut end NutArray', Var, maxval(NutArray), sum(NutArray)
+  endif
 end subroutine ver_hor_nut

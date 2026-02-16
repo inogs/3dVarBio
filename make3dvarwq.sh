@@ -9,9 +9,9 @@ OGSTM_COMPILER=intel
 
 
 DEBUG_OCEANVAR=.dbg
+DEBUG_OCEANVAR=
 
 
 INC_FILE=${OGSTM_ARCH}.${OGSTM_OS}.${OGSTM_COMPILER}${DEBUG_OCEANVAR}.inc
 cp $INC_FILE compiler.inc
-make clean
 gmake

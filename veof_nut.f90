@@ -102,7 +102,7 @@ subroutine veof_nut(NutArray, Var)
         evc(:,1:my_km,1:MyNEofs_nit) = ros%evc_n3n
       endif
       if (drv%dnc .eq. 1) then
-        eva(:,MyNEofs_nit+1:MyNEofs) = ros%eva_dnc
+        eva(:,MyNEofs_nit+1:MyNEofs) = ros%eva_dnc(:,1:ros%neof_dnc)
         evc(:,1:my_km,MyNEofs_nit+1:MyNEofs) = ros%evc_dnc(:,1:my_km,1:ros%neof_dnc)
       endif
     else
@@ -118,7 +118,10 @@ subroutine veof_nut(NutArray, Var)
   
   !cdir noconcur
   do n=1,MyNEofs
-     
+  if(MyId .eq. 0) then
+    write(drv%dia,*) 'in veof_nut Neof Var grd%ro max, sum', n, Var, maxval(grd%ro), sum(grd%ro)
+    write(*,*) 'in veof_nut Neof Var grd%ro max, sum', n, Var, maxval(grd%ro), sum(grd%ro)
+  endif     
      egm(:,:) = 0.0
      
      do j=1,grd%jm
@@ -135,7 +138,12 @@ subroutine veof_nut(NutArray, Var)
            enddo
         enddo
      enddo
-  enddo
+     
+    enddo
+  if(MyId .eq. 0) then
+    write(drv%dia,*) 'in veof_nut Var NutArray max, sum', Var, maxval(NutArray), sum(NutArray)
+    write(*,*) 'in veof_nut Var NutArray max, sum', Var, maxval(NutArray), sum(NutArray)
+  endif     
 
   DEALLOCATE(eva,evc)
 end subroutine veof_nut

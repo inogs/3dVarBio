@@ -56,7 +56,7 @@ subroutine wrt_dia
   ! ---
   ! Innovations
   if(MyId .eq. 0) &
-     write(drv%dia,*) 'writes to corrections.dat !!!!!!!!!!!!!!!!!!!!!!!!!'     
+     write(drv%dia,*) 'writes to corr file', CORR_FILE     
 
   
   status = nf90mpi_create(Var3DCommunicator, trim(CORR_FILE), NF90_CLOBBER, &

@@ -40,11 +40,16 @@ subroutine costf
   
   implicit none
   integer :: ierr
+  REAL(r8) :: gcdotprod
   ! -------------------------------------------------------
   ! calculate backgorund cost term
   ! -------------------------------------------------------
   ctl%f_b = 0.5 * dot_product( ctl%x_c, ctl%x_c)
   call MPI_Allreduce(MPI_IN_PLACE, ctl%f_b, 1, MPI_REAL8, MPI_SUM, Var3DCommunicator, ierr)
+  if(MyId .eq. 0) then
+     print*, "ctl%f_b", ctl%f_b
+     write(drv%dia,*) "ctl%f_b", ctl%f_b
+  endif
   
   ! -------------------------------------------------------
   ! calculate observational cost term
@@ -94,6 +99,10 @@ subroutine costf
   ! calculate cost
   ctl%f_o = 0.5 * dot_product( obs%amo, obs%amo)
   call MPI_Allreduce(MPI_IN_PLACE, ctl%f_o, 1, MPI_REAL8, MPI_SUM, Var3DCommunicator, ierr)
+  if(MyId .eq. 0) then
+     print*, "ctl%f_o", ctl%f_o
+     write(drv%dia,*) "ctl%f_o", ctl%f_o
+  endif
   
   ! -------------------------------------------------------
   ! Cost function
@@ -101,8 +110,10 @@ subroutine costf
    
   ctl%f_c = ctl%f_b + ctl%f_o
   
-  if(MyId .eq. 0) &
+  if(MyId .eq. 0) then
        print*,' Cost function ',ctl%f_c, '(iter.',drv%MyCounter,')'
+       write(drv%dia,*) ' Cost function ',ctl%f_c, '(iter.',drv%MyCounter,')'
+  endif
   
   ! -------------------------------------------------------
   ! calculate the cost function gradient
@@ -129,8 +140,19 @@ subroutine costf
     endif
     if(drv%nut .eq. 1) then
       if((bio%N3n .eq. 1) .or. (drv%dnc .eq. 1)) then
+       if (MyId .eq. 0) then
+         print*, 'I am here call ver_hor_nut_ad for N'
+         write(drv%dia,*) 'I am here call ver_hor_nut_ad for N'
+       endif
         call ver_hor_nut_ad(grd%n3n, grd%n3n_ad, 'N')
         if(drv%dnc .eq. 1) then
+          if (MyId .eq. 0) then
+            print*, 'I am here call ver_hor_nut_ad for D'
+            write(drv%dia,*) 'I am here call ver_hor_nut_ad for D'
+            print*, 'DIAG costf: grd%dnc_ad sum', sum(grd%dnc_ad), ' max=', maxval(grd%dnc_ad)
+            write(drv%dia,*) 'DIAG costf: grd%dnc_ad sum', sum(grd%dnc_ad), ' max=', maxval(grd%dnc_ad)
+          endif
+          
           call ver_hor_nut_ad(grd%dnc, grd%dnc_ad, 'D')
         endif
       endif
@@ -147,6 +169,10 @@ subroutine costf
   !   write(*,*) 'COSTF sum(ro_ad) = ' , sum(grd%ro_ad)
   ! --------
   ! Convert the control vector 
+  if (MyId .eq. 0) then
+    print*, 'DIAG costf: before cnv_ctv_ad sum(grd%ro_ad)=', sum(grd%ro_ad), ' max=', maxval(grd%ro_ad)
+    write(drv%dia,*) 'DIAG costf: before cnv_ctv_ad sum(grd%ro_ad)=', sum(grd%ro_ad), ' max=', maxval(grd%ro_ad)
+  endif
   call cnv_ctv_ad
   
   ! -------------------------------------------------------
@@ -154,6 +180,16 @@ subroutine costf
   ! -------------------------------------------------------
   
   !   write(*,*) 'COSTF sum(g_c) = ' , sum( ctl%g_c)
+  gcdotprod = dot_product( ctl%g_c(:), ctl%g_c(:))
+  if(MyId .eq. 0) then
+     print*, "gc dot ", gcdotprod
+     write(drv%dia,*) "gc dot ", gcdotprod
+  endif
   ctl%g_c(:) = ctl%x_c(:) + ctl%g_c(:) ! OMP
+  gcdotprod = dot_product( ctl%g_c(:), ctl%g_c(:))
+  if(MyId .eq. 0) then
+     print*, "dopo gc dot ", gcdotprod
+     write(drv%dia,*) " dopo gc dot ", gcdotprod
+  endif
   
 end subroutine costf

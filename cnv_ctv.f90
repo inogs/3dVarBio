@@ -34,11 +34,21 @@ subroutine cnv_ctv
  use ctl_str
  use eof_str
 
+ use mpi_str
+ use drv_str
+
  implicit none
 
  INTEGER(i4)   :: i,j,k, kk
  INTEGER(i4)   :: jumpInd, indSupWP
 
+ REAL(r8) :: dotpxc
+
+ dotpxc = dot_product( ctl%x_c, ctl%x_c )
+ if(MyId .eq. 0) then
+    write(drv%dia,*) 'Diag cnv_ctv: dotp, sum, max x_c', dotpxc, sum(ctl%x_c), maxval(ctl%x_c)
+    write(*,*) 'Diag cnv_ctv: dotp, sum, max x_c', dotpxc, sum(ctl%x_c), maxval(ctl%x_c)
+ endif
 
    do k=1,ros%neof
    jumpInd =  (k -1 )*nSurfaceWaterPoints
@@ -48,6 +58,10 @@ subroutine cnv_ctv
            kk = jumpInd + indSupWP
            grd%ro(i,j,k) = ctl%x_c(kk)
        enddo
+       if(MyId .eq. 0) then
+          write(drv%dia,*) 'Diag cnv_ctv: sum, max grd%ro k', sum(grd%ro), maxval(grd%ro), k
+          write(*,*) 'Diag cnv_ctv: sum, max grd%ro k', sum(grd%ro), maxval(grd%ro), k
+       endif
    enddo
 
 
