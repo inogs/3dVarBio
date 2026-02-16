@@ -45,7 +45,6 @@ subroutine obs_dnc_ad
   INTEGER(i4)   ::  i, j, k, kk, my_km
   REAL(r8), DIMENSION(grd%jm,grd%km)  :: slicevar
   REAL(8) :: obsg
-  REAL(8) :: tt
 
   my_km = grd%km
   ! if(drv%multiv.eq.1) &
@@ -65,7 +64,6 @@ subroutine obs_dnc_ad
   !   call EXTEND_2D( grd%O2o_ad, grd%km, O2oExtended_3d )
   call EXTEND_2D( grd%dnc_ad, grd%km, DncExtended_3d )
 
-  tt = 0.
   
   do kk = 1,dnc%no
 
@@ -74,7 +72,6 @@ subroutine obs_dnc_ad
     k=dnc%kb(kk)
 
     if(dnc%flc(kk).eq.1)then
-      tt = tt+1
 
           obs%k = obs%k + 1
           obsg = obs%gra(obs%k)
@@ -91,21 +88,9 @@ subroutine obs_dnc_ad
 
   enddo
 
-  if(MyId .eq. 0) then
-     print*, "tt in obs_dnc_ad ", tt
-     write(drv%dia,*) "tt in obs_dnc_ad ", tt
-
-     print*, 'DIAG obs_dnc_ad: DncExt sum', sum(DncExtended_3d), ' max=', maxval(DncExtended_3d)
-     write(drv%dia,*) 'DIAG obs_dnc_ad: DncExt sum', sum(DncExtended_3d), ' max=', maxval(DncExtended_3d)
-  
-  endif
 
   slicevar(:,1:my_km) = grd%dnc_ad(1,:,1:my_km)
   call ADD_PREVCORE_CONTRIB(DncExtended_3d, my_km, grd%dnc_ad, slicevar(:,1:my_km))
 
-if(MyId .eq. 0) then
-     print*, 'DIAG obs_dnc_ad: grd%dnc_ad sum', sum(grd%dnc_ad), ' max=', maxval(grd%dnc_ad)
-     write(drv%dia,*) 'DIAG obs_dnc_ad: grd%dnc_ad sum', sum(grd%dnc_ad), ' max=', maxval(grd%dnc_ad)
-endif
 
 end subroutine obs_dnc_ad

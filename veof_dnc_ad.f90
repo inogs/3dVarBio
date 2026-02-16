@@ -34,8 +34,6 @@ subroutine veof_dnc_ad(NutArrayAd, Var)
  use grd_str
  use eof_str
 
- use mpi_str
-
  implicit none
 
  INTEGER(i4)             :: i, j, k, l, n, offset, my_km
@@ -46,15 +44,6 @@ subroutine veof_dnc_ad(NutArrayAd, Var)
  CHARACTER :: Var
  INTEGER   :: MyNEofs
 
- if (MyId .eq. 0) then
-    print*, 'DIAG veof beginning: ', sum(grd%ro_ad), ' max=', maxval(grd%ro_ad), Var
-    write(drv%dia,*) 'DIAG veof beginning : ', sum(grd%ro_ad), ' max=', maxval(grd%ro_ad), Var
- endif
- 
- if (MyId .eq. 0) then
-    print*, 'DIAG veof beginning NutAD: ', sum(NutArrayAd), ' max=', maxval(NutArrayAd)
-    write(drv%dia,*) 'DIAG veof beginning NutAD: ', sum(NutArrayAd), ' max=', maxval(NutArrayAd)
- endif
  
   my_km = grd%km
   ! Altrove usato grd%km come limite per assimilazione nit qui ro%kmnit
@@ -134,10 +123,6 @@ subroutine veof_dnc_ad(NutArrayAd, Var)
 enddo
 !$OMP END DO
 !$OMP END PARALLEL 
- if (MyId .eq. 0) then
-         print*, 'DIAG veof end: ', sum(grd%ro_ad), ' max=', maxval(grd%ro_ad), Var
-         write(drv%dia,*) 'DIAG veof end : ', sum(grd%ro_ad), ' max=', maxval(grd%ro_ad), Var
- endif
  
 
 DEALLOCATE(eva,evc)

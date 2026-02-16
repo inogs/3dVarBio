@@ -33,8 +33,6 @@ subroutine resid
   use obs_str
   use drv_str
   use dnc_str
-
-  use mpi_str
   
   implicit none
   
@@ -68,10 +66,6 @@ subroutine resid
   endif
   
 
-  if(MyId .eq. 0) then
-     print*, "in resid dnc%inc dotp, sum, max", dot_product(dnc%inc,dnc%inc), sum(dnc%inc), maxval(dnc%inc)
-     write(drv%dia,*) "in resid dnc%inc dotp, sum, max", dot_product(dnc%inc,dnc%inc), sum(dnc%inc), maxval(dnc%inc)
-  endif
   ! ---
   ! Density increments
   if(drv%dnc .eq. 1) then
@@ -84,25 +78,5 @@ subroutine resid
    enddo
   endif
 
-  if(MyId .eq. 0) then
-      print*, "in resid obs%inc dotp, sum, max", dot_product(obs%inc,obs%inc), sum(obs%inc), maxval(obs%inc)
-      write(drv%dia,*) "in resid obs%inc dotp, sum, max", dot_product(obs%inc,obs%inc), sum(obs%inc), maxval(obs%inc)
-  endif
-
-  if(MyId .eq. 0) then
-      print*, "in resid obs%res dotp, sum, max", dot_product(obs%res,obs%res), sum(obs%res), maxval(obs%res)
-      write(drv%dia,*) "in resid obs%res dotp, sum, max", dot_product(obs%res,obs%res), sum(obs%res), maxval(obs%res)
-  endif
-
-  if(MyId .eq. 0) then
-      print*, "in resid obs%err dotp, sum, max", dot_product(obs%err,obs%err), sum(obs%err), maxval(obs%err)
-      write(drv%dia,*) "in resid obs%err dotp, sum, max", dot_product(obs%err,obs%err), sum(obs%err), maxval(obs%err)
-  endif
-
-  if(MyId .eq. 0) then
-      print*, "in resid dnc%flc dotp, sum, max", dot_product(dnc%flc,dnc%flc), sum(dnc%flc), maxval(dnc%flc)
-      write(drv%dia,*) "in resid dnc%flc dotp, sum, max", dot_product(dnc%flc,dnc%flc), sum(dnc%flc), maxval(dnc%flc)
-  endif
-
-
+  
 end subroutine resid

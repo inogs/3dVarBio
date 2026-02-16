@@ -46,10 +46,6 @@ subroutine obs_dnc
   ! if(drv%multiv.eq.1) &
   !   my_km = ros%kmchl
 
-  if(MyId .eq. 0) then
-     print*, "in obs_dnc grd%dnc max and sum", maxval(grd%dnc), sum(grd%dnc)
-     write(drv%dia,*) "in obs_dnc grd%dnc max and sum", maxval(grd%dnc), sum(grd%dnc)
-  endif
   ! condc = 0
   ! condn = 0
   ! if ((drv%chl_assim.eq.1 ) .or. (drv%multiv.eq.1)) then
@@ -63,37 +59,6 @@ subroutine obs_dnc
   ! if (bio%O2o.eq.1 ) &
   !   call EXTEND_2D( grd%O2o, grd%km, O2oExtended_3d )
 
-  if(MyId .eq. 0) then
-     print*, "in obs_dnc DncExtended max and sum", maxval(DncExtended_3d), sum(DncExtended_3d)
-     write(drv%dia,*) "in obs_dnc DncExtended max and sum", maxval(DncExtended_3d), sum(DncExtended_3d)
-  endif
-
-  if(MyId .eq. 0) then
-     print*, "in obs_dnc pq1 dot", dot_product(dnc%pq1,dnc%pq1), maxval(dnc%pq1), sum(dnc%pq1)
-     write(drv%dia,*) "in obs_dnc pq1 dot", dot_product(dnc%pq1,dnc%pq1), maxval(dnc%pq1), sum(dnc%pq1)
-
-     print*, "in obs_dnc pq2 dot", dot_product(dnc%pq2,dnc%pq2), maxval(dnc%pq2), sum(dnc%pq2)
-     write(drv%dia,*) "in obs_dnc pq2 dot", dot_product(dnc%pq2,dnc%pq2), maxval(dnc%pq2), sum(dnc%pq2)
-
-     print*, "in obs_dnc pq3 dot", dot_product(dnc%pq3,dnc%pq3), maxval(dnc%pq3), sum(dnc%pq3)
-     write(drv%dia,*) "in obs_dnc pq3 dot", dot_product(dnc%pq3,dnc%pq3), maxval(dnc%pq3), sum(dnc%pq3)
-
-     print*, "in obs_dnc pq4 dot", dot_product(dnc%pq4,dnc%pq4), maxval(dnc%pq4), sum(dnc%pq4)
-     write(drv%dia,*) "in obs_dnc pq4 dot", dot_product(dnc%pq4,dnc%pq4), maxval(dnc%pq4), sum(dnc%pq4)
-
-     print*, "in obs_dnc pq5 dot", dot_product(dnc%pq5,dnc%pq5), maxval(dnc%pq5), sum(dnc%pq5)
-     write(drv%dia,*) "in obs_dnc pq5 dot", dot_product(dnc%pq5,dnc%pq5), maxval(dnc%pq5), sum(dnc%pq5)
-
-     print*, "in obs_dnc pq6 dot", dot_product(dnc%pq6,dnc%pq6), maxval(dnc%pq6), sum(dnc%pq6)
-     write(drv%dia,*) "in obs_dnc pq6 dot", dot_product(dnc%pq6,dnc%pq6), maxval(dnc%pq6), sum(dnc%pq6)
-
-     print*, "in obs_dnc pq7 dot", dot_product(dnc%pq7,dnc%pq7), maxval(dnc%pq7), sum(dnc%pq7)
-     write(drv%dia,*) "in obs_dnc pq7 dot", dot_product(dnc%pq7,dnc%pq7), maxval(dnc%pq7), sum(dnc%pq7)
-
-     print*, "in obs_dnc pq8 dot", dot_product(dnc%pq8,dnc%pq8), maxval(dnc%pq8), sum(dnc%pq8)
-     write(drv%dia,*) "in obs_dnc pq8 dot", dot_product(dnc%pq8,dnc%pq8), maxval(dnc%pq8), sum(dnc%pq8)
-  endif
-
 
 
   do kk = 1,dnc%no
@@ -103,10 +68,6 @@ subroutine obs_dnc
       k=dnc%kb(kk)
 
       if(dnc%flc(kk).eq.1) then
-      if(MyId .eq. 0) then
-         print*, " dnc%flc(kk)", dnc%flc(kk)
-         write(drv%dia,*) " dnc%flc(kk) in obs_dnc ", dnc%flc(kk)
-      endif
 
 
         dnc%inc(kk) = &
@@ -121,9 +82,5 @@ subroutine obs_dnc
     endif
   enddo
 
-  if(MyId .eq. 0) then
-     print*, "in obs_dnc dnc%inc dotp, max and sum", dot_product(dnc%inc,dnc%inc), maxval(dnc%inc), sum(dnc%inc)
-     write(drv%dia,*) "in obs_dnc dnc%inc dotp, max and sum", dot_product(dnc%inc,dnc%inc), maxval(dnc%inc), sum(dnc%inc)
-  endif
 
 end subroutine obs_dnc

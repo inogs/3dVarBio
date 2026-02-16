@@ -219,10 +219,7 @@ subroutine ver_hor_nut_ad(NutArray, NutArrayAd, Var)
      NutArrayAd(:,:,k)  = (NutArrayAd(:,:,k) + NutArray(:,:,k) ) * 0.5
   enddo
   
- if (MyId .eq. 0) then
-          print*, 'DIAG ver_hor_nut_ad: NutArrayAd sum', sum(NutArrayAd), ' max=', maxval(NutArrayAd)
-          write(drv%dia,*) 'DIAG ver_hor_nut_ad: NutArrayAd sum', sum(NutArrayAd), ' max=', maxval(NutArrayAd)
- endif
+ 
   
   ! 103 continue
   ! ---

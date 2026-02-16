@@ -33,7 +33,6 @@ subroutine veof_nut_ad(NutArrayAd, Var)
  use drv_str
  use grd_str
  use eof_str
- use mpi_str
 
  implicit none
 
@@ -45,10 +44,6 @@ subroutine veof_nut_ad(NutArrayAd, Var)
  CHARACTER :: Var
  INTEGER   :: MyNEofs, MyNEofs_nit
 
-if (MyId .eq. 0) then
-    print*, 'DIAG veof beginning: ', sum(grd%ro_ad), ' max=', maxval(grd%ro_ad), Var
-    write(drv%dia,*) 'DIAG veof beginning : ', sum(grd%ro_ad), ' max=', maxval(grd%ro_ad), Var
-endif
 
   my_km = 0
   offset = 0
@@ -135,12 +130,6 @@ endif
    enddo
 
   enddo
-  if (MyId .eq. 0) then
-      print*, 'DIAG veof neofs, neofs_nit: ', MyNEofs, MyNEofs_nit
-      write(drv%dia,*) 'DIAG veof neofs, neofs_nit: ', MyNEofs, MyNEofs_nit
-      print*, 'DIAG veof: ', sum(grd%ro_ad), ' max=', maxval(grd%ro_ad), Var
-      write(drv%dia,*) 'DIAG veof: ', sum(grd%ro_ad), ' max=', maxval(grd%ro_ad), Var
-  endif
      
   !$OMP END DO
 !$OMP END PARALLEL 

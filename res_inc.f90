@@ -35,10 +35,7 @@ subroutine res_inc
  use obs_str
  use bio_str
 
- use mpi_str
-
  implicit none
- REAL(r8) :: dotp1,dotp2
 
  if (drv%multiv .eq. 0) then
   if (drv%chl_assim .eq. 1) then
@@ -60,19 +57,6 @@ subroutine res_inc
     grd%n3n_ad(:,:,:) = 0.0
  endif
  
- dotp1 = dot_product( obs%amo, obs%amo)
- if(MyId .eq. 0) then
-     print*, "dotgra 1 ", dotp1
-     write(drv%dia,*) "dotgra 1 ", dotp1
- endif
  obs%gra(:) = obs%amo(:) / obs%err(:) ! OMP
- dotp1 = dot_product( obs%gra, obs%gra)
- dotp2 = dot_product( obs%amo, obs%amo)
- if(MyId .eq. 0) then
-     print*, "dotgra 1 ", dotp1
-     write(drv%dia,*) "dotgra 1 ", dotp1
-     print*, "dotgra 2 ", dotp2
-     write(drv%dia,*) "dotgra 2 ", dotp2
- endif
 
 end subroutine res_inc

@@ -36,8 +36,6 @@ subroutine cnv_inn
   use ctl_str
   use drv_str
   use bio_str
-
-  use mpi_str
   
   implicit none
   
@@ -51,12 +49,7 @@ subroutine cnv_inn
     endif
     if(drv%nut .eq. 1) then
       if((bio%N3n .eq. 1) .or. (drv%dnc .eq. 1)) then
-        if(MyId .eq. 0) then
-          write(drv%dia,*) 'calling ver_hor_nut in cnv_inn'
-          write(*,*) 'calling ver_hor_nut in cnv_inn'
-        endif
         call ver_hor_nut(grd%n3n, grd%n3n_ad,'N')
-
         ! if (drv%dnc .eq. 1) then
         !   call ver_hor_nut(grd%n3n)
         ! endif

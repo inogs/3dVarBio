@@ -12,13 +12,16 @@
 - **Avoid double allocation/deallocation**: corrected logic so `grd%n3n` / `grd%n3n_ad` are not allocated or deallocated twice when both `bio%N3n` and `drv%dnc` are true (fixes in `readGrid.f90`, `sav_itr.f90`, `wrt_dia.f90` and related).
 - **`res_inc.f90` / `resid.f90`**: logic/typo fixes so the adjoint/reset arrays are correctly zeroed (`grd%dnc_ad` set, not `grd%dnc`), correct loop formatting and consistent MPI diagnostics.
 - **EOF / vertical transform fixes**:
-  - Corrected ordering / slicing for density-nutrient EOFs so multivariate EOFs are appended/used in the correct offset and shapes (changes in `veof_nut.f90`, `veof_nut_ad.f90`, `veof_dnc_ad.f90`, EOF indexing and allocation).
+  - Corrected ordering / slicing for density-nutrient EOFs so multivariate EOFs are appended/used in the correct offset and shapes in particular multivariate EOFs in veof_nut (changes in `veof_nut.f90`, `veof_nut_ad.f90`, `veof_dnc_ad.f90`, EOF indexing and allocation).
+  ---> in veof_dnc_ad.f90 my_km was set equal to 0 !!! Updated to be my_km = grd%km
   - `ver_hor_nut_ad.f90` now calls `veof_dnc_ad` with the correct array argument (`NutArrayAd`).
 - **`obs_arg*` / `wrt_dia` conditionals**: strengthened checks to include `drv%dnc` where needed so grids and observational operators extend/define variables when density-nutrient coupling is enabled.
 - **`cnv_ctv*`, `cnv_inn`, `costf`**: small logic fixes to ensure correct calls when `drv%multiv`/`drv%dnc` flags are set, and to sequence vertical/horizontal transforms correctly for density increments.
 - **`tao_minimizer.f90`**: adjusted TAO iteration/evaluation limits to lower values (10) for quicker debug runs, expanded failure handling (additional reason codes), and added diagnostics when copying solution back to `ctl%x_c`.
 
---> Notice: the TAO max iterations/function-evaluations set in `tao_minimizer.f90` appears to be overridden — runs show a maximum of 30 function evaluations. This is likely coming from PETSc/TAO options (for example a compile/run flag such as `-tao_max_funcs 30` or a default set at build time). Check Makefiles, build scripts, and PETSc/TAO option sources (or command-line / options file) to change the effective limit.
+--> Notice: the TAO max iterations/function-evaluations set in `tao_minimizer.f90` appearead to be overridden — runs show a maximum of 30 function evaluations. It seemed likely coming from PETSc/TAO options (for example a compile/run flag such as `-tao_max_funcs 30` or a default set at build time). 
+ BUT now it works with a number of max function-evaluation set.
+Check Makefiles, build scripts, and PETSc/TAO option sources (or command-line / options file) to change the effective limit.
 
 - **Minor build/script change**: `make3dvarwq.sh` cleaned to avoid an unconditional `make clean` (left commented/removed).
 

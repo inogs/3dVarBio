@@ -32,18 +32,12 @@ subroutine cnv_ctv_ad
  use grd_str
  use ctl_str
  use eof_str
- use drv_str
- use mpi_str
 
  implicit none
 
  INTEGER(i4)     :: i,j,k, kk
  INTEGER(i4)   :: jumpInd, indSupWP
 
-   if (MyId .eq. 0) then
-      print*, 'DIAG cnv_ctv_ad: before sum(grd%ro_ad)=', sum(grd%ro_ad), ' max=', maxval(grd%ro_ad)
-      write(drv%dia,*) 'DIAG cnv_ctv_ad: before sum(grd%ro_ad)=', sum(grd%ro_ad), ' max=', maxval(grd%ro_ad)
-   endif
 
    do k=1,ros%neof
      jumpInd =  (k -1 )* nSurfaceWaterPoints
@@ -53,11 +47,6 @@ subroutine cnv_ctv_ad
            kk = jumpInd + indSupWP
            ctl%g_c(kk) = grd%ro_ad(i,j,k)
         enddo
-
    enddo
-   if (MyId .eq. 0) then
-      print*, 'DIAG cnv_ctv_ad: after sum(ctl%g_c)=', sum(ctl%g_c), ' max=', maxval(ctl%g_c)
-      write(drv%dia,*) 'DIAG cnv_ctv_ad: after sum(ctl%g_c)=', sum(ctl%g_c), ' max=', maxval(ctl%g_c)
-   endif
 
 end subroutine cnv_ctv_ad

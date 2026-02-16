@@ -118,10 +118,6 @@ subroutine veof_nut(NutArray, Var)
   
   !cdir noconcur
   do n=1,MyNEofs
-  if(MyId .eq. 0) then
-    write(drv%dia,*) 'in veof_nut Neof Var grd%ro max, sum', n, Var, maxval(grd%ro), sum(grd%ro)
-    write(*,*) 'in veof_nut Neof Var grd%ro max, sum', n, Var, maxval(grd%ro), sum(grd%ro)
-  endif     
      egm(:,:) = 0.0
      
      do j=1,grd%jm
@@ -139,11 +135,7 @@ subroutine veof_nut(NutArray, Var)
         enddo
      enddo
      
-    enddo
-  if(MyId .eq. 0) then
-    write(drv%dia,*) 'in veof_nut Var NutArray max, sum', Var, maxval(NutArray), sum(NutArray)
-    write(*,*) 'in veof_nut Var NutArray max, sum', Var, maxval(NutArray), sum(NutArray)
-  endif     
+  enddo
 
   DEALLOCATE(eva,evc)
 end subroutine veof_nut

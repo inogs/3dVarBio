@@ -28,7 +28,6 @@ subroutine tao_minimizer
   TaoConvergedReason ::   reason
   integer(i4)        ::   j
   real(8)            ::   MaxGrad
-  integer(i4)        ::   nitget, nfget
 
   ! Working arrays
   PetscInt, allocatable, dimension(:)     :: loc
@@ -136,17 +135,8 @@ subroutine tao_minimizer
 
   ! setting max number of fucntion evaluation
   !maxfeval = 300
-  call TaoSetMaximumFunctionEvaluations(tao, 10, ierr)
-  call TaoSetMaximumIterations(tao, 10, ierr)
-  call TaoGetMaximumIterations(tao,nitget)
-  call TaoGetMaximumFunctionEvaluations(tao,nfget)
-  if(MyId .eq. 0) then
-     print*, "max func", nfget
-     print*, "max it", nitget
-     print*, ""
-     write(drv%dia,*) "max func", nfget
-     write(drv%dia,*) "max it", nitget
-  endif
+  call TaoSetMaximumFunctionEvaluations(tao, 30, ierr)
+  CHKERRQ(ierr)
 
   ! calling the solver to minimize the problem
   call TaoSolve(tao, ierr)
@@ -220,10 +210,6 @@ subroutine tao_minimizer
   call VecGetArrayReadF90(MyState, xtmp, ierr)
   CHKERRQ(ierr)
 
-  if (MyId .eq. 0) then
-    print*, 'in tao_minimizer xtmp max, sum: ', maxval(xtmp), sum(xtmp)
-    write(*,*) 'in tao_minimizer xtmp max, sum: ', maxval(xtmp), sum(xtmp)
-  endif
   do j = 1, ctl%n
      ctl%x_c(j) = xtmp(j)
   end do
