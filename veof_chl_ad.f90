@@ -37,7 +37,7 @@ subroutine veof_chl_ad
 
  implicit none
 
- INTEGER(i4)             :: i, j, k, l, n, my_km, MyNEofs, ierr!, k1
+ INTEGER(i4)             :: i, j, k, l, n, my_km, MyNEofs, ierr, k1
  REAL(r8), DIMENSION ( grd%im, grd%jm)  :: egm
  REAL(r8), ALLOCATABLE, DIMENSION(:,:) :: eva
  REAL(r8), ALLOCATABLE, DIMENSION(:,:,:) :: evc

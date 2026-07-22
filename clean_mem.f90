@@ -78,6 +78,7 @@ subroutine clean_mem
     DEALLOCATE ( dnc%ib, dnc%jb, dnc%kb)
     DEALLOCATE ( dnc%pq1, dnc%pq2, dnc%pq3, dnc%pq4)
     DEALLOCATE ( dnc%pq5, dnc%pq6, dnc%pq7, dnc%pq8)
+    DEALLOCATE (grd%lon, grd%lat)
   endif
 
   ! Constants structure

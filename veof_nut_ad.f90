@@ -36,7 +36,7 @@ subroutine veof_nut_ad(NutArrayAd, Var)
 
  implicit none
 
- INTEGER(i4)             :: i, j, k, l, n, offset, my_km
+ INTEGER(i4)             :: i, j, k, l, n, offset, my_km, k1
  REAL(r8), DIMENSION ( grd%im, grd%jm)  :: egm
  REAL(r8) :: NutArrayAd(grd%im,grd%jm,grd%km)
  REAL(r8), ALLOCATABLE, DIMENSION(:,:) :: eva

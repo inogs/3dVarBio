@@ -40,6 +40,9 @@ subroutine get_obs
   arg%nc = 0
   sat%nc = 0
 
+  dnc%nc = 0
+  dnc%no = 0
+
   
   ! ----
   ! Load ARGO observations

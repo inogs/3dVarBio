@@ -58,7 +58,7 @@ subroutine ver_hor_nut(NutArray, NutArrayAd, Var)
   ! ---
   ! Vertical EOFs
   if(Var .eq. 'D') then
-   call veof_dnc(NutArray, Var)
+   call veof_dnc(NutArray)
   else
    call veof_nut(NutArray, Var)
   endif

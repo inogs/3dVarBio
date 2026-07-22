@@ -1,4 +1,4 @@
-subroutine veof_dnc
+subroutine veof_dnc(NutArray)
 !anna
 !---------------------------------------------------------------------------
 !                                                                          !
@@ -40,8 +40,11 @@ subroutine veof_dnc
   INTEGER(i4)     :: i, j, k, l,n, ierr
   INTEGER(i4)     :: my_km, MyNEofs, offset
   REAL(r8), DIMENSION ( grd%im, grd%jm)  :: egm
+  REAL(r8) :: NutArray(grd%im,grd%jm,grd%km)
   REAL(r8), ALLOCATABLE, DIMENSION(:,:)  :: eva
   REAL(r8), ALLOCATABLE, DIMENSION(:,:,:)  :: evc
+
+  NutArray(:,:,:) = 0.0
   
   my_km = grd%km
   MyNEofs = ros%neof_dnc
@@ -71,7 +74,7 @@ subroutine veof_dnc
      do k=1,my_km ! OMP
         do j=1,grd%jm
           do i=1,grd%im
-            grd%dnc(i,j,k) = grd%dnc(i,j,k) + evc(grd%reg(i,j),k,n) * egm(i,j)
+            NutArray(i,j,k) = NutArray(i,j,k) + evc(grd%reg(i,j),k,n) * egm(i,j)
           enddo
         enddo
      enddo

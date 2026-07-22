@@ -1,4 +1,4 @@
-subroutine veof_dnc_ad(NutArrayAd, Var)
+subroutine veof_dnc_ad(NutArrayAd)
 
 !---------------------------------------------------------------------------
 !                                                                          !
@@ -36,12 +36,11 @@ subroutine veof_dnc_ad(NutArrayAd, Var)
 
  implicit none
 
- INTEGER(i4)             :: i, j, k, l, n, offset, my_km
+ INTEGER(i4)             :: i, j, k, l, n, offset, my_km, k1
  REAL(r8), DIMENSION ( grd%im, grd%jm)  :: egm
  REAL(r8) :: NutArrayAd(grd%im,grd%jm,grd%km)
  REAL(r8), ALLOCATABLE, DIMENSION(:,:) :: eva
  REAL(r8), ALLOCATABLE, DIMENSION(:,:,:) :: evc
- CHARACTER :: Var
  INTEGER   :: MyNEofs
 
  
@@ -50,21 +49,6 @@ subroutine veof_dnc_ad(NutArrayAd, Var)
   ! Da correggere o fare un check
   MyNEofs = ros%neof_dnc
   offset = ros%neof_chl + ros%neof_n3n
-  ! if((drv%nut .eq.1) .and. (drv%multiv .eq. 0)) then
-  !    my_km = grd%km
-  !    if(Var .eq. 'N') then
-  !      MyNEofs = ros%neof_n3n
-  !      offset = ros%neof_chl
-  !    else
-  !      MyNEofs = ros%neof_o2o
-  !      offset = ros%neof_chl + ros%neof_n3n
-  !    endif
-  ! else if((drv%nut .eq.0) .and. (drv%multiv .eq. 1)) then
-  !   if(Var .eq. 'N') then
-  !     my_km = ros%kmnit
-  !     MyNEofs = ros%neof_multi
-  !   endif
-  ! endif
 
 
   ALLOCATE (eva(ros%nreg,MyNEofs)); eva = huge(eva(1,1))
@@ -72,18 +56,6 @@ subroutine veof_dnc_ad(NutArrayAd, Var)
 
   eva(:,:) = ros%eva_dnc(:,:)
   evc(:,1:my_km,:) = ros%evc_dnc(:,my_km+1:my_km*2,:)
-  ! if((drv%nut .eq.1) .and. (drv%multiv .eq. 0)) then
-  !   if(Var .eq. 'N') then
-  !   else
-  !     eva = ros%eva_o2o
-  !     evc = ros%evc_o2o
-  !   endif
-  ! else if((drv%nut .eq.0) .and. (drv%multiv .eq. 1)) then
-  !   if(Var .eq. 'N') then
-  !     eva = ros%eva_multi
-  !     evc(:,1:my_km,:) = ros%evc_multi(:,ros%kmchl+1:ros%kmchl+ros%kmnit,:)
-  !   endif
-  ! endif
 
   do n=1,MyNEofs
     grd%ro_ad(:,:,n+offset) = 0.0 ! OMP
