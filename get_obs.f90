@@ -32,6 +32,7 @@ subroutine get_obs
   use set_knd
   use obs_str
   use drv_str
+  use dnc_str
   
   implicit none
   
