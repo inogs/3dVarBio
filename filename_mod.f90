@@ -18,7 +18,7 @@ character (LEN=1024) :: GRID_FILE    != 'grid1.nc'
 character (LEN=1024) :: RCORR_FILE  != 'chl_rad_corr.nc'
 character (LEN=1024) :: ARGO_FILE   != 'argo_mis.dat'
 character (LEN=1024) :: ANIS_FILE   != 'gradsal.nc'
-character (LEN=1024) :: INCR_FILE   != 'density_increments.nc'
+character (LEN=1024) :: INCR_FILE   != 'density_increments.dat'
 
 
 CONTAINS
