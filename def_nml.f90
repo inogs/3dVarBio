@@ -37,17 +37,18 @@ subroutine def_nml
   use ctl_str
   use mpi_str
   use bio_str
+  use dnc_str
 
   implicit none
 
   LOGICAL       :: read_eof
-  INTEGER(i4)   :: neof_chl, neof_n3n, neof_o2o, nreg, rcf_ntr
+  INTEGER(i4)   :: neof_chl, neof_n3n, neof_o2o, neof_dnc, nreg, rcf_ntr
   INTEGER(i4)   :: neof_multi, kmchl, kmnit
   INTEGER(i4)   :: verbose
   REAL(r8)      :: rcf_L, ctl_tol, ctl_per, rcf_efc
   
   NAMELIST /ctllst/ ctl_tol, ctl_per, verbose
-  NAMELIST /covlst/ neof_chl, neof_n3n, neof_o2o, neof_multi, kmchl, kmnit, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
+  NAMELIST /covlst/ neof_chl, neof_n3n, neof_o2o, neof_dnc, neof_multi, kmchl, kmnit, nreg, read_eof, rcf_ntr, rcf_L, rcf_efc
 
 
 ! -------------------------------------------------------------------
@@ -99,6 +100,7 @@ subroutine def_nml
     write(drv%dia,*) ' Number of EOFs for chl:          neof_chl = ', neof_chl
     write(drv%dia,*) ' Number of EOFs for N3n:          neof_n3n = ', neof_n3n
     write(drv%dia,*) ' Number of EOFs for O2o:          neof_o2o = ', neof_o2o
+    write(drv%dia,*) ' Number of dens-nut EOFs:         neof_dnc = ', neof_dnc
     write(drv%dia,*) ' Number of multivariate EOFs:   neof_multi = ', neof_multi
     write(drv%dia,*) ' Chl Nlevels in multi EOFs:          kmchl = ', kmchl
     write(drv%dia,*) ' Nit Nlevels in multi EOFs:          kmnit = ', kmnit
@@ -115,6 +117,7 @@ subroutine def_nml
   ros%neof_chl = neof_chl
   ros%neof_n3n = neof_n3n
   ros%neof_o2o = neof_o2o
+  ros%neof_dnc = neof_dnc
   ros%neof_multi = neof_multi
   ros%kmchl    = kmchl
   ros%kmnit    = kmnit

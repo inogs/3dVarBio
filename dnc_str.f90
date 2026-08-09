@@ -1,4 +1,4 @@
-MODULE obs_str
+MODULE dnc_str
   
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -23,7 +23,7 @@ MODULE obs_str
   
   !-----------------------------------------------------------------------
   !                                                                      !
-  ! Observational vectors                                                !
+  ! Density increment vectors                                            !
   !                                                                      !
   ! Version 1: S.Dobricic 2006                                           !
   !-----------------------------------------------------------------------
@@ -35,40 +35,26 @@ MODULE obs_str
   public
   
   ! ---
-  ! Observational vector in the cost function
-  TYPE obs_t
-     
-     INTEGER(i8)              ::  no         ! Number of observations
-     INTEGER(i8)              ::  k          ! Observation index 
-     REAL(r8),    POINTER     ::  inc(:)     ! Increments
-     REAL(r8),    POINTER     ::  amo(:)     ! Analysis - observation
-     REAL(r8),    POINTER     ::  res(:)     ! residual
-     REAL(r8),    POINTER     ::  err(:)     ! Observational error
-     REAL(r8),    POINTER     ::  gra(:)     ! Observational gradient
-     
-  END TYPE obs_t
-  
-  TYPE (obs_t)                 :: obs
-  
-  ! ---
-  ! Observational vector for ARGO floats
-  TYPE arg_t
+  ! Density increment vector for ARGO floats
+  TYPE dnc_t
 
      INTEGER(i8)              ::  no         ! Number of all observations
      INTEGER(i8)              ::  nc         ! Number of good observations
-     REAL(r8)                 ::  dep        ! Minimum depth for observations
-     INTEGER(i8)              ::  kdp        ! Model level corresponding to dep
-     INTEGER(i8), POINTER     ::  ino(:)     ! Float number
-     INTEGER(i8), POINTER     ::  par(:)     ! Parameter flag (0-chl, 1-N3n, 2-O2o)
+     INTEGER(i8)              ::  k          ! Density increment index
+    !  REAL(r8)                 ::  dep        ! Minimum depth for observations
+    !  INTEGER(i8)              ::  kdp        ! Model level corresponding to dep
+    !  INTEGER(i8), POINTER     ::  ino(:)     ! Float number
+    !  INTEGER(i8), POINTER     ::  par(:)     ! Parameter flag (0-chl, 1-N3n, 2-O2o)
      INTEGER(i8), POINTER     ::  flg(:)     ! Quality flag
      INTEGER(i8), POINTER     ::  flc(:)     ! Temporary flag for multigrid
      REAL(r8),    POINTER     ::  lon(:)     ! Longitute
      REAL(r8),    POINTER     ::  lat(:)     ! Latitude
      REAL(r8),    POINTER     ::  dpt(:)     ! Depth
-     REAL(r8),    POINTER     ::  tim(:)     ! Time
+    !  REAL(r8),    POINTER     ::  tim(:)     ! Time
      REAL(r8),    POINTER     ::  inc(:)     ! Increments
-     REAL(r8),    POINTER     ::  err(:)     ! Observational error
-   !   REAL(r8),    POINTER     ::  std(:)     ! STD used for EOFs normalization
+    ! REAL(r8),    POINTER     ::  corr(:)    ! Correlations
+     REAL(r8),    POINTER     ::  err(:)     ! Nitrate std (error)
+    ! REAL(r8),    POINTER     ::  std(:)     ! Density std
      REAL(r8),    POINTER     ::  res(:)     ! residual
      INTEGER(i8), POINTER     ::  ib(:)      ! i index of the nearest west point
      REAL(r8)   , POINTER     ::  pb(:)      ! distance from the nearest west point
@@ -87,39 +73,9 @@ MODULE obs_str
 
      INTEGER(i4)              ::  nc_global  ! Number of global good observations
 
-  END TYPE arg_t
+  END TYPE dnc_t
 
-  TYPE (arg_t)                 :: arg
+  TYPE (dnc_t)                 :: dnc
 
-  ! ---
-  ! Observational vector for SAT chl
-  TYPE chl_t
-     
-     INTEGER(i8)              ::  no         ! Number of all observations
-     INTEGER(i8)              ::  nc         ! Number of good observations
-     REAL(r8)                 ::  dep        ! Minimum depth for observations
-     INTEGER(i8)              ::  kdp        ! Model level corresponding to dep
-     INTEGER(i8), POINTER     ::  flg(:)     ! Quality flag
-     INTEGER(i8), POINTER     ::  flc(:)     ! Temporary flag for multigrid
-     REAL(r8),    POINTER     ::  inc(:)     ! Increments
-     REAL(r8),    POINTER     ::  err(:)     ! Observational error
-     REAL(r8),    POINTER     ::  res(:)     ! residual
-     INTEGER(i8), POINTER     ::  ib(:)      ! i index of the nearest west point
-     REAL(r8)   , POINTER     ::  pb(:)      ! distance from the nearest west point
-     INTEGER(i8), POINTER     ::  jb(:)      ! j index of the nearest south point
-     REAL(r8)   , POINTER     ::  qb(:)      ! distance from the nearest south point
-     REAL(r8)   , POINTER     ::  pq1(:)     ! Interpolation parameter for masked grids
-     REAL(r8)   , POINTER     ::  pq2(:)     ! Interpolation parameter for masked grids
-     REAL(r8)   , POINTER     ::  pq3(:)     ! Interpolation parameter for masked grids
-     REAL(r8)   , POINTER     ::  pq4(:)     ! Interpolation parameter for masked grids
-     REAL(r8)   , POINTER     ::  dpt(:)     ! Maximum depth of surrounding points
-     REAL(r8),    POINTER     ::  dzr(:,:)   ! Relative thickness
-     REAL(r8)                 ::  max_val    ! Maximum value allowed to accept the observation
-
-     INTEGER(i4)              ::  nc_global  ! Number of global good observations
-
-  END TYPE chl_t
   
-  TYPE (chl_t)                 :: sat
-  
-END MODULE obs_str
+END MODULE dnc_str

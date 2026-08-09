@@ -1,4 +1,4 @@
-subroutine oceanvar
+subroutine biovar
   
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -112,10 +112,9 @@ subroutine oceanvar
   ! In case of assimiation of chl only at some dates
     if ((drv%nut.eq.0) .and. (NNutVar.gt.0) .and. (drv%multiv.eq.0)) then
       call cp_o2o_stat
+      call cp_nut_stat
       if (drv%chl_upnut .eq. 1) then
         call wrt_upd_nut
-      else
-        call cp_nut_stat
       endif
     endif
   endif
@@ -125,17 +124,18 @@ subroutine oceanvar
   endif
   
   if ((drv%nut .eq. 1) .or. (drv%multiv.eq.1)) then
-    if((bio%O2o .eq. 1) .and. (bio%N3n .eq. 1)) then
+    if((bio%O2o .eq. 1) .and. ((bio%N3n .eq. 1) .or. (drv%dnc .eq. 1))) then
       call wrt_o2o_stat
       call wrt_nut_stat
-    else if((bio%O2o .eq. 1) .and. (bio%N3n .eq. 0)) then
+    else if((bio%O2o .eq. 1) .and. (bio%N3n .eq. 0) .and. (drv%dnc .eq. 0)) then
       call wrt_o2o_stat
       call cp_nut_stat
-    else if((bio%O2o .eq. 0) .and. (bio%N3n .eq. 1)) then
+    else if((bio%O2o .eq. 0) .and. ((bio%N3n .eq. 1) .or. (drv%dnc .eq. 1))) then
       call cp_o2o_stat
       call wrt_nut_stat
     endif
   endif
+
 
   call sav_itr
   if(MyId .eq. 0) write(drv%dia,*) 'out of sav_itr '
@@ -146,4 +146,4 @@ subroutine oceanvar
   !-----------------------------------------------------------------
   if(MyId .eq. 0) close(drv%dia)
 
-end subroutine oceanvar
+end subroutine biovar

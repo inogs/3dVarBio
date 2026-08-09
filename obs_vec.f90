@@ -34,6 +34,7 @@ subroutine obs_vec
   use drv_str
   use obs_str
   use mpi_str
+  use dnc_str
   
   implicit none
   
@@ -42,7 +43,7 @@ subroutine obs_vec
   ! -------
   ! Define observational vector
   
-  obs%no = sat%nc + arg%nc
+  obs%no = sat%nc + arg%nc + dnc%nc
 
   if(MyId .eq. 0) &
        write(drv%dia,*) ' Total number of observations: ', obs%no
@@ -84,5 +85,18 @@ subroutine obs_vec
 
  endif
  
+ ! Observations of density increments
+ if(drv%dnc .eq. 1) then
+  do i=1,dnc%no
+    if(dnc%flc(i).eq.1)then
+       k=k+1
+       obs%res(k) = dnc%res(i)
+       obs%err(k) = dnc%err(i)
+    endif
+  enddo
+  
+  DEALLOCATE(dnc%res, dnc%err)
+
+  endif
  
 end subroutine obs_vec

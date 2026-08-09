@@ -43,8 +43,11 @@ subroutine res_inc
   end if
   
   if (drv%nut .eq. 1) then
-    if (bio%n3n .eq. 1) &
+    if ((bio%n3n .eq. 1) .or. (drv%dnc .eq. 1)) then
       grd%n3n_ad(:,:,:) = 0.0
+      if (drv%dnc .eq. 1) &
+        grd%dnc_ad(:,:,:) = 0.0
+    endif
     if (bio%o2o .eq. 1) &
       grd%o2o_ad(:,:,:) = 0.0
   endif

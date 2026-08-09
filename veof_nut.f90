@@ -42,7 +42,7 @@ subroutine veof_nut(NutArray, Var)
   REAL(r8) :: NutArray(grd%im,grd%jm,grd%km)
   REAL(r8), ALLOCATABLE, DIMENSION(:,:) :: eva
   REAL(r8), ALLOCATABLE, DIMENSION(:,:,:) :: evc
-  INTEGER(I4) :: MyNEofs, offset  
+  INTEGER(I4) :: MyNEofs, MyNEofs_nit, offset
   CHARACTER   :: Var
   
   NutArray(:,:,:) = 0.0
@@ -52,21 +52,26 @@ subroutine veof_nut(NutArray, Var)
   if((drv%nut .eq.1) .and. (drv%multiv .eq. 0)) then
     my_km = grd%km
     if(Var .eq. 'N') then
-      MyNEofs = ros%neof_n3n
+      MyNEofs_nit = ros%neof_n3n
+      MyNEofs = MyNEofs_nit
       offset = ros%neof_chl
+      ! If density-nutrient EOFs are provided and dnc flag set
+      if (drv%dnc .eq. 1) then
+        MyNEofs = MyNEofs_nit + ros%neof_dnc
+      endif
     else
       MyNEofs = ros%neof_o2o
-      offset = ros%neof_chl + ros%neof_n3n
+      offset = ros%neof_chl + ros%neof_n3n + ros%neof_dnc
     endif
   else if((drv%nut .eq.0) .and. (drv%multiv .eq. 1)) then
-    if(Var .eq. 'N') then
+    if((Var .eq. 'N') .and. (drv%dnc .eq. 0)) then
       my_km = grd%km
       MyNEofs = ros%neof_multi
     else
       if(MyId .eq. 0) then
-        write(drv%dia,*) "Error! Only nitrate multivariate assimilation implemented"
+        write(drv%dia,*) "Error! Only nitrate multivariate assimilation without dens-nit covariances implemented"
         write(drv%dia,*) ""
-        write(*,*) "Error! Only nitrate multivariate assimilation implemented! Aborting"
+        write(*,*) "Error! Only nitrate multivariate assimilation without dens-nit covariances implemented! Aborting"
         write(*,*) ""
       endif
       call MPI_Barrier(Var3DCommunicator, ierr)
@@ -90,17 +95,22 @@ subroutine veof_nut(NutArray, Var)
 
   ALLOCATE (eva(ros%nreg,MyNEofs)); eva = huge(eva(1,1))
   ALLOCATE (evc(ros%nreg,my_km,MyNEofs)); evc = huge(evc(1,1,1))
-
   if((drv%nut .eq.1) .and. (drv%multiv .eq. 0)) then
     if(Var .eq. 'N') then
-      eva = ros%eva_n3n
-      evc = ros%evc_n3n
+      if(MyNEofs_nit .gt. 0) then
+        eva(:,1:MyNEofs_nit) = ros%eva_n3n
+        evc(:,1:my_km,1:MyNEofs_nit) = ros%evc_n3n
+      endif
+      if (drv%dnc .eq. 1) then
+        eva(:,MyNEofs_nit+1:MyNEofs) = ros%eva_dnc(:,1:ros%neof_dnc)
+        evc(:,1:my_km,MyNEofs_nit+1:MyNEofs) = ros%evc_dnc(:,1:my_km,1:ros%neof_dnc)
+      endif
     else
       eva = ros%eva_o2o
       evc = ros%evc_o2o
     endif
   else if((drv%nut .eq.0) .and. (drv%multiv .eq. 1)) then
-    if(Var .eq. 'N') then
+    if((Var .eq. 'N') .and. (drv%dnc.eq.0)) then
       eva = ros%eva_multi
       evc(:,1:my_km,:) = ros%evc_multi(:,ros%kmchl+1:ros%kmchl+grd%km,:)
     endif
@@ -108,7 +118,6 @@ subroutine veof_nut(NutArray, Var)
   
   !cdir noconcur
   do n=1,MyNEofs
-     
      egm(:,:) = 0.0
      
      do j=1,grd%jm
@@ -125,7 +134,8 @@ subroutine veof_nut(NutArray, Var)
            enddo
         enddo
      enddo
+     
   enddo
 
-DEALLOCATE(eva,evc)
+  DEALLOCATE(eva,evc)
 end subroutine veof_nut

@@ -135,7 +135,7 @@ subroutine tao_minimizer
 
   ! setting max number of fucntion evaluation
   !maxfeval = 300
-  call TaoSetMaximumFunctionEvaluations(tao, 100, ierr)
+  call TaoSetMaximumFunctionEvaluations(tao, 30, ierr)
   CHKERRQ(ierr)
 
   ! calling the solver to minimize the problem
@@ -147,6 +147,8 @@ subroutine tao_minimizer
      print*, ''
      print*, 'Tao Solver Info:'
      print*, ''
+     write(drv%dia,*) "Tao Solver Info:"
+     write(drv%dia,*) ""
   endif
 
   call TaoView(tao, PETSC_VIEWER_STDOUT_WORLD, ierr)
@@ -154,7 +156,7 @@ subroutine tao_minimizer
   call TaoGetSolutionStatus(tao, iter, fval, gnorm, cnorm, xdiff, reason, ierr)
   if(reason .lt. 0) then
 
-    if( ((reason.eq.-6) .or. (reason.eq.-5)) .and. (drv%MyCounter .gt. 12) ) then
+    if( ((reason.eq.-6) .or. (reason.eq.-5) .or. (reason.eq.-2)) .and. (drv%MyCounter .gt. 5) ) then
       if(MyId .eq. 0) then
         print*, "TAO failed to find a solution"
         print*, "fval..", fval
@@ -163,6 +165,14 @@ subroutine tao_minimizer
         print*, "iter", iter
         print*, " MyCount", drv%MyCounter
         print*, "BUT assigning a solution "
+
+        write(drv%dia,*) "TAO failed to find a solution"
+        write(drv%dia,*) "fval..", fval
+        write(drv%dia,*) "gnorm.", gnorm
+        write(drv%dia,*) "reason", reason
+        write(drv%dia,*) "iter", iter
+        write(drv%dia,*) " MyCount", drv%MyCounter
+        write(drv%dia,*) "BUT assigning a solution "
       endif
 
     else
@@ -174,10 +184,18 @@ subroutine tao_minimizer
         print*, "iter", iter
         print*, " MyCount", drv%MyCounter
         print*, "Aborting.."
+
+        write(drv%dia,*) "TAO failed to find a solution"
+        write(drv%dia,*) "fval..", fval
+        write(drv%dia,*) "gnorm.", gnorm
+        write(drv%dia,*) "reason", reason
+        write(drv%dia,*) "iter", iter
+        write(drv%dia,*) " MyCount", drv%MyCounter
+        write(drv%dia,*) "Aborting.."
       endif
       call MPI_Barrier(Var3DCommunicator, ierr)
       call MPI_Abort(Var3DCommunicator, -1, ierr)
-    endif ! reason -6 or -5
+    endif ! reason -6 or -5 or -2
 
   endif !reason.lt.0
 

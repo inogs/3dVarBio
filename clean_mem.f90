@@ -39,6 +39,7 @@ subroutine clean_mem
   use cns_str
   use rcfl
   use mpi_str
+  use dnc_str
   
   implicit none
 
@@ -68,6 +69,18 @@ subroutine clean_mem
     DEALLOCATE ( sat%dzr)
   endif
 
+  ! density increments
+  if(drv%dnc .eq. 1) then
+    DEALLOCATE ( dnc%flc)
+    DEALLOCATE ( dnc%inc)
+    ! DEALLOCATE ( dnc%corr)
+    ! DEALLOCATE ( dnc%std)
+    DEALLOCATE ( dnc%ib, dnc%jb, dnc%kb)
+    DEALLOCATE ( dnc%pq1, dnc%pq2, dnc%pq3, dnc%pq4)
+    DEALLOCATE ( dnc%pq5, dnc%pq6, dnc%pq7, dnc%pq8)
+    DEALLOCATE (grd%lon, grd%lat)
+  endif
+
   ! Constants structure
   DEALLOCATE ( rcf%al)
   DEALLOCATE ( rcf%sc)
@@ -78,7 +91,7 @@ subroutine clean_mem
   DEALLOCATE(RecCountX3D_chl, RecDisplX3D_chl)
 
   DEALLOCATE(ChlExtended)
-  DEALLOCATE(ChlExtended_3d,N3nExtended_3d,O2oExtended_3d)
+  DEALLOCATE(ChlExtended_3d,N3nExtended_3d,O2oExtended_3d,DncExtended_3d)
   DEALLOCATE(SendBottom, RecTop)
   DEALLOCATE(SendTop, RecBottom)
   DEALLOCATE(SendTop_2d, RecBottom_2d)

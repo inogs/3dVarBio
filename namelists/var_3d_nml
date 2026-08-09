@@ -28,6 +28,7 @@
 !  neof_chl - Number of vertical EOFs for chl
 !  neof_n3n - Number of vertical EOFs for n3n
 !  neof_o2o - Number of vertical EOFs for o2o
+!  neof_dnc - Number of vertical EOFs for density-nitrate
 !  neof_multi - Number of multivariate vertical EOFs
 !  kmchl    - chl Nlevels in multi EOFs
 !  kmnit    - nit Nlevels in multi EOFs
@@ -43,6 +44,7 @@
    neof_chl = 4
    neof_n3n = 4
    neof_o2o = 4
+   neof_dnc = 10
    neof_multi = 26
    kmchl    = 26
    kmnit    = 40

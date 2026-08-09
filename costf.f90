@@ -45,6 +45,10 @@ subroutine costf
   ! -------------------------------------------------------
   ctl%f_b = 0.5 * dot_product( ctl%x_c, ctl%x_c)
   call MPI_Allreduce(MPI_IN_PLACE, ctl%f_b, 1, MPI_REAL8, MPI_SUM, Var3DCommunicator, ierr)
+  if(MyId .eq. 0) then
+     print*, "ctl%f_b", ctl%f_b
+     write(drv%dia,*) "ctl%f_b", ctl%f_b
+  endif
   
   ! -------------------------------------------------------
   ! calculate observational cost term
@@ -61,8 +65,11 @@ subroutine costf
       call ver_hor_chl
     endif
     if(drv%nut .eq. 1) then
-      if(bio%N3n .eq. 1) then
+      if((bio%N3n .eq. 1) .or. (drv%dnc .eq. 1)) then
         call ver_hor_nut(grd%n3n, grd%n3n_ad, 'N')
+        if(drv%dnc .eq. 1) then
+          call ver_hor_nut(grd%dnc,grd%dnc_ad,'D')
+        endif
       endif
       if(bio%O2o .eq. 1) then
         call ver_hor_nut(grd%o2o, grd%o2o_ad, 'O')
@@ -91,6 +98,10 @@ subroutine costf
   ! calculate cost
   ctl%f_o = 0.5 * dot_product( obs%amo, obs%amo)
   call MPI_Allreduce(MPI_IN_PLACE, ctl%f_o, 1, MPI_REAL8, MPI_SUM, Var3DCommunicator, ierr)
+  if(MyId .eq. 0) then
+     print*, "ctl%f_o", ctl%f_o
+     write(drv%dia,*) "ctl%f_o", ctl%f_o
+  endif
   
   ! -------------------------------------------------------
   ! Cost function
@@ -98,8 +109,10 @@ subroutine costf
    
   ctl%f_c = ctl%f_b + ctl%f_o
   
-  if(MyId .eq. 0) &
+  if(MyId .eq. 0) then
        print*,' Cost function ',ctl%f_c, '(iter.',drv%MyCounter,')'
+       write(drv%dia,*) ' Cost function ',ctl%f_c, '(iter.',drv%MyCounter,')'
+  endif
   
   ! -------------------------------------------------------
   ! calculate the cost function gradient
@@ -125,8 +138,11 @@ subroutine costf
       call ver_hor_chl_ad
     endif
     if(drv%nut .eq. 1) then
-      if(bio%N3n .eq. 1) then
+      if((bio%N3n .eq. 1) .or. (drv%dnc .eq. 1)) then
         call ver_hor_nut_ad(grd%n3n, grd%n3n_ad, 'N')
+        if(drv%dnc .eq. 1) then
+          call ver_hor_nut_ad(grd%dnc, grd%dnc_ad, 'D')
+        endif
       endif
       if(bio%O2o .eq. 1) then
         call ver_hor_nut_ad(grd%o2o, grd%o2o_ad, 'O')

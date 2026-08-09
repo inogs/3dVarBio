@@ -41,6 +41,7 @@ subroutine sav_itr
   use mpi_str
   use bio_str
   use da_params
+  use dnc_str
 
   implicit none
   
@@ -73,9 +74,13 @@ subroutine sav_itr
     DEALLOCATE( grd%chl_ad)
   endif
   if(drv%nut .eq. 1) then
-    if(bio%n3n .eq. 1) then
+    if((bio%n3n .eq. 1) .or. (drv%dnc .eq. 1)) then
       DEALLOCATE( grd%n3n)
       DEALLOCATE( grd%n3n_ad)
+      if(drv%dnc .eq. 1) then
+        DEALLOCATE( grd%dnc)
+        DEALLOCATE( grd%dnc_ad)
+      endif
     endif
     if(bio%o2o .eq. 1) then
       DEALLOCATE( grd%o2o)
@@ -91,6 +96,7 @@ subroutine sav_itr
     DEALLOCATE( grd%n3n)
     DEALLOCATE( grd%n3n_ad)
   endif
+
   
   ! Observational vector
   DEALLOCATE( obs%inc, obs%amo, obs%res)
@@ -109,8 +115,15 @@ subroutine sav_itr
     if(bio%O2o .eq. 1) then
       DEALLOCATE( ros%evc_o2o, ros%eva_o2o )
     endif
+    if(drv%dnc .eq. 1) then
+      DEALLOCATE( ros%evc_dnc, ros%eva_dnc )
+    endif
   endif
 
+  if(drv%multiv.eq.1) then
+    DEALLOCATE( ros%evc_multi, ros%eva_multi)
+  endif
+  
   ! Control structure
   DEALLOCATE( ctl%x_c, ctl%g_c)
 
@@ -131,7 +144,7 @@ subroutine sav_itr
     endif
     if(drv%nut .eq. 1) then
       DEALLOCATE( bio%InitialNut)
-      if(bio%N3n.eq.1 .AND. bio%updateN1p.eq.1)  DEALLOCATE( bio%covn3n_n1p)
+      if((bio%N3n.eq.1 .or. drv%dnc .eq. 1) .AND. (bio%updateN1p.eq.1)) DEALLOCATE(bio%covn3n_n1p)
       if(drv%chl_assim .eq. 0) then   
         DEALLOCATE( bio%cquot, bio%pquot)
         DEALLOCATE( bio%InitialChl) !used in cp_chl_stat
@@ -146,6 +159,11 @@ subroutine sav_itr
     DEALLOCATE( bio%InitialNut)
     if(bio%updateN1p.eq.1)  DEALLOCATE( bio%covn3n_n1p)
   endif
+
+  ! if(drv%dnc .eq. 1) then
+  !   DEALLOCATE( bio%InitialNut)
+  !   DEALLOCATE( bio%covn3n_n1p)
+  ! endif
 
   DEALLOCATE(SurfaceWaterPoints)  
   

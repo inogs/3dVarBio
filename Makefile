@@ -60,45 +60,9 @@ OBJSTR  =  \
 	ctl_str.o\
 	rcfl_mod.o\
 	bio_str.o\
-	mpi_str.o
+	mpi_str.o\
+	dnc_str.o\
 
-PHYSOBS  =  \
-	get_obs_sla.o\
-	get_obs_arg.o\
-	get_obs_xbt.o\
-	get_obs_gld.o\
-	get_obs_vdr.o\
-	get_obs_gvl.o\
-	get_obs_tra.o\
-	get_obs_trd.o\
-	obs_sla.o\
-	obs_arg.o\
-	obs_xbt.o\
-	obs_gld.o\
-	obs_vdr.o\
-	obs_gvl.o\
-	obs_tra.o\
-	obs_trd.o\
-	obs_sla_ad.o\
-	obs_arg_ad.o\
-	obs_xbt_ad.o\
-	obs_gld_ad.o\
-	obs_vdr_ad.o\
-	obs_gvl_ad.o\
-	obs_tra_ad.o\
-	obs_trd_ad.o\
-	bar_mod.o\
-	get_vel.o\
-	div_dmp.o\
-	get_byg.o\
-	bar_mod_ad.o\
-	get_vel_ad.o\
-	div_dmp_ad.o\
-	get_byg_ad.o\
-	mod_trj_ad.o\
-	mod_trj_tl.o\
-	invrt.o\
-	invrt_ad.o
 
 OBJS    =  \
 	def_nml.o\
@@ -108,6 +72,7 @@ OBJS    =  \
 	rdeofs_chl.o\
 	rdeofs_n3n.o\
 	rdeofs_o2o.o\
+	rdeofs_dnc.o\
 	rdeofs_multi.o\
 	rdrcorr.o\
 	mean_rdr.o\
@@ -115,6 +80,7 @@ OBJS    =  \
 	get_obs.o\
 	get_obs_arg.o\
 	get_obs_sat.o\
+	get_densincr_arg.o\
 	int_par.o\
 	obs_vec.o\
 	ini_cfn.o\
@@ -125,14 +91,18 @@ OBJS    =  \
 	rcfl_y.o\
 	veof_chl.o\
 	veof_nut.o\
+	veof_dnc.o\
 	obsop.o\
+	obs_dnc.o\
 	obs_arg.o\
+	obs_dnc_ad.o\
 	resid.o\
 	res_inc.o\
 	obsop_ad.o\
 	obs_arg_ad.o\
 	veof_chl_ad.o\
 	veof_nut_ad.o\
+	veof_dnc_ad.o\
 	veof_multiv_ad.o\
 	ver_hor_chl_ad.o\
 	ver_hor_nut_ad.o\
@@ -167,7 +137,7 @@ OBJS    =  \
 	readGrid.o\
 	def_cov.o\
 	tao_minimizer.o\
-    oceanvar.o
+    biovar.o
 
 MAINEXE = main.o
 

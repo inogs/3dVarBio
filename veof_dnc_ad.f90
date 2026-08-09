@@ -1,4 +1,4 @@
-MODULE cns_str
+subroutine veof_dnc_ad(NutArrayAd)
 
 !---------------------------------------------------------------------------
 !                                                                          !
@@ -23,41 +23,80 @@ MODULE cns_str
 
 !-----------------------------------------------------------------------
 !                                                                      !
-! Structure of constants                                               !
+! Vertical transformation (adjoint)                                    !
 !                                                                      !
 ! Version 1: S.Dobricic 2006                                           !
 !-----------------------------------------------------------------------
 
+
  use set_knd
+ use drv_str
+ use grd_str
+ use eof_str
 
-implicit none
+ implicit none
 
-public
+ INTEGER(i4)             :: i, j, k, l, n, offset, my_km, k1
+ REAL(r8), DIMENSION ( grd%im, grd%jm)  :: egm
+ REAL(r8) :: NutArrayAd(grd%im,grd%jm,grd%km)
+ REAL(r8), ALLOCATABLE, DIMENSION(:,:) :: eva
+ REAL(r8), ALLOCATABLE, DIMENSION(:,:,:) :: evc
+ INTEGER   :: MyNEofs
 
-   TYPE rcf_t
+ 
+  my_km = grd%km
+  ! Altrove usato grd%km come limite per assimilazione nit qui ro%kmnit
+  ! Da correggere o fare un check
+  MyNEofs = ros%neof_dnc
+  offset = ros%neof_chl + ros%neof_n3n
 
-        INTEGER(i4)          ::  ntr     ! No. of iterations (half of)
-        REAL(r8)             ::  dx      ! Grid resolution (m)
-        REAL(r8)             ::  L       ! Correlation radius
-        REAL(r8),POINTER     ::  Lxyz(:,:,:)!Correlation radius from file in km
-        REAL(r8),POINTER     ::  L_x(:,:,:)!Correlation radius from file in km
-        REAL(r8),POINTER     ::  L_y(:,:,:)!Correlation radius from file in km
-        REAL(r8),POINTER     ::  rtx(:,:)!Correlation radius from file in km
-        REAL(r8),POINTER     ::  rty(:,:)!Correlation radius from file in km
-        REAL(r8)             ::  E       ! Norm
-        REAL(r8)             ::  alp     ! Filter weight
-        INTEGER(i4)          ::  ntb     ! Number of points in the table
-        REAL(r8)             ::  dsmn    ! Minimum distance 
-        REAL(r8)             ::  dsmx    ! Maximum distance 
-        REAL(r8)             ::  dsl     ! Table increment
-        REAL(r8), POINTER    ::  al(:)   ! Filter weights in the table
-        REAL(r8), POINTER    ::  sc(:,:)   ! Filter scaling factors in the table
-        REAL(r8)             ::  scl     ! Scaling factor
-        REAL(r8)             ::  efc     ! Scaling factor for extended points
-        INTEGER(i4)          ::  kstp    ! Step for extended points
 
-   END TYPE rcf_t
+  ALLOCATE (eva(ros%nreg,MyNEofs)); eva = huge(eva(1,1))
+  ALLOCATE (evc(ros%nreg,my_km,MyNEofs)); evc = huge(evc(1,1,1))
 
-   TYPE (rcf_t)              :: rcf
+  eva(:,:) = ros%eva_dnc(:,:)
+  evc(:,1:my_km,:) = ros%evc_dnc(:,my_km+1:my_km*2,:)
 
-END MODULE cns_str
+  do n=1,MyNEofs
+    grd%ro_ad(:,:,n+offset) = 0.0 ! OMP
+  enddo
+
+!$OMP PARALLEL  &
+!$OMP PRIVATE(i,j,k,k1,n) &
+!$OMP PRIVATE(egm) 
+!$OMP DO
+  do n=1,MyNEofs
+
+   egm(:,:) = 0.0
+
+   ! 3D variables
+   
+   do k=1,my_km ! OMP
+      do j=1,grd%jm
+         do i=1,grd%im
+            egm(i,j) = egm(i,j) + evc(grd%reg(i,j), k,n) * NutArrayAd(i,j,k)
+         enddo
+      enddo
+   enddo
+   
+   
+   do j=1,grd%jm
+      do i=1,grd%im
+        egm(i,j) = eva(grd%reg(i,j),n) * egm(i,j) 
+      enddo
+   enddo
+
+   do j=1,grd%jm
+      do i=1,grd%im
+         grd%ro_ad(i,j,n+offset) = grd%ro_ad(i,j,n+offset) + egm(i,j) 
+      enddo
+   enddo
+   
+enddo
+!$OMP END DO
+!$OMP END PARALLEL 
+ 
+
+DEALLOCATE(eva,evc)
+
+end subroutine veof_dnc_ad

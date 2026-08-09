@@ -327,7 +327,7 @@ subroutine wrt_chl_stat
 
 
 
-  DEALLOCATE(DumpBio, ValuesToTest, MyConditions)
+  DEALLOCATE(DumpBio, ValuesToTest, MyConditions, LimitCorr)
 
 
 end subroutine wrt_chl_stat

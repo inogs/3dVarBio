@@ -62,7 +62,7 @@ MODULE mpi_str
   REAL(r8), POINTER, DIMENSION(:)        ::  SendTop, RecBottom, SendBottom, RecTop
   REAL(r8), ALLOCATABLE, DIMENSION(:,:)      ::  SendTop_2d, RecBottom_2d
   REAL(r8), ALLOCATABLE, DIMENSION(:,:)      ::  SendBottom_2d, RecTop_2d
-  REAL(r8), ALLOCATABLE,  DIMENSION(:,:,:)    ::  ChlExtended_3d, N3nExtended_3d, O2oExtended_3d
+  REAL(r8), ALLOCATABLE,  DIMENSION(:,:,:)    ::  ChlExtended_3d, N3nExtended_3d, O2oExtended_3d, DncExtended_3d
 
 
 CONTAINS

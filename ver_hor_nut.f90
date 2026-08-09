@@ -57,10 +57,15 @@ subroutine ver_hor_nut(NutArray, NutArrayAd, Var)
 
   ! ---
   ! Vertical EOFs
-  call veof_nut(NutArray, Var)
+  if(Var .eq. 'D') then
+   call veof_dnc(NutArray)
+  else
+   call veof_nut(NutArray, Var)
+  endif
   !return
   ! goto 103 !No Vh
   
+
   ! ---
   ! Load temporary arrays
   do k=1,grd%km
@@ -247,5 +252,5 @@ subroutine ver_hor_nut(NutArray, NutArrayAd, Var)
   enddo
   
   ! 103 continue
-  
+
 end subroutine ver_hor_nut

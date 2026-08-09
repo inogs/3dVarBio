@@ -55,6 +55,10 @@ subroutine obsop
   if(drv%sat_obs .eq. 1) &
     call obs_sat
 
+  ! Density increments
+  if(drv%dnc .eq. 1) &
+    call obs_dnc
+
   call MPI_Barrier(Var3DCommunicator, ierr)
   
 end subroutine obsop

@@ -6,6 +6,7 @@ character (LEN=1024) :: EOF_FILE_CHL != 'eofs_chl.nc'
 character (LEN=1024) :: EOF_FILE_N3N != 'eofs_n3n.nc'
 character (LEN=1024) :: EOF_FILE_O2O != 'eofs_o2o.nc'
 character (LEN=1024) :: EOF_FILE_MULTI != 'eofs_multi.nc'
+character (LEN=1024) :: EOF_FILE_DNC != 'eofs_dnc.nc'
 character (LEN=1024) :: STD_FILE_MULTI != 'std_multi.nc'
 character (LEN=1024) :: MISFIT_FILE  != 'chl_mis.nc'
 character (LEN=1024) :: NUTCOV_FILE  != 'crosscorrs.nc'
@@ -14,10 +15,10 @@ character (LEN=1024) :: CORR_FILE    != 'corr.nc'
 character (LEN=1024) :: EIV_FILE     != 'eiv.nc'
 character (LEN=1024) :: OBS_FILE     != 'obs_1.dat'
 character (LEN=1024) :: GRID_FILE    != 'grid1.nc'
-!laura
 character (LEN=1024) :: RCORR_FILE  != 'chl_rad_corr.nc'
 character (LEN=1024) :: ARGO_FILE   != 'argo_mis.dat'
 character (LEN=1024) :: ANIS_FILE   != 'gradsal.nc'
+character (LEN=1024) :: INCR_FILE   != 'density_increments.dat'
 
 
 CONTAINS
@@ -30,6 +31,7 @@ EOF_FILE_CHL = 'eofs_chl.nc'
 EOF_FILE_N3N = 'eofs_n3n.nc'
 EOF_FILE_O2O = 'eofs_o2o.nc'
 EOF_FILE_MULTI = 'eofs_multi.nc'
+EOF_FILE_DNC = 'eofs_dnc.nc'
 STD_FILE_MULTI = 'std_multi.nc'
 MISFIT_FILE  = 'chl_mis.nc'
 NUTCOV_FILE  = 'crosscorrs.nc'
@@ -38,10 +40,10 @@ NUTCHLCOV_FILE  = 'crosscorrs.nc'
    EIV_FILE  = 'eiv.nc'
    OBS_FILE  = 'obs_1.dat' ! 'obs_'//fgrd//'.dat'
   GRID_FILE  = 'grid1.nc'! 'grid'//cgrd//'.nc'
-!laura
  RCORR_FILE  = 'chl_rad_corr.nc'
   ARGO_FILE  = 'arg_mis.dat'
   ANIS_FILE  = 'gradsal.nc'
+  INCR_FILE  = 'density_increments.dat'
 
 END SUBROUTINE SETFILENAMES
 

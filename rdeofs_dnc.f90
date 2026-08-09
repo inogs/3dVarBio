@@ -1,4 +1,4 @@
-subroutine rdeofs_multi
+subroutine rdeofs_dnc
   
   !---------------------------------------------------------------------------
   !                                                                          !
@@ -41,72 +41,13 @@ subroutine rdeofs_multi
   implicit none
   
   INTEGER(i4)                    :: stat, ncid, idvar
-  INTEGER(8)                     :: ik,ireg
-  integer(8)                     :: neofs, nlevs, nregs, nregsstd
+  integer(8)                     :: neofs, nlevs, nregs
   integer(KIND=MPI_OFFSET_KIND)  :: GlobalStart(3), GlobalCount(3)
-  real(4), allocatable           :: std_chl(:),std_n3n(:)
-  real(4), allocatable           :: x3(:,:,:), x2(:,:), x1(:)
+  real(4), allocatable           :: x3(:,:,:), x2(:,:)
   
 
-  ! Read std file for normalization
-  stat = nf90mpi_open(Var3DCommunicator, trim(STD_FILE_MULTI), NF90_NOWRITE, MPI_INFO_NULL, ncid)
-  if (stat /= nf90_noerr) call handle_err("nf90mpi_open "//trim(STD_FILE_MULTI), stat)
-  
-  ! Get dimensions 
-  stat = nf90mpi_inq_dimid (ncid, 'nreg', idvar)
-  if (stat /= nf90_noerr) call handle_err("nf90mpi_inq_dimid nreg", stat)
-  stat = nfmpi_inq_dimlen (ncid, idvar, nregsstd)
-  if (stat /= nf90_noerr) call handle_err("nfmpi_inq_dimlen nregsstd", stat)
-
-  if(MyId .eq. 0) then
-     write(drv%dia,*)'Number of reg in std file : ',nregsstd
-     write(drv%dia,*)'Uses ',ros%neof_multi,' eofs.'
-  endif
-  
-  if(ros%nreg .ne. nregsstd) then
-
-     if(MyId .eq. 0) &
-          write(drv%dia,*)'Error: nregsstd differs from nregs'
-
-     call MPI_Abort(Var3DCommunicator, -1, stat)
-     
-  endif
-  
-  !  Allocate eof arrays and get data
-  ALLOCATE ( std_chl( ros%nreg ) )  ; std_chl = huge(std_chl(1))
-  ALLOCATE ( std_n3n( ros%nreg ) )  ; std_n3n = huge(std_n3n(1))
-  ALLOCATE ( x1( ros%nreg ) )
-  GlobalStart(:) = 1
-  GlobalCount(1) = ros%nreg
-  GlobalCount(2) = ros%kmchl+ros%kmnit
-  GlobalCount(3) = ros%neof_multi
-  
-  stat = nf90mpi_inq_varid(ncid, 'stdP_l', idvar)
-  if (stat /= nf90_noerr) call handle_err("nf90mpi_inq_varid evc", stat)
-  stat = nfmpi_get_vara_real_all(ncid,idvar,GlobalStart(1), GlobalCount(1), x1)
-  if (stat /= nf90_noerr) call handle_err("nfmpi_get_vara_real_all eva", stat)
-
-  std_chl(:) = x1(:)
-  
-  stat = nf90mpi_inq_varid(ncid, 'stdN3n', idvar)
-  if (stat /= nf90_noerr) call handle_err("nf90mpi_inq_varid eva", stat)
-  stat = nfmpi_get_vara_real_all(ncid,idvar,GlobalStart(1), GlobalCount(1), x1)
-  if (stat /= nf90_noerr) call handle_err("nfmpi_get_vara_real_all", stat)
-
-  std_n3n(:) = x1(:)
-  
-  ! DECOMMENT FOLLOWING TWO LINES TO MAKE FILTER TEST
-  ! ros%evc_multi(:,:,:) = 1.
-  ! ros%eva_multi(:,:) = 1.
-  
-  stat = nf90mpi_close(ncid)
-  if (stat /= nf90_noerr) call handle_err("nf90mpi_close", stat)
-
-
-
-
-  stat = nf90mpi_open(Var3DCommunicator, trim(EOF_FILE_MULTI), NF90_NOWRITE, MPI_INFO_NULL, ncid)
-  if (stat /= nf90_noerr) call handle_err("nf90mpi_open "//trim(EOF_FILE_MULTI), stat)
+  stat = nf90mpi_open(Var3DCommunicator, trim(EOF_FILE_DNC), NF90_NOWRITE, MPI_INFO_NULL, ncid)
+  if (stat /= nf90_noerr) call handle_err("nf90mpi_open "//trim(EOF_FILE_DNC), stat)
   
   ! Get dimensions 
   stat = nf90mpi_inq_dimid (ncid, 'nreg', idvar)
@@ -123,8 +64,8 @@ subroutine rdeofs_multi
   if (stat /= nf90_noerr) call handle_err("nfmpi_inq_dimlen neofs", stat)
 
   if(MyId .eq. 0) then
-     write(drv%dia,*)'Eof dimensions for multivariate are: ',ros%nreg, ros%kmchl+ros%kmnit, neofs
-     write(drv%dia,*)'Uses ',ros%neof_multi,' eofs.'
+     write(drv%dia,*)'Eof dimensions for nut-density are: ',ros%nreg, 2*ros%kmt, neofs
+     write(drv%dia,*)'Uses ',ros%neof_dnc,' eofs.'
   endif
   
   if(ros%nreg .ne. nregs) then
@@ -136,27 +77,27 @@ subroutine rdeofs_multi
      
   endif
   
-  if(ros%neof_multi .gt. neofs) then
+  if(ros%neof_dnc .gt. neofs) then
 
      if(MyId .eq. 0) &
           write(drv%dia,*)'Error: Requires more Eofs than available in the input file.'
      call MPI_Abort(Var3DCommunicator, -1, stat)
      
-  else if(ros%neof_multi .lt. neofs) then
+  else if(ros%neof_dnc .lt. neofs) then
      
      if(MyId .eq. 0) then
-        write(drv%dia,*)'Warning: ros%neof_multi < neofs!'
-        write(drv%dia,*)'ros%neof_multi =', ros%neof_multi
+        write(drv%dia,*)'Warning: ros%neof_dnc < neofs!'
+        write(drv%dia,*)'ros%neof_dnc =', ros%neof_dnc
         write(drv%dia,*)'neofs =', neofs
-        write(drv%dia,*)'continue using ros%neof_multi'
-        write(*,*)'Warning: ros%neof_multi < neofs!'
-        write(*,*)'ros%neof_multi =', ros%neof_multi
+        write(drv%dia,*)'continue using ros%neof_dnc'
+        write(*,*)'Warning: ros%neof_dnc < neofs!'
+        write(*,*)'ros%neof_dnc =', ros%neof_dnc
         write(*,*)'neofs =', neofs
-        write(*,*)'continue using ros%neof_multi'
+        write(*,*)'continue using ros%neof_dnc'
      endif
   endif
   
-  if((ros%kmchl+ros%kmnit) .ne. nlevs) then
+  if(2*ros%kmt .ne. nlevs) then
      if(MyId .eq. 0) &
           write(drv%dia,*)'Error: Vertical dimension different than in the input file.'
 
@@ -164,49 +105,40 @@ subroutine rdeofs_multi
   endif
   
   !  Allocate eof arrays and get data
-  ALLOCATE ( ros%evc_multi( ros%nreg, ros%kmchl+ros%kmnit, ros%neof_multi) )  ; ros%evc_multi = huge(ros%evc_multi(1,1,1))
-  ALLOCATE ( ros%eva_multi( ros%nreg, ros%neof_multi) )           ; ros%eva_multi = huge(ros%eva_multi(1,1))
-  ALLOCATE ( x3( ros%nreg, ros%kmchl+ros%kmnit, ros%neof_multi) )
-  ALLOCATE ( x2( ros%nreg, ros%neof_multi) )
+  ALLOCATE ( ros%evc_dnc( ros%nreg, 2*ros%kmt, ros%neof_dnc) )  ; ros%evc_dnc = huge(ros%evc_dnc(1,1,1))
+  ALLOCATE ( ros%eva_dnc( ros%nreg, ros%neof_dnc) )           ; ros%eva_dnc = huge(ros%eva_dnc(1,1))
+  ALLOCATE ( x3( ros%nreg, 2*ros%kmt, ros%neof_dnc) )
+  ALLOCATE ( x2( ros%nreg, ros%neof_dnc) )
   GlobalStart(:) = 1
   GlobalCount(1) = ros%nreg
-  GlobalCount(2) = ros%kmchl+ros%kmnit
-  GlobalCount(3) = ros%neof_multi
+  GlobalCount(2) = 2*ros%kmt
+  GlobalCount(3) = ros%neof_dnc
   
   stat = nf90mpi_inq_varid(ncid, 'evc', idvar)
   if (stat /= nf90_noerr) call handle_err("nf90mpi_inq_varid evc", stat)
   stat = nfmpi_get_vara_real_all(ncid,idvar,GlobalStart, GlobalCount, x3)
   if (stat /= nf90_noerr) call handle_err("nfmpi_get_vara_real_all eva", stat)
 
-  ros%evc_multi(:,:,:) = x3(:,:,:)
-
-  do ireg=1,ros%nreg
-    do ik=1,ros%kmchl
-      ros%evc_multi(ireg,ik,:) = ros%evc_multi(ireg,ik,:)*std_chl(ireg)
-    enddo
-    do ik=ros%kmchl+1,ros%kmchl+ros%kmnit
-      ros%evc_multi(ireg,ik,:) = ros%evc_multi(ireg,ik,:)*std_n3n(ireg)
-    enddo
-  enddo
+  ros%evc_dnc(:,:,:) = x3(:,:,:)
   
   GlobalCount(1) = ros%nreg
-  GlobalCount(2) = ros%neof_multi
+  GlobalCount(2) = ros%neof_dnc
 
   stat = nf90mpi_inq_varid(ncid, 'eva', idvar)
   if (stat /= nf90_noerr) call handle_err("nf90mpi_inq_varid eva", stat)
   stat = nfmpi_get_vara_real_all(ncid,idvar,GlobalStart(1:2), GlobalCount(1:2), x2)
   if (stat /= nf90_noerr) call handle_err("nfmpi_get_vara_real_all", stat)
-  ros%eva_multi(:,:) = x2(:,:)
+  ros%eva_dnc(:,:) = x2(:,:)
   
   ! DECOMMENT FOLLOWING TWO LINES TO MAKE FILTER TEST
-  ! ros%evc_multi(:,:,:) = 1.
-  ! ros%eva_multi(:,:) = 1.
+  ! ros%evc(:,:,:) = 1.
+  ! ros%eva(:,:) = 1.
   
   stat = nf90mpi_close(ncid)
   if (stat /= nf90_noerr) call handle_err("nf90mpi_close", stat)
 
-  DEALLOCATE(x3, x2, x1, std_chl, std_n3n)
+  DEALLOCATE(x3, x2)
   
-end subroutine rdeofs_multi
+end subroutine rdeofs_dnc
 
 

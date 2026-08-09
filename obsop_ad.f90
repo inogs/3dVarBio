@@ -50,6 +50,9 @@ subroutine obsop_ad
   if(drv%sat_obs .eq. 1) &  
     call obs_sat_ad
 
+  ! Density increments
+  if(drv%dnc .eq. 1) &
+    call obs_dnc_ad
   ! ---
   ! Apply biological repartition of the chlorophyll
   if((drv%chl_assim .eq. 1) .or. (drv%multiv .eq. 1)) &

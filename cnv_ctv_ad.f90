@@ -38,6 +38,7 @@ subroutine cnv_ctv_ad
  INTEGER(i4)     :: i,j,k, kk
  INTEGER(i4)   :: jumpInd, indSupWP
 
+
    do k=1,ros%neof
      jumpInd =  (k -1 )* nSurfaceWaterPoints
         do indSupWP=1,nSurfaceWaterPoints

@@ -32,6 +32,7 @@ subroutine get_obs
   use set_knd
   use obs_str
   use drv_str
+  use dnc_str
   
   implicit none
   
@@ -39,6 +40,9 @@ subroutine get_obs
   sat%no = 0
   arg%nc = 0
   sat%nc = 0
+
+  dnc%nc = 0
+  dnc%no = 0
 
   
   ! ----
@@ -51,4 +55,8 @@ subroutine get_obs
   if(drv%sat_obs .eq. 1) &
     call get_obs_sat
   
+  ! Load density increments for Physical DA
+  if(drv%dnc .eq. 1) &
+    call get_densincr_arg
+
 end subroutine get_obs

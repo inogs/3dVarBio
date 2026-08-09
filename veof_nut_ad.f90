@@ -36,23 +36,26 @@ subroutine veof_nut_ad(NutArrayAd, Var)
 
  implicit none
 
- INTEGER(i4)             :: i, j, k, l, n, offset, my_km
+ INTEGER(i4)             :: i, j, k, l, n, offset, my_km, k1
  REAL(r8), DIMENSION ( grd%im, grd%jm)  :: egm
  REAL(r8) :: NutArrayAd(grd%im,grd%jm,grd%km)
  REAL(r8), ALLOCATABLE, DIMENSION(:,:) :: eva
  REAL(r8), ALLOCATABLE, DIMENSION(:,:,:) :: evc
  CHARACTER :: Var
- INTEGER   :: MyNEofs
+ INTEGER   :: MyNEofs, MyNEofs_nit
+
 
   my_km = 0
-  ! Altrove usato grd%km come limite per assimilazione nit qui ro%kmnit
-  ! Da correggere o fare un check
   offset = 0
   if((drv%nut .eq.1) .and. (drv%multiv .eq. 0)) then
      my_km = grd%km
      if(Var .eq. 'N') then
-       MyNEofs = ros%neof_n3n
+       MyNEofs_nit = ros%neof_n3n
+       MyNEofs = MyNEofs_nit
        offset = ros%neof_chl
+       if (drv%dnc .eq. 1) then
+        MyNEofs = MyNEofs_nit + ros%neof_dnc
+       endif
      else
        MyNEofs = ros%neof_o2o
        offset = ros%neof_chl + ros%neof_n3n
@@ -70,8 +73,16 @@ subroutine veof_nut_ad(NutArrayAd, Var)
 
   if((drv%nut .eq.1) .and. (drv%multiv .eq. 0)) then
     if(Var .eq. 'N') then
-      eva = ros%eva_n3n
-      evc = ros%evc_n3n
+      if(MyNEofs_nit .gt. 0) then
+        eva(:,1:MyNEofs_nit) = ros%eva_n3n
+        evc(:,1:my_km,1:MyNEofs_nit) = ros%evc_n3n
+      endif
+      if (drv%dnc .eq. 1) then
+        eva(:,MyNEofs_nit+1:MyNEofs) = ros%eva_dnc
+        evc(:,1:my_km,MyNEofs_nit+1:MyNEofs) = ros%evc_dnc(:,1:my_km,1:ros%neof_dnc)
+      endif
+      ! eva = ros%eva_n3n
+      ! evc = ros%evc_n3n
     else
       eva = ros%eva_o2o
       evc = ros%evc_o2o
@@ -117,9 +128,10 @@ subroutine veof_nut_ad(NutArrayAd, Var)
          grd%ro_ad(i,j,n+offset) = grd%ro_ad(i,j,n+offset) + egm(i,j) 
       enddo
    enddo
-   
-enddo
-!$OMP END DO
+
+  enddo
+     
+  !$OMP END DO
 !$OMP END PARALLEL 
 
 DEALLOCATE(eva,evc)

@@ -52,7 +52,7 @@ subroutine obs_arg
     condc = 1
     call EXTEND_2D( grd%chl, my_km, ChlExtended_3d )
   endif
-  if ((drv%nut.eq.1 .and. bio%N3n.eq.1 ) .or. (drv%multiv.eq.1)) then
+  if ((drv%nut.eq.1 .and. ((bio%N3n.eq.1) .or. (drv%dnc.eq.1))) .or. (drv%multiv.eq.1)) then
     condn = 1
     call EXTEND_2D( grd%n3n, grd%km, N3nExtended_3d )
   endif

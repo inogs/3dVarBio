@@ -25,6 +25,7 @@
  chl_assim = 1
  chl_upnut = 0
     nut    = 1
+   multiv  = 0
    nphyto  = 4
    chl_dep = 0.0
    ncmp    = 5
@@ -44,6 +45,7 @@ ApplyConditions = .true.
 !            0-no satellite assimilation
 !  argo    - 1-assimilate argo data
 !          - 0-no argo assimilation
+!   dnc    - coupled density/nutrient assimilation
 ! uniformL - 1-non uniform radius
 !          - 0-uniform radius (rcf%L)
 ! anisL    - 1-anisotropy
@@ -53,6 +55,7 @@ ApplyConditions = .true.
 &params
  sat_obs  = 1
   argo    = 1
+   dnc    = 1
  uniformL = 0
   anisL   = 0
 /

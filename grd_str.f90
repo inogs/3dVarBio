@@ -55,6 +55,8 @@ MODULE grd_str
      REAL(r8),    POINTER     ::  n3n_ad(:,:,:) ! n3n adjoint variable
      REAL(r8),    POINTER     ::  o2o(:,:,:)    ! o2o
      REAL(r8),    POINTER     ::  o2o_ad(:,:,:) ! o2o adjoint variable
+     REAL(r8),    POINTER     ::  dnc(:,:,:)    ! density
+     REAL(r8),    POINTER     ::  dnc_ad(:,:,:) ! density adjoint variable
      
 
      REAL(r8),    POINTER     ::  dep(:)       ! Depth
