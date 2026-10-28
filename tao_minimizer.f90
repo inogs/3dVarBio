@@ -1,6 +1,16 @@
+#include "petscversion.h"
+
+! Since PETSc 3.23 the Fortran functions with the suffix F90 are replaced by
+! the ones without it (that now take a Fortran pointer as argument)
+#if PETSC_VERSION_GE(3,23,0)
+#define VecGetArrayF90 VecGetArray
+#define VecRestoreArrayF90 VecRestoreArray
+#define VecGetArrayReadF90 VecGetArrayRead
+#define VecRestoreArrayReadF90 VecRestoreArrayRead
+#endif
+
 subroutine tao_minimizer
 
-#include "petscversion.h"
 #if PETSC_VERSION_GE(3,8,0)
 #include "petsc/finclude/petscvec.h"
 #else
@@ -26,6 +36,7 @@ subroutine tao_minimizer
   PetscReal          ::   fval, gnorm, cnorm, xdiff
   PetscReal          ::   MyTolerance
   TaoConvergedReason ::   reason
+  integer            ::   ireason    ! integer value of reason
   integer(i4)        ::   j
   real(8)            ::   MaxGrad
 
@@ -152,14 +163,20 @@ subroutine tao_minimizer
   call TaoView(tao, PETSC_VIEWER_STDOUT_WORLD, ierr)
 
   call TaoGetSolutionStatus(tao, iter, fval, gnorm, cnorm, xdiff, reason, ierr)
-  if(reason .lt. 0) then
+  ! Since PETSc 3.23 the Fortran enums are derived types, with the value in %v
+#if PETSC_VERSION_GE(3,23,0)
+  ireason = reason%v
+#else
+  ireason = reason
+#endif
+  if(ireason .lt. 0) then
 
-    if( ((reason.eq.-6) .or. (reason.eq.-5)) .and. (drv%MyCounter .gt. 12) ) then
+    if( ((ireason.eq.-6) .or. (ireason.eq.-5)) .and. (drv%MyCounter .gt. 12) ) then
       if(MyId .eq. 0) then
         print*, "TAO failed to find a solution"
         print*, "fval..", fval
         print*, "gnorm.", gnorm
-        print*, "reason", reason
+        print*, "reason", ireason
         print*, "iter", iter
         print*, " MyCount", drv%MyCounter
         print*, "BUT assigning a solution "
@@ -170,7 +187,7 @@ subroutine tao_minimizer
         print*, "TAO failed to find a solution"
         print*, "fval..", fval
         print*, "gnorm.", gnorm
-        print*, "reason", reason
+        print*, "reason", ireason
         print*, "iter", iter
         print*, " MyCount", drv%MyCounter
         print*, "Aborting.."
